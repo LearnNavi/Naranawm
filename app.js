@@ -83,7 +83,7 @@ fetchHashTableData(eanaEltuConnection, 'SELECT id, format, argc, changeable FROM
 
 
 eanaEltuConnection.end(function(err){
-   // console.log(eanaEltu);
+    //console.log(eanaEltu);
 });
 
 
