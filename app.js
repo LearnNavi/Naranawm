@@ -96,10 +96,65 @@ eanaEltuConnection.end(function (err) {
     buildDictionary();
 });
 
-function buildDictionary() {
-    console.log("Building Dictionary...");
-    
+
+function buildDictionaryLanguages() {
+    var languages = {
+        en: {
+            engName: "English",
+            nativeName: "English",
+            active: 1
+        }
+    };
+    for(var index in eanaEltu.dictLanguages){
+        var language = eanaEltu.dictLanguages[index];
+
+        languages[index] = {
+            engName: language.engName,
+            nativeName: language.nativeName,
+            active: language.active
+        };
+
+    }
+    return languages;
 }
 
+function buildDictionaryMetadata(languages) {
+    var metadata = {};
+    for(var index in eanaEltu.dictMeta){
+        metadata[index] = {
+            en: eanaEltu.dictMeta[index].value
+        };
+        var localization = eanaEltu.dictLoc[index];
+        for(var lc in localization){
+            // The CZ language is in Upper case for some weird reason, this is a hack because of that
+            if(languages[lc.toLowerCase()].active) {
+                if(localization[lc].value === ''){
+                    console.log("Missing " + lc + " translation for [" + index + "]");
+                }
+                metadata[index][lc] = localization[lc].value;
+            } else {
+                // Skip inactive languages
+            }
+        }
+    }
+    return metadata;
+}
 
+function buildDictionary() {
+    console.log("Building Dictionary...");
+    var languages = buildDictionaryLanguages();
+    var metadata = buildDictionaryMetadata(languages);
+
+}
+
+var dictionary = {
+    languages: {
+        name: 'nativeName',
+        englishName: 'englishName',
+        active: 'active'
+    },
+    entries: {
+
+    }
+};
 
