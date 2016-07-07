@@ -6,7 +6,16 @@ var dictionary = {};
 
 //We need a function which handles requests and send response
 function handleRequest(request, response){
-    response.end(JSON.stringify(dictionary));
+    console.log(request.url);
+    switch(request.url) {
+        case "/":
+            response.end("Mobile App Database System");
+            break;
+        case "/dictionary":
+            response.end(JSON.stringify(dictionary));
+            break;
+    }
+
 }
 
 //Create a server
