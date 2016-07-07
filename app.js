@@ -1,4 +1,22 @@
 var mysql = require('mysql');
+var http = require('http');
+var PORT = 8080;
+
+var dictionary = {};
+
+//We need a function which handles requests and send response
+function handleRequest(request, response){
+    response.end(JSON.stringify(dictionary));
+}
+
+//Create a server
+var server = http.createServer(handleRequest);
+
+//Lets start our server
+server.listen(PORT, function(){
+    //Callback triggered when server is successfully listening. Hurray!
+    console.log("Server listening on: http://localhost:%s", PORT);
+});
 
 function fetchHashTableData(db, query, id, group, callback) {
     db.query(query, function (err, rows, fields) {
@@ -118,7 +136,7 @@ function buildDictionaryLanguages() {
     return languages;
 }
 
-function buildDictionaryMetadata(languages) {
+function buildDictionaryMetadata() {
     var metadata = {};
     for(var index in eanaEltu.dictMeta){
         metadata[index] = {
@@ -127,7 +145,7 @@ function buildDictionaryMetadata(languages) {
         var localization = eanaEltu.dictLoc[index];
         for(var lc in localization){
             // The CZ language is in Upper case for some weird reason, this is a hack because of that
-            if(languages[lc.toLowerCase()].active) {
+            if(dictionary.languages[lc.toLowerCase()].active) {
                 if(localization[lc].value === ''){
                     console.log("Missing " + lc + " translation for [" + index + "]");
                 }
@@ -142,12 +160,12 @@ function buildDictionaryMetadata(languages) {
 
 function buildDictionary() {
     console.log("Building Dictionary...");
-    var languages = buildDictionaryLanguages();
-    var metadata = buildDictionaryMetadata(languages);
+    dictionary.languages = buildDictionaryLanguages();
+    dictionary.metadata = buildDictionaryMetadata();
 
 }
 
-var dictionary = {
+/*var dictionary = {
     languages: {
         name: 'nativeName',
         englishName: 'englishName',
@@ -157,4 +175,4 @@ var dictionary = {
 
     }
 };
-
+*/
