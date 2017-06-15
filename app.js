@@ -167,7 +167,7 @@ fetchHashTableData(eanaEltuConnection, 'SELECT id, arg1, arg2, arg3, arg4, arg5,
 });
 
 // Fetch dictWordMeta
-fetchHashTableData(eanaEltuConnection, 'SELECT id, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, odd, block, editTime, audio FROM dictWordMeta', 'id', undefined, function (data) {
+fetchHashTableData(eanaEltuConnection, 'SELECT id, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, odd, block, editTime, audio, \'en\' as lc FROM dictWordMeta', 'id', undefined, function (data) {
     eanaEltu.dictWordMeta = data;
 });
 
@@ -302,45 +302,107 @@ function processTemplate(template) {
 
 }
 
+function processEntry(primaryEntry, localizedEntry) {
+    // Pull out each of the 10 args, if the arg is missing from the localized version, use the primary instead
+    var entry = {
+        type: primaryEntry.type,
+        odd: primaryEntry.odd,
+        locOdd: localizedEntry.odd,
+        block: primaryEntry.block,
+        editTime: primaryEntry.editTime,
+        locEditTime: localizedEntry.editTime,
+        audio: primaryEntry.audio,
+        lc: localizedEntry.lc,
+        arg1: localizedEntry.arg1 !== null ? localizedEntry.arg1 : primaryEntry.arg1,
+        arg2: localizedEntry.arg2 !== null ? localizedEntry.arg2 : primaryEntry.arg2,
+        arg3: localizedEntry.arg3 !== null ? localizedEntry.arg3 : primaryEntry.arg3,
+        arg4: localizedEntry.arg4 !== null ? localizedEntry.arg4 : primaryEntry.arg4,
+        arg5: localizedEntry.arg5 !== null ? localizedEntry.arg5 : primaryEntry.arg5,
+        arg6: localizedEntry.arg6 !== null ? localizedEntry.arg6 : primaryEntry.arg6,
+        arg7: localizedEntry.arg7 !== null ? localizedEntry.arg7 : primaryEntry.arg7,
+        arg8: localizedEntry.arg8 !== null ? localizedEntry.arg8 : primaryEntry.arg8,
+        arg9: localizedEntry.arg9 !== null ? localizedEntry.arg9 : primaryEntry.arg9,
+        arg10: localizedEntry.arg10 !== null ? localizedEntry.arg10 : primaryEntry.arg10
+    };
+
+    // This needs to get defined somewhere else (I see a major refactor coming soon...)
+    var ipaTypes = [
+        'word',
+        'lenite',
+        'marker',
+        'cw',
+        'cww',
+        'loan',
+        'note',
+        'derive',
+        'derives',
+        'deriveall',
+        'infix',
+        'affect',
+        'affix',
+        'alloffix',
+        'alloffixx',
+        'derivingaffix',
+        'infixcw',
+        'infixcww',
+        'infixcwww',
+        'infixN',
+        'affectN',
+        'infixcwN',
+        'affixN',
+        'alloffixN',
+        'alloffixxN',
+        'derivingaffixN',
+        'markerN',
+        'pword',
+        'pcw',
+        'pderives',
+        'liu'
+    ];
+
+    var nonIpaTypes = [
+        'infixNN',
+        'affectNN',
+        'infixcwNN',
+        'affixNN',
+        'alloffixNN',
+        'derivingaffixNN',
+        'markerNN',
+        'eanaInfix'
+    ];
+
+    var parsedEntry = format(dictionary.templates[entry.lc][entry.type], undefined, entry.arg1, entry.arg2, entry.arg3, entry.arg4, entry.arg5, entry.arg6, entry.arg7, entry.arg8, entry.arg9, entry.arg10);
+
+    if(nonIpaTypes.indexOf(primaryEntry.type) > -1){
+        // Not an IPA entry...
+        console.log(primaryEntry.type, parsedEntry);
+
+    } else {
+
+    }
+
+    var textPrimStressRegex = /\\textprimstress/;
+    //parsedEntry = processRegexReplace()
+}
+
+function processIpaEntry() {
+
+}
+
 function buildDictionaryEntries() {
     var languages = getActiveLanguages();
     for(var id in eanaEltu.dictWordMeta){
         var entry = eanaEltu.dictWordMeta[id];
         for(var i = 0; i < languages.length; i++){
             var lc = languages[i];
-            if(lc === 'en'){
-                console.log(format(dictionary.templates[lc][entry.type], undefined, entry.arg1, entry.arg2, entry.arg3, entry.arg4, entry.arg5, entry.arg6, entry.arg7, entry.arg8, entry.arg9, entry.arg10));
-            } else {
-                var localizedEntry = eanaEltu.dictWordLoc[id][lc];
-                if(localizedEntry === undefined){
-                    localizedEntry = {
-                        arg1: null,
-                        arg2: null,
-                        arg3: null,
-                        arg4: null,
-                        arg5: null,
-                        arg6: null,
-                        arg7: null,
-                        arg8: null,
-                        arg9: null,
-                        arg10: null
-                    }
-                }
-                var arg1 = localizedEntry.arg1 !== null ? localizedEntry.arg1 : entry.arg1;
-                var arg2 = localizedEntry.arg2 !== null ? localizedEntry.arg2 : entry.arg2;
-                var arg3 = localizedEntry.arg3 !== null ? localizedEntry.arg3 : entry.arg3;
-                var arg4 = localizedEntry.arg4 !== null ? localizedEntry.arg4 : entry.arg4;
-                var arg5 = localizedEntry.arg5 !== null ? localizedEntry.arg5 : entry.arg5;
-                var arg6 = localizedEntry.arg6 !== null ? localizedEntry.arg6 : entry.arg6;
-                var arg7 = localizedEntry.arg7 !== null ? localizedEntry.arg7 : entry.arg7;
-                var arg8 = localizedEntry.arg8 !== null ? localizedEntry.arg8 : entry.arg8;
-                var arg9 = localizedEntry.arg9 !== null ? localizedEntry.arg9 : entry.arg9;
-                var arg10 = localizedEntry.arg10 !== null ? localizedEntry.arg10 : entry.arg10;
-
-                console.log(format(dictionary.templates[lc][entry.type], undefined, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10));
+            var localizedEntry = eanaEltu.dictWordLoc[id][lc];
+            if(localizedEntry === undefined){
+                localizedEntry = entry;
             }
 
-            //console.log(id, entry.type, );
+            var parsedEntry = processEntry(entry, localizedEntry);
+
+            //console.log(id, entry.type, parsedEntry);
 
         }
 
@@ -354,7 +416,7 @@ function buildDictionary() {
     dictionary.metadata = buildDictionaryMetadata();
     dictionary.templates = buildDictionaryTemplates();
     dictionary.entries = buildDictionaryEntries();
-
+    console.log("Complete");
 }
 
 /*var dictionary = {
