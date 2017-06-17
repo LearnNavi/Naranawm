@@ -1,6 +1,7 @@
 var mysql = require('mysql');
 var format = require('string-format');
 var http = require('http');
+var Entry = require('./entry');
 var PORT = 8080;
 
 var dictionary = {};
@@ -14,14 +15,19 @@ function handleRequest(request, response){
             break;
         case "/dictionary/templates":
             var htmlText = "";
-            for(var lc in dictionary.templates){
-                htmlText += "<h1>" + lc + "</h1>";
-                for(var index in dictionary.templates[lc]){
-                    htmlText += dictionary.templates[lc][index];
-                }
+            //for(var lc in dictionary.templates){
+            htmlText += "<h1>" + 'en' + "</h1>";
+            var lcKeys = Object.keys(dictionary.templates['en']).sort();
+            console.log(lcKeys);
+            for(var i = 0; i < lcKeys.length; i++){
+                var type = lcKeys[i];
+                console.log(type);
+                htmlText += type + "<br>\n";
+                htmlText += dictionary.templates['en'][type];
             }
+            //}
             response.end(htmlText);
-            response.end(JSON.stringify(dictionary.templates));
+            //response.end(JSON.stringify(dictionary.templates));
             break;
 
         case "/dictionary/languages":
@@ -30,6 +36,11 @@ function handleRequest(request, response){
 
         case "/dictionary/metadata":
             response.end(JSON.stringify(dictionary.metadata));
+            break;
+
+        case "/dictionary/entries":
+            response.writeHead(200, {"Content-Type": "application/json; charset=utf-8"});
+            response.end(JSON.stringify(dictionary.entries), 'utf8');
             break;
 
          // Fetch dictLanguages
@@ -302,112 +313,68 @@ function processTemplate(template) {
 
 }
 
-function processEntry(primaryEntry, localizedEntry) {
-    // Pull out each of the 10 args, if the arg is missing from the localized version, use the primary instead
-    var entry = {
-        type: primaryEntry.type,
-        odd: primaryEntry.odd,
-        locOdd: localizedEntry.odd,
-        block: primaryEntry.block,
-        editTime: primaryEntry.editTime,
-        locEditTime: localizedEntry.editTime,
-        audio: primaryEntry.audio,
-        lc: localizedEntry.lc,
-        arg1: localizedEntry.arg1 !== null ? localizedEntry.arg1 : primaryEntry.arg1,
-        arg2: localizedEntry.arg2 !== null ? localizedEntry.arg2 : primaryEntry.arg2,
-        arg3: localizedEntry.arg3 !== null ? localizedEntry.arg3 : primaryEntry.arg3,
-        arg4: localizedEntry.arg4 !== null ? localizedEntry.arg4 : primaryEntry.arg4,
-        arg5: localizedEntry.arg5 !== null ? localizedEntry.arg5 : primaryEntry.arg5,
-        arg6: localizedEntry.arg6 !== null ? localizedEntry.arg6 : primaryEntry.arg6,
-        arg7: localizedEntry.arg7 !== null ? localizedEntry.arg7 : primaryEntry.arg7,
-        arg8: localizedEntry.arg8 !== null ? localizedEntry.arg8 : primaryEntry.arg8,
-        arg9: localizedEntry.arg9 !== null ? localizedEntry.arg9 : primaryEntry.arg9,
-        arg10: localizedEntry.arg10 !== null ? localizedEntry.arg10 : primaryEntry.arg10
-    };
+/*
+ Each dictionary entry should have the word in na'vi and the ipa at the top level
+ -Under that, each translation should exist in its own field as an object
+ odd: primaryEntry.odd,
+ type: primaryEntry.type,
+ editTime: primaryEntry.editTime,
+ block: primaryEntry.block,
+ audio: primaryEntry.audio
+ */
 
-    // This needs to get defined somewhere else (I see a major refactor coming soon...)
-    var ipaTypes = [
-        'word',
-        'lenite',
-        'marker',
-        'cw',
-        'cww',
-        'loan',
-        'note',
-        'derive',
-        'derives',
-        'deriveall',
-        'infix',
-        'affect',
-        'affix',
-        'alloffix',
-        'alloffixx',
-        'derivingaffix',
-        'infixcw',
-        'infixcww',
-        'infixcwww',
-        'infixN',
-        'affectN',
-        'infixcwN',
-        'affixN',
-        'alloffixN',
-        'alloffixxN',
-        'derivingaffixN',
-        'markerN',
-        'pword',
-        'pcw',
-        'pderives',
-        'liu'
-    ];
 
-    var nonIpaTypes = [
-        'infixNN',
-        'affectNN',
-        'infixcwNN',
-        'affixNN',
-        'alloffixNN',
-        'derivingaffixNN',
-        'markerNN',
-        'eanaInfix'
-    ];
-
-    var parsedEntry = format(dictionary.templates[entry.lc][entry.type], undefined, entry.arg1, entry.arg2, entry.arg3, entry.arg4, entry.arg5, entry.arg6, entry.arg7, entry.arg8, entry.arg9, entry.arg10);
-
-    if(nonIpaTypes.indexOf(primaryEntry.type) > -1){
-        // Not an IPA entry...
-        console.log(primaryEntry.type, parsedEntry);
-
-    } else {
-
-    }
-
-    var textPrimStressRegex = /\\textprimstress/;
-    //parsedEntry = processRegexReplace()
-}
-
-function processIpaEntry() {
-
-}
 
 function buildDictionaryEntries() {
-    var languages = getActiveLanguages();
+    var entries = {},
+        languages = getActiveLanguages();
+
+    var sources = {};
+    var partsOfSpeech = {};
+
     for(var id in eanaEltu.dictWordMeta){
-        var entry = eanaEltu.dictWordMeta[id];
-        for(var i = 0; i < languages.length; i++){
-            var lc = languages[i];
-            var localizedEntry = eanaEltu.dictWordLoc[id][lc];
-            if(localizedEntry === undefined){
-                localizedEntry = entry;
-            }
+        var rawEntry = eanaEltu.dictWordMeta[id];
 
-            var parsedEntry = processEntry(entry, localizedEntry);
+        var entry = new Entry(rawEntry);
+        sources[entry.source] = entry.source;
 
-            //console.log(id, entry.type, parsedEntry);
-
+        if(partsOfSpeech[entry.type] === undefined){
+            partsOfSpeech[entry.type] = {};
+        }
+        partsOfSpeech[entry.type][entry.partOfSpeech] = entry.partOfSpeech;
+        if(entry.source === "") {
+            console.log("Missing Source: " + entry.lemma, entry.type, entry.id);
         }
 
+        for(var i = 0; i < languages.length; i++){
+            var lc = languages[i];
+            if(lc)
 
+            var localizedEntry = eanaEltu.dictWordLoc[id][lc];
+            var template = dictionary.templates[lc][entry.type];
+
+            if (lc === 'en') {
+                localizedEntry = rawEntry;
+            }
+
+            if(localizedEntry === undefined){
+                //console.log("<" + entry.lemma + "> Missing [" + lc + "] Localization for " + id);
+                // Missing localization, use the default (English) localization instead of omitting the word
+                localizedEntry = rawEntry;
+            }
+            entry.addLocalization(localizedEntry, template, lc);
+        }
+
+        entry.finalizeEntry();
+        entries[entry.id] = entry;
     }
+    var keys = Object.keys(partsOfSpeech);
+    /*
+    for(var j = 0; j < keys.length; j++){
+        var types = Object.keys(partsOfSpeech[keys[j]]).sort();
+        console.log(keys[j] + " <|> " + types.join(" | "));
+    }*/
+    return entries;
 }
 
 function buildDictionary() {
