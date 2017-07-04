@@ -5,6 +5,14 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+var dictionary = require('./dictionary/dictionary');
+
+dictionary.buildDictionary(function(){
+    // We have a full Dictionary now to do things with :)
+    console.log(dictionary.missingEntryTranslations);
+});
+
+
 var index = require('./routes/index');
 var users = require('./routes/users');
 
