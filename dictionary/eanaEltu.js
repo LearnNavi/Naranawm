@@ -1,5 +1,7 @@
 
 var mysql = require('mysql');
+
+// vault.js is an encrypted module that contains connection info for the db.
 var vault = require('../vault');
 
 function EanaEltu() {
