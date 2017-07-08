@@ -2,16 +2,17 @@
 var mysql = require('mysql');
 
 // vault.js is an encrypted module that contains connection info for the db.
+var env       = process.env.NODE_ENV || "development";
 var vault = require('../vault');
 
 function EanaEltu() {
     this.debug = false;
     this.rawEEdata = {};
     this.dbConnection = mysql.createConnection({
-        host: vault.eanaEltu.host,
-        user: vault.eanaEltu.username,
-        password: vault.eanaEltu.password,          // Dev Credentials - Needs to be swapped out with Prod credentials
-        database: vault.eanaEltu.database
+        host: vault[env].eanaEltu.host,
+        user: vault[env].eanaEltu.username,
+        password: vault[env].eanaEltu.password,
+        database: vault[env].eanaEltu.database
     });
 }
 

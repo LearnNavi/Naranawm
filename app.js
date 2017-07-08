@@ -9,12 +9,18 @@ var dictionary = require('./dictionary/dictionary');
 
 dictionary.buildDictionary(function(){
     // We have a full Dictionary now to do things with :)
-    console.log(dictionary.missingEntryTranslations);
+    //console.log(dictionary.missingEntryTranslations);
+    //console.log(dictionary.entries);
+    dictionary.export(function(){
+        console.log("Export Complete!!!");
+        process.exit(0);
+    });
 });
 
 
 var index = require('./routes/index');
 var users = require('./routes/users');
+var dictionaryV1API = require('./routes/dictionary.routes.v1');
 
 var app = express();
 
@@ -32,6 +38,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
 app.use('/users', users);
+app.use('/api/v1/dictionary', dictionaryV1API);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

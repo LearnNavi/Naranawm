@@ -2,6 +2,8 @@
 var format = require('string-format');
 var Entry = require('./entry');
 var EanaEltu = require('./eanaEltu');
+var models = require('../models');
+var Promise = require('promise');
 
 function Dictionary () {
     this.debug = false;
@@ -37,12 +39,84 @@ Dictionary.prototype.buildDictionary = function (callback) {
         buildDictionaryMetadata(self);
         buildDictionaryTemplates(self);
         buildDictionaryEntries(self);
-        if(this.debug){
+        if(self.debug){
             console.log("Complete");
         }
         callback();
     });
 };
+
+Dictionary.prototype.export = function (callback) {
+    if(this.debug){
+        console.log("Exporting Dictionary to new Database...");
+    }
+    var self = this;
+    var sourcePromises = [];
+    var entryPromises = [];
+
+    // Using force: true to drop all tables first
+    models.sequelize.sync({force: true}).then(function() {
+
+        // Insert Sources
+        for(var source in self.sources){
+            sourcePromises.push(models.Source.create({
+                name: source,
+                description: getSourceDescription(source)
+            }));
+        }
+
+        Promise.all(sourcePromises).then(function(){
+            models.Source.findAll().then(function(sources){
+
+                sources.forEach(function(source){
+                    self.sources[source.name] = source;
+                });
+
+                // Insert Entries
+                for(var id in self.entries){
+                    var entry = self.entries[id];
+                    entryPromises.push(models.Entry.create({
+                        id: entry.id,
+                        lemma: entry.lemma,
+                        ipa: entry.ipa,
+                        partOfSpeech: entry.partOfSpeech,
+                        SourceId: self.sources[entry.source].id,
+                        createdAt: entry.editTime * 1000
+                    }));
+                }
+                Promise.all(entryPromises).then(callback);
+            });
+        });
+
+
+
+    });
+};
+
+function getSourceDescription(source) {
+    var result = source.replace("PF", "Dr. Paul Frommer");
+    if(source === "G"){
+        result = result.replace("G", "The Avatar Games");
+    }
+    if(source === "M" || source === "PF, M"){
+        result = result.replace("M", "The Movie");
+    }
+    result = result.replace("JC", "James Cameron");
+    result = result.replace("LN", "LearnNavi.org");
+    result = result.replace("ASG", "The Survival Guide");
+    result = result.replace("PND", "Pandorapedia.com");
+    result = result.replace("Prr", "Prrton");
+    result = result.replace("CP", "CCH Pounder");
+    result = result.replace("LA", "Laz Alonso");
+    result = result.replace("RL", "Richard Littauer");
+    result = result.replace("SW", "Sigourney Weaver");
+    result = result.replace("ZS", "Zoë Saldana");
+    result = result.replace("CM", "Carla Meyer");
+    result = result.replace("CdS", "Cirque du Soleil");
+    //result = result.replace("", "");
+
+    return result;
+}
 
 function buildDictionaryLanguages(self) {
     for(var index in self.eanaEltu.dictLanguages){
