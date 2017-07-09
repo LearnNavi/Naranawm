@@ -47,6 +47,7 @@ const nonIpaTypes = [
 
 function Entry(rawEntry) {
     this.id = rawEntry.id;
+    this.pubId = rawEntry.id << 2; // No clue why all public IDs use a bit shift of 2 vs internal...
     this.lemma = rawEntry.arg1;
     this.type = rawEntry.type;
     this.odd = rawEntry.odd;
@@ -54,66 +55,45 @@ function Entry(rawEntry) {
     this.editTime = rawEntry.editTime;
     this.audio = rawEntry.audio;
     this.source = parseSource(rawEntry);
-    this.partOfSpeech = parsePartOfSpeech(rawEntry);
+    this.partOfSpeech = this.parsePartOfSpeech(rawEntry);
     this.ipa = parseIpa(rawEntry);
     this.localizations = {};
 
     this.rawEntry = rawEntry;
 }
 
-Entry.prototype.addLocalization = function (localizedEntry, template, lc) {
+Entry.prototype.addLocalization = function (localizedEntry, lc) {
     // Pull out each of the 10 args, if the arg is missing from the localized version, use the primary instead
     var entry = {
         odd: localizedEntry.odd,
         editTime: localizedEntry.editTime,
         lc: localizedEntry.lc,
-        arg3: localizedEntry.arg3 !== null ? localizedEntry.arg3 : this.rawEntry.arg3,
-        arg4: localizedEntry.arg4 !== null ? localizedEntry.arg4 : this.rawEntry.arg4,
-        arg5: localizedEntry.arg5 !== null ? localizedEntry.arg5 : this.rawEntry.arg5,
-        arg6: localizedEntry.arg6 !== null ? localizedEntry.arg6 : this.rawEntry.arg6,
-        arg7: localizedEntry.arg7 !== null ? localizedEntry.arg7 : this.rawEntry.arg7,
-        arg8: localizedEntry.arg8 !== null ? localizedEntry.arg8 : this.rawEntry.arg8,
-        arg9: localizedEntry.arg9 !== null ? localizedEntry.arg9 : this.rawEntry.arg9,
-        arg10: localizedEntry.arg10 !== null ? localizedEntry.arg10 : this.rawEntry.arg10,
-        rawEntry: localizedEntry
+        partOfSpeech: this.parsePartOfSpeech(localizedEntry),
+        arg1: localizedEntry.arg1,
+        arg2: localizedEntry.arg2,
+        arg3: localizedEntry.arg3,
+        arg4: localizedEntry.arg4,
+        arg5: localizedEntry.arg5,
+        arg6: localizedEntry.arg6,
+        arg7: localizedEntry.arg7,
+        arg8: localizedEntry.arg8,
+        arg9: localizedEntry.arg9,
+        arg10: localizedEntry.arg10
     };
 
-    /*var parsedEntry = format(
-        template, undefined,
-        primaryEntry.arg1,
-        primaryEntry.arg2,
-        primaryEntry.arg3,
-        primaryEntry.arg4,
-        primaryEntry.arg5,
-        primaryEntry.arg6,
-        primaryEntry.arg7,
-        primaryEntry.arg8,
-        primaryEntry.arg9,
-        primaryEntry.arg10);*/
+    this.localizations[lc] = entry;
 
-    //this.localizations[lc] = entry;
+    return entry;
 };
 
 Entry.prototype.finalizeEntry = function () {
     delete this.rawEntry;
-    for (var lc in this.localizations) {
-        if (this.localizations.hasOwnProperty(lc)) {
-            delete this.localizations[lc].rawEntry;
-            delete this.localizations[lc].arg3;
-            delete this.localizations[lc].arg4;
-            delete this.localizations[lc].arg5;
-            delete this.localizations[lc].arg6;
-            delete this.localizations[lc].arg7;
-            delete this.localizations[lc].arg8;
-            delete this.localizations[lc].arg9;
-            delete this.localizations[lc].arg10;
-        }
-    }
 };
 
-function parsePartOfSpeech(entry) {
+Entry.prototype.parsePartOfSpeech = function(localization) {
     // Part of Speech
-    switch(entry.type){
+    var result = "";
+    switch(this.type){
         // arg 3
         case 'affect':
         case 'affectN':
@@ -147,7 +127,8 @@ function parsePartOfSpeech(entry) {
         case 'pderives':
         case 'pword':
         case 'word':
-            return entry.arg3;
+            result += localization.arg3;
+            break;
 
         // Arg 4
         case 'alloffix':
@@ -155,16 +136,17 @@ function parsePartOfSpeech(entry) {
         case 'alloffixNN':
         case 'alloffixx':
         case 'alloffixxN':
-            return entry.arg4;
+            result += localization.arg4;
+            break;
 
         // Arg 9
         case 'allofix':
-            return entry.arg9;
-
+            result += localization.arg9;
+            break;
     }
 
-    return "";
-}
+    return result.trim();
+};
 
 function parseSource(entry) {
     // Source

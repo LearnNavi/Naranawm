@@ -1,14 +1,14 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
-    var LocalizedEntry = sequelize.define('LocalizedEntry', {
-        odd: DataTypes.STRING
+    var LocalizedMetadata = sequelize.define('LocalizedMetadata', {
+        value: { type: DataTypes.STRING, allowNull: false }
     });
 
-    LocalizedEntry.removeAttribute('id');
+    LocalizedMetadata.removeAttribute('id');
 
-    LocalizedEntry.associate = function (models) {
+    LocalizedMetadata.associate = function (models) {
         // associations can be defined here
-        LocalizedEntry.belongsTo(models.Entry, {
+        LocalizedMetadata.belongsTo(models.Metadata, {
             foreignKey: {
                 primaryKey: true,
                 allowNull: false
@@ -16,18 +16,15 @@ module.exports = function (sequelize, DataTypes) {
             constraints: true,
             onDelete: 'cascade'
         });
-        LocalizedEntry.belongsTo(models.Language, {
+        LocalizedMetadata.belongsTo(models.Language, {
             foreignKey: {
                 primaryKey: true,
                 allowNull: false
             },
             constraints: true,
-            onDelete: 'cascade'
-        });
-        LocalizedEntry.belongsTo(models.PartOfSpeech, {
             onDelete: 'cascade'
         });
     };
 
-    return LocalizedEntry;
+    return LocalizedMetadata;
 };
