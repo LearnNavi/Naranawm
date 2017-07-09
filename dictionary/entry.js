@@ -106,9 +106,10 @@ Entry.prototype.parsePartOfSpeech = function(localization) {
         case 'derive':
         case 'deriveall':
         case 'derives':
-        case 'derivingAffix':
-        case 'derivingAffixN':
+        case 'derivingaffix':
+        case 'derivingaffixN':
         case 'derivingaffixNN':
+        case 'infix':
         case 'infixN':
         case 'infixNN':
         case 'infixcw':
@@ -167,6 +168,7 @@ function parseSource(entry) {
         case 'affix':
         case 'affixN':
         case 'affixNN':
+        case 'infix':
         case 'infixN':
         case 'infixNN':
         case 'infixcwNN':
@@ -248,6 +250,9 @@ function parseIpa(entry) {
         }
         //console.log(entry.arg1, rawIpa);
         return rawIpa;
+    } else {
+        console.log("EXISTS", entry);
+        process.exit(0);
     }
     // Not an IPA type, return nothing, it will make the ipa field not show up on the object
 }

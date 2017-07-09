@@ -90,9 +90,19 @@ Dictionary.prototype.export = function (callback) {
                             self.sources[source.name] = source;
                         });
 
-                        // Insert Metadata
-                        var metadata = [];
+                        // Insert Metadata (Including New entries that we need added for other refactorings elsewhere
+                        var metadata = [{
+                            id: "__STANDARD_IPA_ENTRY_TEMPLATE__"
+                        }];
                         var localizedMetadata = [];
+                        for(var isoCode in self.languages){
+                            localizedMetadata.push({
+                                LanguageIsoCode: isoCode,
+                                MetadatumId: "__STANDARD_IPA_ENTRY_TEMPLATE__",
+                                value: "\\par\\textbf{#LEMMA}: [\\textipa{#IPA}] $_{#SOURCE}$ #PART_OF_SPEECH"
+                            })
+                        }
+
                         for(var index in self.metadata){
                             for(var lc in self.metadata[index]){
 
@@ -130,50 +140,75 @@ Dictionary.prototype.export = function (callback) {
 
                                 models.PartOfSpeech.bulkCreate(partsOfSpeech).then(function(){
 
-                                    // Insert Entries
-                                    var entries = [];
-                                    var localizedEntries = [];
-                                    for(var id in self.entries){
-                                        var entry = self.entries[id];
-                                        entries.push({
-                                            id: entry.id,
-                                            pubId: entry.pubId,
-                                            lemma: entry.lemma,
-                                            ipa: entry.ipa,
-                                            //partOfSpeech: entry.partOfSpeech,
-                                            //odd: entry.odd,
-                                            audio: entry.pubId + ".mp3",
-                                            SourceId: self.sources[entry.source].id,
-                                            createdAt: entry.editTime * 1000
-                                        });
+                                    // Insert Templates
+                                    var templates = [];
+                                    var localizedTemplates = [];
+                                    for(var lang in self.templates){
+                                        for(var templateId in self.templates[lang]){
+                                            var template = self.templates[lang][templateId];
 
-                                        for(var lc in entry.localizations){
-                                            var localizedEntry = entry.localizations[lc];
-                                            localizedEntries.push({
-                                                EntryId: entry.id,
-                                                LanguageIsoCode: lc,
-                                                odd: localizedEntry.odd,
-                                                createdAt: localizedEntry.editTime * 1000
-                                            });
+                                            if(lang === "raw"){
+                                                templates.push({
+                                                    id: templateId,
+                                                    format: template.format,
+                                                    argc: template.argc,
+                                                    changeable: template.changeable
+                                                });
+                                            } else {
+                                                localizedTemplates.push({
+                                                    TemplateId: templateId,
+                                                    LanguageIsoCode: lang,
+                                                    format: template.format,
+                                                    argc: template.argc,
+                                                    changeable: template.changeable
+                                                });
+                                            }
 
                                         }
                                     }
-                                    models.Entry.bulkCreate(entries).then(function(){
-                                        models.LocalizedEntry.bulkCreate(localizedEntries).then(callback);
-                                    }).catch(function(err){
-                                        console.log(122,err);
+
+                                    models.Template.bulkCreate(templates).then(function(){
+                                        models.LocalizedTemplate.bulkCreate(localizedTemplates).then(function () {
+                                            // Insert Entries
+                                            var entries = [];
+                                            var localizedEntries = [];
+                                            for(var id in self.entries){
+                                                var entry = self.entries[id];
+                                                entries.push({
+                                                    id: entry.id,
+                                                    pubId: entry.pubId,
+                                                    lemma: entry.lemma,
+                                                    ipa: entry.ipa,
+                                                    //partOfSpeech: entry.partOfSpeech,
+                                                    //odd: entry.odd,
+                                                    audio: entry.pubId + ".mp3",
+                                                    SourceId: self.sources[entry.source].id,
+                                                    createdAt: entry.editTime * 1000
+                                                });
+
+                                                for(var lc in entry.localizations){
+                                                    var localizedEntry = entry.localizations[lc];
+                                                    localizedEntries.push({
+                                                        EntryId: entry.id,
+                                                        LanguageIsoCode: lc,
+                                                        odd: localizedEntry.odd,
+                                                        createdAt: localizedEntry.editTime * 1000
+                                                    });
+
+                                                }
+                                            }
+                                            models.Entry.bulkCreate(entries).then(function(){
+                                                models.LocalizedEntry.bulkCreate(localizedEntries).then(callback);
+                                            }).catch(function(err){
+                                                console.log(122,err);
+                                            });
+                                        });
                                     });
-                                }, function(err){
-                                    console.log(124,err);
                                 });
                             });
                         });
                     });
                 });
-
-
-
-
             });
         });
     });
@@ -246,36 +281,193 @@ function buildDictionaryMetadata(self) {
                     self.missingMetadataTranslations[lc.toLowerCase()] = [];
                 }
                 self.missingMetadataTranslations[lc.toLowerCase()].push(index);
-            } else {
-                self.metadata[index][lc.toLowerCase()] = {
-                    value: localization[lc].value,
-                    editTime: localization[lc].editTime
-                };
             }
+
+            self.metadata[index][lc.toLowerCase()] = {
+                value: localization[lc].value,
+                editTime: localization[lc].editTime
+            };
         }
     }
 }
 
+function sourceLocation(type) {
+    // Source
+    switch(type){
+        // Arg 4
+        case 'affect':
+        case 'affectN':
+        case 'affectNN':
+        case 'derivingaffix':
+        case 'derivingaffixN':
+        case 'derivingaffixNN':
+        case 'marker':
+        case 'markerN':
+        case 'markerNN':
+            return "#4";
+
+        // Arg 5
+        case 'affix':
+        case 'affixN':
+        case 'affixNN':
+        case 'infix':
+        case 'infixN':
+        case 'infixNN':
+        case 'infixcwNN':
+        case 'liu':
+        case 'pword':
+        case 'word':
+            return "#5";
+
+        // Arg 6
+        case 'alloffix':
+        case 'alloffixN':
+        case 'alloffixNN':
+        case 'alloffixx':
+        case 'alloffixxN':
+        case 'lenite':
+        case 'loan':
+            return "#6";
+
+        // Arg 7
+        case 'cww':
+        case 'derives':
+        case 'infixcw':
+        case 'infixcwN':
+        case 'pderives':
+            return "#7";
+
+        // Arg 8
+        case 'deriveall':
+        case 'infixcww':
+        case 'note':
+            return "#8";
+
+        // Arg 9
+        case 'cw':
+        case 'derive':
+        case 'infixcwww':
+        case 'pcw':
+            return "#9";
+
+
+    }
+
+    return "";
+}
+
+function partOfSpeechLocation(type) {
+    // Part of Speech
+    switch(type){
+        // arg 3
+        case 'affect':
+        case 'affectN':
+        case 'affectNN':
+        case 'affix':
+        case 'affixN':
+        case 'affixNN':
+        case 'cw':
+        case 'cww':
+        case 'derive':
+        case 'deriveall':
+        case 'derives':
+        case 'derivingaffix':
+        case 'derivingaffixN':
+        case 'derivingaffixNN':
+        case 'infix':
+        case 'infixN':
+        case 'infixNN':
+        case 'infixcw':
+        case 'infixcwN':
+        case 'infixcwNN':
+        case 'infixcww':
+        case 'infixcwww':
+        case 'lenite':
+        case 'liu':
+        case 'loan':
+        case 'marker':
+        case 'markerN':
+        case 'markerNN':
+        case 'note':
+        case 'pcw':
+        case 'pderives':
+        case 'pword':
+        case 'word':
+            return "#3";
+
+        // Arg 4
+        case 'alloffix':
+        case 'alloffixN':
+        case 'alloffixNN':
+        case 'alloffixx':
+        case 'alloffixxN':
+            return "#4";
+
+        // Arg 9
+        case 'allofix':
+            return "#9";
+    }
+
+    return;
+}
+
 function buildDictionaryTemplates(self) {
+    const nonIpaTypes = [
+            'infixNN',
+            'affectNN',
+            'infixcwNN',
+            'affixNN',
+            'alloffixNN',
+            'derivingaffixNN',
+            'markerNN',
+            'eanaInfix'];
     // Need to get list of languages
     for(var i = 0; i < self.activeLanguages.length; i++){
         self.templates[self.activeLanguages[i]] = {};
     }
+    self.templates['raw'] = {};
 
     var regex = /__(.*)__/;
+    var generic_template = "\\par\\textbf{#LEMMA}: [\\textipa{#IPA}] $_{#SOURCE}$ #PART_OF_SPEECH";
 
     for(var index in self.eanaEltu.dictWordTemplate){
 
+        // Template Cleanup...
+        if(nonIpaTypes.indexOf(index) !== -1){
+            // None of these have any entries of this type, dropping as they aren't needed...
+            continue;
+        }
+
+        var format = self.eanaEltu.dictWordTemplate[index].format;
+        format = format.replace("#1", "#LEMMA");
+        format = format.replace("#2", "#IPA");
+        format = format.replace(sourceLocation(index), "#SOURCE");
+        format = format.replace(partOfSpeechLocation(index), "#PART_OF_SPEECH");
+
+        self.templates['raw'][index] = {
+            format: format.replace(generic_template, "__STANDARD_IPA_ENTRY_TEMPLATE__"),
+            argc: self.eanaEltu.dictWordTemplate[index].argc,
+            changeable: self.eanaEltu.dictWordTemplate[index].changeable
+        };
+
         for(var j = 0; j < self.activeLanguages.length; j++){
-            var format = self.eanaEltu.dictWordTemplate[index].format;
             var result = format.match(regex);
+            var localizedFormat = format;
             if(result !== null) {
                 var meta = self.metadata[result[1]];
-                format = format.replace(result[0], meta[self.activeLanguages[j]]);
+                if(meta[self.activeLanguages[j]] === undefined){
+                    console.log("MISSING TRANSLATION FOR [" + result[1] + "] in " + self.activeLanguages[j]);
+                    continue;
+                }
+                localizedFormat = localizedFormat.replace(result[0], meta[self.activeLanguages[j]].value);
             }
 
             //format = processTemplate(format);
-            self.templates[self.activeLanguages[j]][index] = format;
+            self.templates[self.activeLanguages[j]][index] = {
+                format: localizedFormat.replace(generic_template, "__STANDARD_IPA_ENTRY_TEMPLATE__"),
+                argc: self.eanaEltu.dictWordTemplate[index].argc,
+                changeable: self.eanaEltu.dictWordTemplate[index].changeable
+            };
         }
     }
 }
