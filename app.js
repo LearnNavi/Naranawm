@@ -1,9 +1,14 @@
+
+process.env.NODE_ENV = "mamp";
+
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+
+console.log("ENV: " + process.env.NODE_ENV);
 
 var dictionary = require('./dictionary/dictionary');
 

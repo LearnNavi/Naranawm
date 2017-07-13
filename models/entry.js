@@ -15,6 +15,9 @@ module.exports = function (sequelize, DataTypes) {
         Entry.belongsTo(models.Source, {
             onDelete: 'CASCADE'
         });
+        Entry.belongsTo(models.DictionaryBlock, {
+            onDelete: 'CASCADE'
+        });
     };
 
     return Entry;

@@ -46,6 +46,308 @@ Dictionary.prototype.buildDictionary = function (callback) {
     });
 };
 
+Dictionary.prototype.exportDictionaryBuilds = function () {
+    // Insert Dictionary Types
+    var self = this;
+    var blocks = [   // Copied out of EE perl script
+        {
+            id: 0,
+            description: "Main Block"
+        },{
+            id: 1,
+            description: "Invalid Words Block"
+        },{
+            id: 2,
+            description: "Infixes Block"
+        },{
+            id: 3,
+            description: "Noun Inflections Block"
+        },{
+            id: 4,
+            description: "Other noun inflections block"
+        },{
+            id: 5,
+            description: "English Shorthand Terms Block [DEPRECATED]"
+        },{
+            id: 6,
+            description: "Proper Nouns Block"
+        },{
+            id: 7,
+            description: "Proper Nouns Block (Flora)"
+        },{
+            id: 8,
+            description: "Proper Nouns Block (Fauna)"
+        },{
+            id: 9,
+            description: "Loaned Words Block"
+        },{
+            id: 10,
+            description: "Phrases Block"
+        },{
+            id: 11,
+            description: "Derivational Morph Block"
+        }
+    ];
+    var builds = [];
+    var buildData = [];
+    for(var type in self.eanaEltu.dictOrder){
+        builds.push({
+            id: type,
+            description: getDictionaryBuildDescription(type)
+        });
+        for(var position in self.eanaEltu.dictOrder[type]){
+            var data = self.eanaEltu.dictOrder[type][position];
+
+            if(data.type === "raw"){
+                data.data1 = getDictionaryBuildTemplate(data.data1);
+            }
+
+            if(data.type === "changelog"){
+                data.data1 = "changelog";
+            }
+
+            if(data.type === "raw" || data.type === "file" || data.type === "changelog"){
+                data.type = "template";
+                data.template = data.data1.toLowerCase();
+            }
+
+            buildData.push({
+                DictionaryBuildId: type,
+                DictionaryBlockId: getDictionaryBlockId(data),
+                TemplateId: data.template,
+                position: data.pos,
+                type: data.type,
+                data: getDictionaryBuildData(data)
+            });
+        }
+    }
+
+    return models.DictionaryBuild.bulkCreate(builds).then(function(){
+        "use strict";
+        return models.DictionaryBlock.bulkCreate(blocks).then(function(){
+            return models.DictionaryBuildData.bulkCreate(buildData);
+        })
+    });
+};
+
+Dictionary.prototype.exportLanguages = function (){
+    "use strict";
+    // Insert Languages
+    var self = this;
+    var languages = [];
+    for(var langId in self.languages){
+        var language = self.languages[langId];
+        languages.push({
+            isoCode: langId,
+            isoName: language.engName,
+            nativeName: language.nativeName,
+            active: language.active
+        });
+    }
+
+    return models.Language.bulkCreate(languages).then(function() {
+        models.Language.findAll().then(function (languages) {
+            languages.forEach(function (language) {
+                self.languages[language.isoCode] = language;
+            });
+        });
+    });
+};
+
+Dictionary.prototype.exportSources = function(){
+    "use strict";
+    // Insert Sources
+    var self = this;
+    var sources = [];
+    for(var source in self.sources){
+        sources.push({
+            name: source,
+            description: getSourceDescription(source)
+        });
+    }
+
+    return models.Source.bulkCreate(sources).then(function() {
+        models.Source.findAll().then(function (sources) {
+            sources.forEach(function (source) {
+                self.sources[source.name] = source;
+            });
+        });
+    });
+};
+
+Dictionary.prototype.exportTemplates = function () {
+    // Insert Templates
+    var self = this;
+    var templates = [
+        {
+            id: "localized_end",
+            format: "__END__",
+            argc: 0,
+            changeable: ""
+        }, {
+            id: "newpage",
+            format: "\\newpage",
+            argc: 0,
+            changeable: ""
+        }, {
+            id: "end_hangparas_multicols",
+            format: "\\end{hangparas}}\\end{multicols}",
+            argc: 0,
+            changeable: ""
+        }, {
+            id: "end_hangparas",
+            format: "\\end{hangparas}",
+            argc: 0,
+            changeable: ""
+        }, {
+            id: "end_document",
+            format: "\\end{document}",
+            argc: 0,
+            changeable: ""
+        }, {
+            id: "end_hangparas_multicols_newpage",
+            format: "\\end{hangparas}}\\end{multicols}+\\newpage",
+            argc: 0,
+            changeable: ""
+        }];
+    var localizedTemplates = [];
+    for(var lang in self.templates){
+        for(var templateId in self.templates[lang]){
+            var template = self.templates[lang][templateId];
+
+            if(lang === "raw"){
+                templates.push({
+                    id: templateId,
+                    format: template.format,
+                    argc: template.argc,
+                    changeable: template.changeable
+                });
+            } else {
+                localizedTemplates.push({
+                    TemplateId: templateId,
+                    LanguageIsoCode: lang,
+                    format: template.format,
+                    argc: template.argc,
+                    changeable: template.changeable
+                });
+            }
+        }
+    }
+
+    for(var id in self.eanaEltu.dictLayout){
+        var layout = self.eanaEltu.dictLayout[id];
+        if(layout.id === "changelog"){
+            layout.value += "\n\\begin{itemize}\n<<CHANGELOG_ITEMS>>\n\\end{itemize}\n\\end{document}";
+        }
+        if(id === "__PANDORAPEDIA__"){
+            continue;
+        }
+        templates.push({
+            id: layout.id.toLowerCase(),
+            format: layout.value,
+            argc: 0,
+            changeable: ""
+        });
+    }
+
+    return models.Template.bulkCreate(templates).then(function() {
+        return models.LocalizedTemplate.bulkCreate(localizedTemplates);
+    });
+};
+
+Dictionary.prototype.exportMetadata = function () {
+    // Insert Metadata (Including New entries that we need added for other refactorings elsewhere
+    var self = this;
+    var metadata = [{
+        id: "__STANDARD_IPA_ENTRY_TEMPLATE__"
+    }];
+    var localizedMetadata = [];
+    for(var isoCode in self.languages){
+        localizedMetadata.push({
+            LanguageIsoCode: isoCode,
+            MetadatumId: "__STANDARD_IPA_ENTRY_TEMPLATE__",
+            value: "\\par\\textbf{#LEMMA}: [\\textipa{#IPA}] $_{#SOURCE}$ #PART_OF_SPEECH"
+        })
+    }
+
+    for(var index in self.metadata){
+        for(var lc in self.metadata[index]){
+
+            if(lc === "en"){
+                metadata.push({
+                    id: index,
+                    createdAt: self.metadata[index][lc].editTime * 1000
+                });
+            }
+            localizedMetadata.push({
+                LanguageIsoCode: lc,
+                MetadatumId: index,
+                value: self.metadata[index][lc].value,
+                createdAt: self.metadata[index][lc].editTime * 1000
+            });
+        }
+    }
+
+    return models.Metadata.bulkCreate(metadata).then(function() {
+        return models.LocalizedMetadata.bulkCreate(localizedMetadata);
+    });
+};
+
+Dictionary.prototype.exportPartsOfSpeech = function () {
+    // Insert Parts of Speech
+    var self = this;
+    var partsOfSpeech = [];
+    for (var langId in self.partsOfSpeech) {
+        for (var pos in self.partsOfSpeech[langId]) {
+            if (pos === "") {
+                continue;
+            }
+            partsOfSpeech.push({
+                LanguageIsoCode: langId,
+                type: pos
+            });
+        }
+    }
+
+    return models.PartOfSpeech.bulkCreate(partsOfSpeech);
+};
+
+Dictionary.prototype.exportEntries = function () {
+    // Insert Entries
+    var self = this;
+    var entries = [];
+    var localizedEntries = [];
+    for(var id in self.entries){
+        var entry = self.entries[id];
+        entries.push({
+            id: entry.id,
+            pubId: entry.pubId,
+            lemma: entry.lemma,
+            ipa: entry.ipa,
+            //partOfSpeech: entry.partOfSpeech,
+            //odd: entry.odd,
+            audio: entry.pubId + ".mp3",
+            SourceId: self.sources[entry.source].id,
+            DictionaryBlockId: entry.block,
+            createdAt: entry.editTime * 1000
+        });
+
+        for(var lc in entry.localizations){
+            var localizedEntry = entry.localizations[lc];
+            localizedEntries.push({
+                EntryId: entry.id,
+                LanguageIsoCode: lc,
+                odd: localizedEntry.odd,
+                createdAt: localizedEntry.editTime * 1000
+            });
+
+        }
+    }
+    return models.Entry.bulkCreate(entries).then(function(){
+        return models.LocalizedEntry.bulkCreate(localizedEntries);
+    });
+};
+
 Dictionary.prototype.export = function (callback) {
     if(this.debug){
         console.log("Exporting Dictionary to new Database...");
@@ -55,164 +357,113 @@ Dictionary.prototype.export = function (callback) {
     // Using force: true to drop all tables first
     models.sequelize.sync({force: true}).then(function() {
 
-        // Insert Languages
-        var languages = [];
-        for(var langId in self.languages){
-            var language = self.languages[langId];
-            languages.push({
-                isoCode: langId,
-                isoName: language.engName,
-                nativeName: language.nativeName,
-                active: language.active
-            });
-        }
+        var topLayerPromises = [];
+        topLayerPromises.push(self.exportLanguages());
+        topLayerPromises.push(self.exportSources());
+        topLayerPromises.push(self.exportTemplates());
 
-        models.Language.bulkCreate(languages).then(function(){
-            models.Language.findAll().then(function(languages){
+        Promise.all(topLayerPromises).then(function(){
+            "use strict";
+            // These need the topLayerPromises to be resolved first, as they require data that they provide
+            var secondLayerPromises = [];
+            secondLayerPromises.push(self.exportDictionaryBuilds());
+            secondLayerPromises.push(self.exportMetadata());
+            secondLayerPromises.push(self.exportPartsOfSpeech());
 
-                languages.forEach(function(language){
-                    self.languages[language.isoCode] = language;
-                });
-
-                // Insert Sources
-                var sources = [];
-                for(var source in self.sources){
-                    sources.push({
-                        name: source,
-                        description: getSourceDescription(source)
-                    });
-                }
-
-                models.Source.bulkCreate(sources).then(function(){
-                    models.Source.findAll().then(function(sources) {
-
-                        sources.forEach(function (source) {
-                            self.sources[source.name] = source;
-                        });
-
-                        // Insert Metadata (Including New entries that we need added for other refactorings elsewhere
-                        var metadata = [{
-                            id: "__STANDARD_IPA_ENTRY_TEMPLATE__"
-                        }];
-                        var localizedMetadata = [];
-                        for(var isoCode in self.languages){
-                            localizedMetadata.push({
-                                LanguageIsoCode: isoCode,
-                                MetadatumId: "__STANDARD_IPA_ENTRY_TEMPLATE__",
-                                value: "\\par\\textbf{#LEMMA}: [\\textipa{#IPA}] $_{#SOURCE}$ #PART_OF_SPEECH"
-                            })
-                        }
-
-                        for(var index in self.metadata){
-                            for(var lc in self.metadata[index]){
-
-                                if(lc === "en"){
-                                    metadata.push({
-                                        id: index,
-                                        createdAt: self.metadata[index][lc].editTime * 1000
-                                    });
-                                }
-                                localizedMetadata.push({
-                                    LanguageIsoCode: lc,
-                                    MetadatumId: index,
-                                    value: self.metadata[index][lc].value,
-                                    createdAt: self.metadata[index][lc].editTime * 1000
-                                });
-                            }
-                        }
-
-                        models.Metadata.bulkCreate(metadata).then(function(){
-                            models.LocalizedMetadata.bulkCreate(localizedMetadata).then(function(){
-
-                                // Insert Parts of Speech
-                                var partsOfSpeech = [];
-                                for (var langId in self.partsOfSpeech) {
-                                    for (var pos in self.partsOfSpeech[langId]) {
-                                        if (pos === "") {
-                                            continue;
-                                        }
-                                        partsOfSpeech.push({
-                                            LanguageIsoCode: langId,
-                                            type: pos
-                                        });
-                                    }
-                                }
-
-                                models.PartOfSpeech.bulkCreate(partsOfSpeech).then(function(){
-
-                                    // Insert Templates
-                                    var templates = [];
-                                    var localizedTemplates = [];
-                                    for(var lang in self.templates){
-                                        for(var templateId in self.templates[lang]){
-                                            var template = self.templates[lang][templateId];
-
-                                            if(lang === "raw"){
-                                                templates.push({
-                                                    id: templateId,
-                                                    format: template.format,
-                                                    argc: template.argc,
-                                                    changeable: template.changeable
-                                                });
-                                            } else {
-                                                localizedTemplates.push({
-                                                    TemplateId: templateId,
-                                                    LanguageIsoCode: lang,
-                                                    format: template.format,
-                                                    argc: template.argc,
-                                                    changeable: template.changeable
-                                                });
-                                            }
-
-                                        }
-                                    }
-
-                                    models.Template.bulkCreate(templates).then(function(){
-                                        models.LocalizedTemplate.bulkCreate(localizedTemplates).then(function () {
-                                            // Insert Entries
-                                            var entries = [];
-                                            var localizedEntries = [];
-                                            for(var id in self.entries){
-                                                var entry = self.entries[id];
-                                                entries.push({
-                                                    id: entry.id,
-                                                    pubId: entry.pubId,
-                                                    lemma: entry.lemma,
-                                                    ipa: entry.ipa,
-                                                    //partOfSpeech: entry.partOfSpeech,
-                                                    //odd: entry.odd,
-                                                    audio: entry.pubId + ".mp3",
-                                                    SourceId: self.sources[entry.source].id,
-                                                    createdAt: entry.editTime * 1000
-                                                });
-
-                                                for(var lc in entry.localizations){
-                                                    var localizedEntry = entry.localizations[lc];
-                                                    localizedEntries.push({
-                                                        EntryId: entry.id,
-                                                        LanguageIsoCode: lc,
-                                                        odd: localizedEntry.odd,
-                                                        createdAt: localizedEntry.editTime * 1000
-                                                    });
-
-                                                }
-                                            }
-                                            models.Entry.bulkCreate(entries).then(function(){
-                                                models.LocalizedEntry.bulkCreate(localizedEntries).then(callback);
-                                            }).catch(function(err){
-                                                console.log(122,err);
-                                            });
-                                        });
-                                    });
-                                });
-                            });
-                        });
-                    });
-                });
+            Promise.all(secondLayerPromises).then(function(){
+                self.exportEntries().then(function () {
+                    callback();
+                })
             });
         });
     });
 };
+
+function getDictionaryBuildTemplate(data){
+    "use strict";
+    switch(data){
+        case "__END__":
+            return "localized_end";
+        case "\\newpage":
+            return "newpage";
+        case "\\end{hangparas}}\\end{multicols}":
+            return "end_hangparas_multicols";
+        case "\\end{hangparas}":
+            return "end_hangparas";
+        case "\\end{document}":
+            return "end_document";
+        case "\\end{hangparas}}\\end{multicols}+\\newpage":
+            return "end_hangparas_multicols_newpage";
+        default:
+            console.log(data);
+            return;
+    }
+}
+
+function getDictionaryBuildData(data){
+    "use strict";
+    if(data.type === "mainblock" || data.type === "block"){
+        return data.data2;
+    } else {
+        return data.data1;
+    }
+    /*
+     sub fillFile {
+         my ($filename) = @_;
+         # Open the file.
+         #~ open my $HIN, "tex/$filename" or die "Could not open TeXFile: $filename ($!)";
+         #~ my @hlines = <$HIN>;
+         #~ close $HIN;
+         exists $layout{$filename} or die "Unknown layout '$filename'";
+         my @hlines = split /\n/, $layout{$filename};
+         for my $hline (@hlines) {
+             # Placeholder?
+             chomp($hline); chomp($hline);
+             $hline = fillWithPlaceholders($hline);
+         }
+
+         return join("\n", @hlines);
+     }
+
+     sub fillWithPlaceholders {
+         my ($line) = @_;
+         while ($line =~ /__(_[A-Z_0-9]+_)__/ || $line =~ /__([A-Z_0-9]+)__/) {
+             my $id = $1;
+             if (!exists $words{$id}) {
+                $m->error("Couldn't find value for '$id' ($line).");
+             }
+             $line =~ s/__${id}__/$words{$id}/g;
+             # check
+         }
+
+         $line =~ s/% DEFAULT.*//*o;
+         return $line;
+     }
+     */
+}
+
+function getDictionaryBlockId(data){
+    "use strict";
+    if(data.type === "mainblock" || data.type === "block"){
+        return data.data1;
+    }
+}
+
+function getDictionaryBuildDescription(type){
+    "use strict";
+    switch(type){
+        case "NaviDictionary":
+            return "Sorted in Na'vi";
+        case "DictionaryNavi":
+            return "Sorted in English";
+        case "NaviCatDictionary":
+            return "Sorted by category in Na'vi";
+        case "NaviPlainDictionary":
+            return "Concise Version (no appendices)";
+        default:
+            return "";
+    }
+}
 
 function getSourceDescription(source) {
     var result = source.replace("PF", "Dr. Paul Frommer");
@@ -487,7 +738,11 @@ function buildDictionaryEntries(self) {
         }
 
         for(var lc in self.languages){
-
+            if(self.eanaEltu.dictWordLoc[id] === undefined){
+                // No localizations have been added yet...
+                // adding an empty object to keep from failing out
+                self.eanaEltu.dictWordLoc[id] = {};
+            }
             var localizedEntry = self.eanaEltu.dictWordLoc[id][lc];
 
             if (lc === 'en') {
