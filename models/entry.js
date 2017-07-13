@@ -13,10 +13,25 @@ module.exports = function (sequelize, DataTypes) {
             onDelete: 'CASCADE'
         });
         Entry.belongsTo(models.Source, {
-            onDelete: 'CASCADE'
+            foreignKey: {
+                allowNull: false
+            },
+            constraints: true,
+            onDelete: 'cascade'
         });
         Entry.belongsTo(models.DictionaryBlock, {
-            onDelete: 'CASCADE'
+            foreignKey: {
+                allowNull: false
+            },
+            constraints: true,
+            onDelete: 'cascade'
+        });
+        Entry.belongsTo(models.Template, {
+            foreignKey: {
+                allowNull: false
+            },
+            constraints: true,
+            onDelete: 'cascade'
         });
     };
 
