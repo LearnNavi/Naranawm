@@ -23,7 +23,7 @@ module.exports = function (sequelize, DataTypes) {
             }
         });
 
-        DictionaryBuildData.belongsTo(models.Template, {
+        DictionaryBuildData.belongsTo(models.DictionaryTemplate, {
             foreignKey: {
                 allowNull: true
             }

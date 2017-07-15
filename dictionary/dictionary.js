@@ -18,6 +18,7 @@ function Dictionary () {
     this.activeLanguages = [];
     this.metadata = {};
     this.templates = {};
+    this.entryTemplates = {};
     this.entries = {};
     this.sources = {};
     this.partsOfSpeech = {};
@@ -175,64 +176,29 @@ Dictionary.prototype.exportSources = function(){
     });
 };
 
-Dictionary.prototype.exportTemplates = function () {
+Dictionary.prototype.exportDictionaryTemplates = function () {
     // Insert Templates
     var self = this;
     var templates = [
         {
             id: "localized_end",
-            format: "__END__",
-            argc: 0,
-            changeable: ""
+            latex: "__END__"
         }, {
             id: "newpage",
-            format: "\\newpage",
-            argc: 0,
-            changeable: ""
+            latex: "\\newpage"
         }, {
             id: "end_hangparas_multicols",
-            format: "\\end{hangparas}}\\end{multicols}",
-            argc: 0,
-            changeable: ""
+            latex: "\\end{hangparas}}\\end{multicols}"
         }, {
             id: "end_hangparas",
-            format: "\\end{hangparas}",
-            argc: 0,
-            changeable: ""
+            latex: "\\end{hangparas}"
         }, {
             id: "end_document",
-            format: "\\end{document}",
-            argc: 0,
-            changeable: ""
+            latex: "\\end{document}"
         }, {
             id: "end_hangparas_multicols_newpage",
-            format: "\\end{hangparas}}\\end{multicols}+\\newpage",
-            argc: 0,
-            changeable: ""
+            latex: "\\end{hangparas}}\\end{multicols}+\\newpage"
         }];
-    var localizedTemplates = [];
-    for(var lang in self.templates){
-        for(var templateId in self.templates[lang]){
-            var template = self.templates[lang][templateId];
-
-            if(lang === "raw"){
-                templates.push({
-                    id: templateId,
-                    format: template.format,
-                    argc: template.argc,
-                    changeable: template.changeable
-                });
-            } else {
-                localizedTemplates.push({
-                    TemplateId: templateId,
-                    LanguageIsoCode: lang,
-                    format: template.format,
-                    argc: template.argc,
-                    changeable: template.changeable
-                });
-            }
-        }
-    }
 
     for(var id in self.eanaEltu.dictLayout){
         var layout = self.eanaEltu.dictLayout[id];
@@ -244,14 +210,207 @@ Dictionary.prototype.exportTemplates = function () {
         }
         templates.push({
             id: layout.id.toLowerCase(),
-            format: layout.value,
-            argc: 0,
-            changeable: ""
+            latex: layout.value
         });
     }
 
-    return models.Template.bulkCreate(templates).then(function() {
-        return models.LocalizedTemplate.bulkCreate(localizedTemplates);
+    return models.DictionaryTemplate.bulkCreate(templates);
+};
+
+Dictionary.prototype.exportEntryTemplates = function () {
+    // Insert Templates
+    var self = this;
+    var templates = [
+        {
+            id: "PAR",
+            latex: "\\par<#>",
+            html: "<p><#></p>",
+            placeholders: 1
+        }, {
+            id: "BOLD",
+            latex: "\\textbf{<#>}",
+            html: "<b><#></b>",
+            placeholders: 1
+        }, {
+            id: "IPA",
+            latex: "\\textipa{<#>}",
+            html: "<#>",
+            placeholders: 1
+        }, {
+            id: "SUBSCRIPT",
+            latex: "$_{<#>}$",
+            html: "<sub><#></sub>",
+            placeholders: 1
+        }, {
+            id: "TEXT",
+            latex: "<#>",
+            html: "<#>",
+            placeholders: 1
+        }, {
+            id: "ITALIC",
+            latex: "\\textit{<#>}",
+            html: "<i><#></i>",
+            placeholders: 1
+        }];
+
+    return models.EntryTemplate.bulkCreate(templates).then(function(){
+        "use strict";
+        return models.EntryTemplate.findAll().then(function(entryTemplates){
+            entryTemplates.forEach(function(entryTemplate){
+                self.entryTemplates[entryTemplate.id] = entryTemplate;
+            });
+        });
+    });
+};
+
+Dictionary.prototype.exportEntryLayouts = function () {
+    // Insert Templates
+    var self = this;
+
+    return models.EntryLayout.create({
+        id: 'ENTRY',
+        layout: '{entry}'
+    }).then(function(entryLayout){
+        entryLayout.addEntryTemplate(self.entryTemplates['PAR'], {
+            through: {
+                position: 0,
+                field: "entry"
+            }});
+        return entryLayout.save().then(function () {
+            return models.EntryLayout.create({
+                id: 'IPA_ENTRY',
+                layout: '{lemma}: [{ipa}] {source} {partOfSpeech} {entry}',
+                ParentId: "ENTRY"
+            }).then(function (entryLayout) {
+                entryLayout.addEntryTemplate(self.entryTemplates['BOLD'], {
+                    through: {
+                        position: 1,
+                        field: "lemma"
+                    }});
+                entryLayout.addEntryTemplate(self.entryTemplates['IPA'], {
+                    through: {
+                        position: 2,
+                        field: "ipa"
+                    }});
+                entryLayout.addEntryTemplate(self.entryTemplates['SUBSCRIPT'], {
+                    through: {
+                        position: 3,
+                        field: "source"
+                    }});
+                entryLayout.addEntryTemplate(self.entryTemplates['TEXT'], {
+                    through: {
+                        position: 4,
+                        field: "partOfSpeech"
+                    }});
+                entryLayout.addEntryTemplate(self.entryTemplates['TEXT'], {
+                    through: {
+                        position: 5,
+                        field: "entry"
+                    }});
+
+                return entryLayout.save().then(function () {
+                    return models.EntryLayout.create({
+                        id: 'IPA_ENTRY_ITALIC_DEF',
+                        layout: '{definition} {entry}',
+                        ParentId: "IPA_ENTRY"
+                    }).then(function (entryLayout) {
+                        entryLayout.addEntryTemplate(self.entryTemplates['ITALIC'], {
+                            through: {
+                                position: 0,
+                                field: "definition"
+                            }});
+                        entryLayout.addEntryTemplate(self.entryTemplates['TEXT'], {
+                            through: {
+                                position: 1,
+                                field: "entry"
+                            }});
+                        return entryLayout.save().then(function () {
+                            return models.EntryLayout.create({
+                                id: 'IPA_ENTRY_ITALIC_DEF_PARENS',
+                                layout: '{definition} ({entry})',
+                                ParentId: "IPA_ENTRY"
+                            }).then(function (entryLayout) {
+                                entryLayout.addEntryTemplate(self.entryTemplates['ITALIC'], {
+                                    through: {
+                                        position: 0,
+                                        field: "definition"
+                                    }});
+                                entryLayout.addEntryTemplate(self.entryTemplates['TEXT'], {
+                                    through: {
+                                        position: 1,
+                                        field: "entry"
+                                    }});
+                                return entryLayout.save().then(function () {
+                                    return models.EntryLayout.create({
+                                        id: 'IPA_ENTRY_PARENS',
+                                        layout: '({entry})',
+                                        ParentId: "IPA_ENTRY"
+                                    }).then(function (entryLayout) {
+                                        entryLayout.addEntryTemplate(self.entryTemplates['TEXT'], {
+                                            through: {
+                                                position: 0,
+                                                field: "entry"
+                                            }
+                                        });
+                                        return entryLayout.save().then(function () {
+                                            var validLayouts = [
+                                                'affixN',
+                                                'alloffixN',
+                                                'cw',
+                                                'cww',
+                                                'derive',
+                                                'derives',
+                                                'derivingaffix',
+                                                'derivingaffixN',
+                                                'infixN',
+                                                'infixcwN',
+                                                'lenite',
+                                                'liu',
+                                                'loan',
+                                                'markerN',
+                                                'note',
+                                                'word'
+                                            ];
+                                            var layouts = [];
+                                            var localizedLayouts = [];
+                                            for(var lang in self.templates){
+                                                for(var templateId in self.templates[lang]){
+                                                    if(validLayouts.indexOf(templateId) !== -1){
+                                                        var template = self.templates[lang][templateId];
+
+                                                        if(lang === "raw"){
+                                                            layouts.push({
+                                                                id: templateId,
+                                                                layout: template.format,
+                                                                argc: template.argc,
+                                                                changeable: template.changeable,
+                                                                ParentId: template.parentId
+                                                            });
+                                                        } else {
+                                                            localizedLayouts.push({
+                                                                EntryLayoutId: templateId,
+                                                                LanguageIsoCode: lang,
+                                                                layout: template.format,
+                                                                argc: template.argc,
+                                                                changeable: template.changeable
+                                                            });
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            return models.EntryLayout.bulkCreate(layouts).then(function() {
+                                                return models.LocalizedEntryLayout.bulkCreate(localizedLayouts);
+                                            });
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            })
+        });
     });
 };
 
@@ -267,7 +426,7 @@ Dictionary.prototype.exportMetadata = function () {
             LanguageIsoCode: isoCode,
             MetadatumId: "__STANDARD_IPA_ENTRY_TEMPLATE__",
             value: "\\par\\textbf{#LEMMA}: [\\textipa{#IPA}] $_{#SOURCE}$ #PART_OF_SPEECH"
-        })
+        });
     }
 
     for(var index in self.metadata){
@@ -329,6 +488,7 @@ Dictionary.prototype.exportEntries = function () {
             audio: entry.pubId + ".mp3",
             SourceId: self.sources[entry.source].id,
             DictionaryBlockId: entry.block,
+            EntryLayoutId: entry.type,
             createdAt: entry.editTime * 1000
         });
 
@@ -360,7 +520,8 @@ Dictionary.prototype.export = function (callback) {
         var topLayerPromises = [];
         topLayerPromises.push(self.exportLanguages());
         topLayerPromises.push(self.exportSources());
-        topLayerPromises.push(self.exportTemplates());
+        topLayerPromises.push(self.exportDictionaryTemplates());
+        topLayerPromises.push(self.exportEntryTemplates());
 
         Promise.all(topLayerPromises).then(function(){
             "use strict";
@@ -368,12 +529,37 @@ Dictionary.prototype.export = function (callback) {
             var secondLayerPromises = [];
             secondLayerPromises.push(self.exportDictionaryBuilds());
             secondLayerPromises.push(self.exportMetadata());
+            secondLayerPromises.push(self.exportEntryLayouts());
             secondLayerPromises.push(self.exportPartsOfSpeech());
 
             Promise.all(secondLayerPromises).then(function(){
                 self.exportEntries().then(function () {
-                    callback();
-                })
+                    models.EntryLayout.findById("derives", {
+                        include: [
+                            {
+                                model: models.EntryLayout,
+                                as: "Parent",
+                                include: [
+                                    {
+                                        model: models.EntryLayout,
+                                        as: "Parent",
+                                        include: [
+                                            {
+                                                model: models.EntryTemplate
+                                            }]
+                                    },{
+                                        model: models.EntryTemplate
+                                    }]
+                            }, {
+                                model: models.EntryTemplate
+                            }]
+                    }).then(function(standardIpaEntry) {
+                        standardIpaEntry.getLatex().then(function(latex){
+                            console.log(latex);
+                            callback();
+                        });
+                    });
+                });
             });
         });
     });
@@ -689,20 +875,56 @@ function buildDictionaryTemplates(self) {
             continue;
         }
 
+        self.eanaEltu.dictWordTemplate[index].parentId = "IPA_ENTRY";
         var format = self.eanaEltu.dictWordTemplate[index].format;
+
         format = format.replace("#1", "#LEMMA");
         format = format.replace("#2", "#IPA");
         format = format.replace(sourceLocation(index), "#SOURCE");
         format = format.replace(partOfSpeechLocation(index), "#PART_OF_SPEECH");
 
+        // Removing the Generic IPA style layout from the template (refactoring the template)
+        format = format.replace(generic_template, "").trim();
+
+        if(format.indexOf("\\textit{#4} (") !== -1){
+            format = format.replace("\\textit{#4} (", "").trim();
+            format = format.replace(")", "");
+            self.eanaEltu.dictWordTemplate[index].parentId = "IPA_ENTRY_ITALIC_DEF_PARENS";
+        }
+
+        if(format.indexOf("\\textit{#4}") !== -1){
+            format = format.replace("\\textit{#4}", "").trim();
+            self.eanaEltu.dictWordTemplate[index].parentId = "IPA_ENTRY_ITALIC_DEF";
+        }
+
+        if(format.indexOf("(") !== -1){
+            format = format.replace("(", "");
+            format = format.replace(")", "");
+            self.eanaEltu.dictWordTemplate[index].parentId = "IPA_ENTRY_PARENS";
+        }
+
+        if(index === "cw" || index === "cww" || index === "loan" || index === "pcw"){
+            // These templates have parens in them, strip them out and use the correct parent
+            self.eanaEltu.dictWordTemplate[index].parentId += "_PARENS";
+        }
+
+        var layout = format;
+        var result;
+        while(result = layout.match(regex)){
+            layout = layout.replace(result[0], "{METADATA." + result[1] + "}");
+        }
+
         self.templates['raw'][index] = {
-            format: format.replace(generic_template, "__STANDARD_IPA_ENTRY_TEMPLATE__"),
+            format: layout,
             argc: self.eanaEltu.dictWordTemplate[index].argc,
-            changeable: self.eanaEltu.dictWordTemplate[index].changeable
+            changeable: self.eanaEltu.dictWordTemplate[index].changeable,
+            parentId: self.eanaEltu.dictWordTemplate[index].parentId
         };
 
+
+
         for(var j = 0; j < self.activeLanguages.length; j++){
-            var result = format.match(regex);
+            result = format.match(regex);
             var localizedFormat = format;
             if(result !== null) {
                 var meta = self.metadata[result[1]];
@@ -710,12 +932,17 @@ function buildDictionaryTemplates(self) {
                     console.log("MISSING TRANSLATION FOR [" + result[1] + "] in " + self.activeLanguages[j]);
                     continue;
                 }
+                if(index === "cw" || index === "cww" || index === "loan" || index === "pcw"){
+                    // These templates have parens in them, strip them out and use the correct parent
+                    meta[self.activeLanguages[j]].value = meta[self.activeLanguages[j]].value.replace("(", "");
+                    meta[self.activeLanguages[j]].value = meta[self.activeLanguages[j]].value.replace(")", "");
+                }
                 localizedFormat = localizedFormat.replace(result[0], meta[self.activeLanguages[j]].value);
             }
 
             //format = processTemplate(format);
             self.templates[self.activeLanguages[j]][index] = {
-                format: localizedFormat.replace(generic_template, "__STANDARD_IPA_ENTRY_TEMPLATE__"),
+                format: localizedFormat,
                 argc: self.eanaEltu.dictWordTemplate[index].argc,
                 changeable: self.eanaEltu.dictWordTemplate[index].changeable
             };
