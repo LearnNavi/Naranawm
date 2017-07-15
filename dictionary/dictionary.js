@@ -223,34 +223,28 @@ Dictionary.prototype.exportEntryTemplates = function () {
     var templates = [
         {
             id: "PAR",
-            latex: "\\par<#>",
-            html: "<p><#></p>",
-            placeholders: 1
+            latex: "\\par#",
+            html: "<p>#</p>"
         }, {
             id: "BOLD",
-            latex: "\\textbf{<#>}",
-            html: "<b><#></b>",
-            placeholders: 1
+            latex: "\\textbf{#}",
+            html: "<b>#</b>"
         }, {
             id: "IPA",
-            latex: "\\textipa{<#>}",
-            html: "<#>",
-            placeholders: 1
+            latex: "\\textipa{#}",
+            html: "#"
         }, {
             id: "SUBSCRIPT",
-            latex: "$_{<#>}$",
-            html: "<sub><#></sub>",
-            placeholders: 1
+            latex: "$_{#}$",
+            html: "<sub>#</sub>"
         }, {
             id: "TEXT",
-            latex: "<#>",
-            html: "<#>",
-            placeholders: 1
+            latex: "#",
+            html: "#"
         }, {
             id: "ITALIC",
-            latex: "\\textit{<#>}",
-            html: "<i><#></i>",
-            placeholders: 1
+            latex: "\\textit{#}",
+            html: "<i><#></i>"
         }];
 
     return models.EntryTemplate.bulkCreate(templates).then(function(){
@@ -263,153 +257,176 @@ Dictionary.prototype.exportEntryTemplates = function () {
     });
 };
 
+Dictionary.prototype.createLayoutWithTemplates = function(layout) {
+    "use strict";
+    var self = this;
+    return models.EntryLayout.create(layout).then(function(entryLayout){
+        for(var i = 0; i < layout.templates.length; i++) {
+            var template = layout.templates[i];
+            entryLayout.addEntryTemplate(self.entryTemplates[template.id], {
+                through: {
+                    position: template.position,
+                    field: template.field
+                }
+            });
+        }
+        return entryLayout.save().then(function(){
+            return new Promise(function(resolve, reject){
+                if(layout.children.length > 0){
+                    var promises = [];
+                    for(var j = 0; j < layout.children.length; j++){
+                        promises.push(self.createLayoutWithTemplates(layout.children[j]));
+                    }
+                    Promise.all(promises).then(resolve);
+                } else {
+                    // No children...
+                    resolve();
+                }
+            });
+        });
+    });
+};
+
 Dictionary.prototype.exportEntryLayouts = function () {
     // Insert Templates
     var self = this;
 
-    return models.EntryLayout.create({
+    var layout = {
         id: 'ENTRY',
-        layout: '{entry}'
-    }).then(function(entryLayout){
-        entryLayout.addEntryTemplate(self.entryTemplates['PAR'], {
-            through: {
+        layout: '{entry}',
+        templates: [
+            {
+                id: 'PAR',
                 position: 0,
-                field: "entry"
-            }});
-        return entryLayout.save().then(function () {
-            return models.EntryLayout.create({
+                field: 'entry'
+            }],
+        children: [
+            {
                 id: 'IPA_ENTRY',
                 layout: '{lemma}: [{ipa}] {source} {partOfSpeech} {entry}',
-                ParentId: "ENTRY"
-            }).then(function (entryLayout) {
-                entryLayout.addEntryTemplate(self.entryTemplates['BOLD'], {
-                    through: {
+                ParentId: "ENTRY",
+                templates: [
+                    {
+                        id: 'BOLD',
+                        position: 0,
+                        field: 'lemma'
+                    },{
+                        id: 'IPA',
                         position: 1,
-                        field: "lemma"
-                    }});
-                entryLayout.addEntryTemplate(self.entryTemplates['IPA'], {
-                    through: {
+                        field: 'ipa'
+                    },{
+                        id: 'SUBSCRIPT',
                         position: 2,
-                        field: "ipa"
-                    }});
-                entryLayout.addEntryTemplate(self.entryTemplates['SUBSCRIPT'], {
-                    through: {
+                        field: 'source'
+                    },{
+                        id: 'TEXT',
                         position: 3,
-                        field: "source"
-                    }});
-                entryLayout.addEntryTemplate(self.entryTemplates['TEXT'], {
-                    through: {
+                        field: 'partOfSpeech'
+                    },{
+                        id: 'TEXT',
                         position: 4,
-                        field: "partOfSpeech"
-                    }});
-                entryLayout.addEntryTemplate(self.entryTemplates['TEXT'], {
-                    through: {
-                        position: 5,
-                        field: "entry"
-                    }});
-
-                return entryLayout.save().then(function () {
-                    return models.EntryLayout.create({
+                        field: 'entry'
+                    }],
+                children: [
+                    {
                         id: 'IPA_ENTRY_ITALIC_DEF',
                         layout: '{definition} {entry}',
-                        ParentId: "IPA_ENTRY"
-                    }).then(function (entryLayout) {
-                        entryLayout.addEntryTemplate(self.entryTemplates['ITALIC'], {
-                            through: {
+                        ParentId: 'IPA_ENTRY',
+                        templates: [
+                            {
+                                id: 'ITALIC',
                                 position: 0,
-                                field: "definition"
-                            }});
-                        entryLayout.addEntryTemplate(self.entryTemplates['TEXT'], {
-                            through: {
+                                field: 'definition'
+                            },{
+                                id: 'TEXT',
                                 position: 1,
-                                field: "entry"
-                            }});
-                        return entryLayout.save().then(function () {
-                            return models.EntryLayout.create({
-                                id: 'IPA_ENTRY_ITALIC_DEF_PARENS',
-                                layout: '{definition} ({entry})',
-                                ParentId: "IPA_ENTRY"
-                            }).then(function (entryLayout) {
-                                entryLayout.addEntryTemplate(self.entryTemplates['ITALIC'], {
-                                    through: {
-                                        position: 0,
-                                        field: "definition"
-                                    }});
-                                entryLayout.addEntryTemplate(self.entryTemplates['TEXT'], {
-                                    through: {
-                                        position: 1,
-                                        field: "entry"
-                                    }});
-                                return entryLayout.save().then(function () {
-                                    return models.EntryLayout.create({
-                                        id: 'IPA_ENTRY_PARENS',
-                                        layout: '({entry})',
-                                        ParentId: "IPA_ENTRY"
-                                    }).then(function (entryLayout) {
-                                        entryLayout.addEntryTemplate(self.entryTemplates['TEXT'], {
-                                            through: {
-                                                position: 0,
-                                                field: "entry"
-                                            }
-                                        });
-                                        return entryLayout.save().then(function () {
-                                            var validLayouts = [
-                                                'affixN',
-                                                'alloffixN',
-                                                'cw',
-                                                'cww',
-                                                'derive',
-                                                'derives',
-                                                'derivingaffix',
-                                                'derivingaffixN',
-                                                'infixN',
-                                                'infixcwN',
-                                                'lenite',
-                                                'liu',
-                                                'loan',
-                                                'markerN',
-                                                'note',
-                                                'word'
-                                            ];
-                                            var layouts = [];
-                                            var localizedLayouts = [];
-                                            for(var lang in self.templates){
-                                                for(var templateId in self.templates[lang]){
-                                                    if(validLayouts.indexOf(templateId) !== -1){
-                                                        var template = self.templates[lang][templateId];
+                                field: 'ENTRY'
+                            }],
+                        children: []
+                    },{
+                        id: 'IPA_ENTRY_ITALIC_DEF_PARENS',
+                        layout: '{definition} ({entry})',
+                        ParentId: "IPA_ENTRY",
+                        templates: [
+                            {
+                                id: 'ITALIC',
+                                position: 0,
+                                field: 'definition'
+                            },{
+                                id: 'TEXT',
+                                position: 1,
+                                field: 'ENTRY'
+                            }],
+                        children: []
+                    },{
+                        id: 'IPA_ENTRY_PARENS',
+                        layout: '({entry})',
+                        ParentId: "IPA_ENTRY",
+                        templates: [
+                            {
+                                id: 'TEXT',
+                                position: 0,
+                                field: 'ENTRY'
+                            }],
+                        children: []
+                    }
+                ]
+            }
+        ]
+    };
 
-                                                        if(lang === "raw"){
-                                                            layouts.push({
-                                                                id: templateId,
-                                                                layout: template.format,
-                                                                argc: template.argc,
-                                                                changeable: template.changeable,
-                                                                ParentId: template.parentId
-                                                            });
-                                                        } else {
-                                                            localizedLayouts.push({
-                                                                EntryLayoutId: templateId,
-                                                                LanguageIsoCode: lang,
-                                                                layout: template.format,
-                                                                argc: template.argc,
-                                                                changeable: template.changeable
-                                                            });
-                                                        }
-                                                    }
-                                                }
-                                            }
+    return self.createLayoutWithTemplates(layout).then(function(){
+        "use strict";
 
-                                            return models.EntryLayout.bulkCreate(layouts).then(function() {
-                                                return models.LocalizedEntryLayout.bulkCreate(localizedLayouts);
-                                            });
-                                        });
-                                    });
-                                });
-                            });
+
+        var validLayouts = [
+            'affixN',
+            'alloffixN',
+            'cw',
+            'cww',
+            'derive',
+            'derives',
+            'derivingaffix',
+            'derivingaffixN',
+            'infixN',
+            'infixcwN',
+            'lenite',
+            'liu',
+            'loan',
+            'markerN',
+            'note',
+            'word'
+        ];
+        var layouts = [];
+        var localizedLayouts = [];
+        for(var lang in self.templates){
+            for(var templateId in self.templates[lang]){
+                if(validLayouts.indexOf(templateId) !== -1){
+                    var template = self.templates[lang][templateId];
+
+                    if(lang === "raw"){
+                        layouts.push({
+                            id: templateId,
+                            layout: template.format,
+                            argc: template.argc,
+                            changeable: template.changeable,
+                            EntryLayoutId: template.parentId
                         });
-                    });
-                });
-            })
+                    } else {
+                        localizedLayouts.push({
+                            EntryTypeId: templateId,
+                            LanguageIsoCode: lang,
+                            layout: template.format,
+                            argc: template.argc,
+                            changeable: template.changeable
+                        });
+                    }
+                }
+            }
+        }
+
+        return models.EntryType.bulkCreate(layouts).then(function() {
+            return models.LocalizedEntryLayout.bulkCreate(localizedLayouts);
         });
     });
 };
@@ -488,7 +505,7 @@ Dictionary.prototype.exportEntries = function () {
             audio: entry.pubId + ".mp3",
             SourceId: self.sources[entry.source].id,
             DictionaryBlockId: entry.block,
-            EntryLayoutId: entry.type,
+            EntryTypeId: entry.type,
             createdAt: entry.editTime * 1000
         });
 
@@ -534,29 +551,13 @@ Dictionary.prototype.export = function (callback) {
 
             Promise.all(secondLayerPromises).then(function(){
                 self.exportEntries().then(function () {
-                    models.EntryLayout.findById("derives", {
-                        include: [
-                            {
-                                model: models.EntryLayout,
-                                as: "Parent",
-                                include: [
-                                    {
-                                        model: models.EntryLayout,
-                                        as: "Parent",
-                                        include: [
-                                            {
-                                                model: models.EntryTemplate
-                                            }]
-                                    },{
-                                        model: models.EntryTemplate
-                                    }]
-                            }, {
-                                model: models.EntryTemplate
-                            }]
-                    }).then(function(standardIpaEntry) {
-                        standardIpaEntry.getLatex().then(function(latex){
-                            console.log(latex);
-                            callback();
+                    models.EntryType.findById("infixcwN").then(function(standardIpaEntry) {
+                        standardIpaEntry.getHtml().then(function(html){
+                            console.log("HTML   ", html);
+                            standardIpaEntry.getLatex().then(function(latex){
+                                console.log("LATEX: ", latex);
+                                callback();
+                            });
                         });
                     });
                 });

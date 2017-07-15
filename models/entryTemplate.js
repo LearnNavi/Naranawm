@@ -3,8 +3,7 @@ module.exports = function (sequelize, DataTypes) {
     var EntryTemplate = sequelize.define('EntryTemplate', {
         id: { type: DataTypes.STRING, primaryKey: true },
         latex: { type: DataTypes.STRING, allowNull: false, defaultValue: "" },
-        html: { type: DataTypes.STRING, allowNull: false, defaultValue: "" },
-        placeholders: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 }
+        html: { type: DataTypes.STRING, allowNull: false, defaultValue: "" }
     });
 
     EntryTemplate.associate = function (models) {

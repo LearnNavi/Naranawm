@@ -10,7 +10,7 @@ module.exports = function (sequelize, DataTypes) {
 
     LocalizedEntryLayout.associate = function (models) {
         // associations can be defined here
-        LocalizedEntryLayout.belongsTo(models.EntryLayout, {
+        LocalizedEntryLayout.belongsTo(models.EntryType, {
             foreignKey: {
                 primaryKey: true,
                 allowNull: false

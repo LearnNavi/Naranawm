@@ -26,7 +26,7 @@ module.exports = function (sequelize, DataTypes) {
             constraints: true,
             onDelete: 'cascade'
         });
-        Entry.belongsTo(models.EntryLayout, {
+        Entry.belongsTo(models.EntryType, {
             foreignKey: {
                 allowNull: false
             },
