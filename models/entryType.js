@@ -4,7 +4,7 @@ var Promise = require('bluebird');
 module.exports = function (sequelize, DataTypes) {
     var EntryType = sequelize.define('EntryType', {
         id: { type: DataTypes.STRING, primaryKey: true },
-        layout: { type: DataTypes.STRING, allowNull: false },
+        layout: { type: DataTypes.STRING, allowNull: true },
         argc: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
         changeable: { type: DataTypes.STRING, allowNull: false, defaultValue: "" }
     });

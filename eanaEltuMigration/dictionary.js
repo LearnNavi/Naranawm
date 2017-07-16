@@ -5,6 +5,11 @@ var EanaEltu = require('./eanaEltu');
 var models = require('../models');
 var Promise = require('bluebird');
 
+/*
+* This Module / Section is to export data from Eana Eltu
+* and convert it into a format that we can insert into
+* the new database schema                               */
+
 function Dictionary () {
     this.debug = false;
     this.eanaEltu = new EanaEltu();
@@ -142,7 +147,8 @@ Dictionary.prototype.exportLanguages = function (){
             isoCode: langId,
             isoName: language.engName,
             nativeName: language.nativeName,
-            active: language.active
+            active: language.active,
+            export: language.active
         });
     }
 
@@ -244,7 +250,11 @@ Dictionary.prototype.exportEntryTemplates = function () {
         }, {
             id: "ITALIC",
             latex: "\\textit{#}",
-            html: "<i><#></i>"
+            html: "<i>#</i>"
+        }, {
+            id: "SMALL_CAPS",
+            latex: "\\textsc{#}",
+            html: "<small>#</small>"
         }];
 
     return models.EntryTemplate.bulkCreate(templates).then(function(){
@@ -257,7 +267,7 @@ Dictionary.prototype.exportEntryTemplates = function () {
     });
 };
 
-Dictionary.prototype.createLayoutWithTemplates = function(layout) {
+Dictionary.prototype.createLayoutWithTemplates = function(layout){
     "use strict";
     var self = this;
     return models.EntryLayout.create(layout).then(function(entryLayout){
@@ -271,19 +281,26 @@ Dictionary.prototype.createLayoutWithTemplates = function(layout) {
             });
         }
         return entryLayout.save().then(function(){
-            return new Promise(function(resolve, reject){
-                if(layout.children.length > 0){
-                    var promises = [];
-                    for(var j = 0; j < layout.children.length; j++){
-                        promises.push(self.createLayoutWithTemplates(layout.children[j]));
-                    }
-                    Promise.all(promises).then(resolve);
-                } else {
-                    // No children...
-                    resolve();
-                }
-            });
+            return self.createLayoutsWithTemplates(layout.children);
         });
+    });
+};
+
+Dictionary.prototype.createLayoutsWithTemplates = function(layouts) {
+    "use strict";
+    var self = this;
+    return new Promise(function(externalResolve, externalReject){
+        var externalPromises = [];
+        if(layouts === undefined || layouts.length === 0){
+            // Nothing to do... resolve/return
+            externalResolve();
+            return;
+        }
+        for(var k = 0; k < layouts.length; k++){
+            externalPromises.push(self.createLayoutWithTemplates(layouts[k]));
+        }
+
+        Promise.all(externalPromises).then(externalResolve);
     });
 };
 
@@ -291,91 +308,105 @@ Dictionary.prototype.exportEntryLayouts = function () {
     // Insert Templates
     var self = this;
 
-    var layout = {
-        id: 'ENTRY',
-        layout: '{entry}',
-        templates: [
-            {
-                id: 'PAR',
-                position: 0,
-                field: 'entry'
-            }],
-        children: [
-            {
-                id: 'IPA_ENTRY',
-                layout: '{lemma}: [{ipa}] {source} {partOfSpeech} {entry}',
-                ParentId: "ENTRY",
-                templates: [
-                    {
-                        id: 'BOLD',
-                        position: 0,
-                        field: 'lemma'
-                    },{
-                        id: 'IPA',
-                        position: 1,
-                        field: 'ipa'
-                    },{
-                        id: 'SUBSCRIPT',
-                        position: 2,
-                        field: 'source'
-                    },{
-                        id: 'TEXT',
-                        position: 3,
-                        field: 'partOfSpeech'
-                    },{
-                        id: 'TEXT',
-                        position: 4,
-                        field: 'entry'
-                    }],
-                children: [
-                    {
-                        id: 'IPA_ENTRY_ITALIC_DEF',
-                        layout: '{definition} {entry}',
-                        ParentId: 'IPA_ENTRY',
-                        templates: [
-                            {
-                                id: 'ITALIC',
-                                position: 0,
-                                field: 'definition'
-                            },{
-                                id: 'TEXT',
-                                position: 1,
-                                field: 'ENTRY'
-                            }],
-                        children: []
-                    },{
-                        id: 'IPA_ENTRY_ITALIC_DEF_PARENS',
-                        layout: '{definition} ({entry})',
-                        ParentId: "IPA_ENTRY",
-                        templates: [
-                            {
-                                id: 'ITALIC',
-                                position: 0,
-                                field: 'definition'
-                            },{
-                                id: 'TEXT',
-                                position: 1,
-                                field: 'ENTRY'
-                            }],
-                        children: []
-                    },{
-                        id: 'IPA_ENTRY_PARENS',
-                        layout: '({entry})',
-                        ParentId: "IPA_ENTRY",
-                        templates: [
-                            {
-                                id: 'TEXT',
-                                position: 0,
-                                field: 'ENTRY'
-                            }],
-                        children: []
-                    }
-                ]
-            }
-        ]
-    };
+    var data = [
+        {
+            id: 'ENTRY',
+            layout: '{entry}',
+            templates: [
+                {
+                    id: 'PAR',
+                    position: 0,
+                    field: 'entry'
+                }],
+            children: [
+                {
+                    id: 'IPA_ENTRY',
+                    layout: '{lemma}: [{ipa}] {source} {partOfSpeech} {entry}',
+                    ParentId: "ENTRY",
+                    templates: [
+                        {
+                            id: 'BOLD',
+                            position: 0,
+                            field: 'lemma'
+                        },{
+                            id: 'IPA',
+                            position: 1,
+                            field: 'ipa'
+                        },{
+                            id: 'SUBSCRIPT',
+                            position: 2,
+                            field: 'source'
+                        },{
+                            id: 'TEXT',
+                            position: 3,
+                            field: 'partOfSpeech'
+                        },{
+                            id: 'TEXT',
+                            position: 4,
+                            field: 'entry'
+                        }],
+                    children: [
+                        {
+                            id: 'IPA_ENTRY_ITALIC_DEF',
+                            layout: '{definition} {entry}',
+                            ParentId: 'IPA_ENTRY',
+                            templates: [
+                                {
+                                    id: 'ITALIC',
+                                    position: 0,
+                                    field: 'definition'
+                                },{
+                                    id: 'TEXT',
+                                    position: 1,
+                                    field: 'ENTRY'
+                                }]
+                        },{
+                            id: 'IPA_ENTRY_ITALIC_DEF_PARENS',
+                            layout: '{definition} ({entry})',
+                            ParentId: "IPA_ENTRY",
+                            templates: [
+                                {
+                                    id: 'ITALIC',
+                                    position: 0,
+                                    field: 'definition'
+                                },{
+                                    id: 'TEXT',
+                                    position: 1,
+                                    field: 'ENTRY'
+                                }]
+                        },{
+                            id: 'IPA_ENTRY_PARENS',
+                            layout: '({entry})',
+                            ParentId: "IPA_ENTRY",
+                            templates: [
+                                {
+                                    id: 'TEXT',
+                                    position: 0,
+                                    field: 'ENTRY'
+                                }]
+                        }
+                    ]
+                }
+            ]
+        },{
+            id: 'SUB_ENTRY_LEMMA_DEF',
+            layout: '{lemma} {definition}',
+            templates: [
+                {
+                    id: 'BOLD',
+                    position: 0,
+                    field: 'lemma'
+                },{
+                    id: 'ITALIC',
+                    position: 1,
+                    field: 'definition'
+                }
+            ],
+            children: []
+        }
+    ];
 
-    return self.createLayoutWithTemplates(layout).then(function(){
+    return self.createLayoutsWithTemplates(data).then(function(){
         "use strict";
 
 
@@ -455,6 +486,7 @@ Dictionary.prototype.exportMetadata = function () {
                     createdAt: self.metadata[index][lc].editTime * 1000
                 });
             }
+
             localizedMetadata.push({
                 LanguageIsoCode: lc,
                 MetadatumId: index,
@@ -551,14 +583,17 @@ Dictionary.prototype.export = function (callback) {
 
             Promise.all(secondLayerPromises).then(function(){
                 self.exportEntries().then(function () {
-                    models.EntryType.findById("infixcwN").then(function(standardIpaEntry) {
-                        standardIpaEntry.getHtml().then(function(html){
-                            console.log("HTML   ", html);
-                            standardIpaEntry.getLatex().then(function(latex){
-                                console.log("LATEX: ", latex);
-                                callback();
-                            });
+                    models.EntryType.findAll().then(function(entryTypes) {
+                        var promises = [];
+                        entryTypes.forEach(function(entryType){
+                            promises.push(entryType.getHtml().then(function(html){
+                                console.log(entryType.id, "HTML   ", html);
+                                return entryType.getLatex().then(function(latex){
+                                    console.log(entryType.id, "LATEX: ", latex);
+                                });
+                            }));
                         });
+                        Promise.all(promises).then(callback);
                     });
                 });
             });
@@ -660,6 +695,12 @@ function getSourceDescription(source) {
     if(source === "M" || source === "PF, M"){
         result = result.replace("M", "The Movie");
     }
+    if(source === "PF, D"){
+        result = result.replace(", D", ", Disney");
+    }
+    if(source === "D"){
+        result = result.replace("D", "Disney");
+    }
     result = result.replace("JC", "James Cameron");
     result = result.replace("LN", "LearnNavi.org");
     result = result.replace("ASG", "The Survival Guide");
@@ -719,12 +760,12 @@ function buildDictionaryMetadata(self) {
                     self.missingMetadataTranslations[lc.toLowerCase()] = [];
                 }
                 self.missingMetadataTranslations[lc.toLowerCase()].push(index);
+            } else {
+                self.metadata[index][lc.toLowerCase()] = {
+                    value: localization[lc].value,
+                    editTime: localization[lc].editTime
+                };
             }
-
-            self.metadata[index][lc.toLowerCase()] = {
-                value: localization[lc].value,
-                editTime: localization[lc].editTime
-            };
         }
     }
 }
@@ -859,9 +900,27 @@ function buildDictionaryTemplates(self) {
             'derivingaffixNN',
             'markerNN',
             'eanaInfix'];
+    var validLayouts = [
+        'affixN',
+        'alloffixN',
+        'cw',
+        'cww',
+        'derive',
+        'derives',
+        'derivingaffix',
+        'derivingaffixN',
+        'infixN',
+        'infixcwN',
+        'lenite',
+        'liu',
+        'loan',
+        'markerN',
+        'note',
+        'word'
+    ];
     // Need to get list of languages
-    for(var i = 0; i < self.activeLanguages.length; i++){
-        self.templates[self.activeLanguages[i]] = {};
+    for(var lcCode in self.languages){
+        self.templates[lcCode] = {};
     }
     self.templates['raw'] = {};
 
@@ -871,7 +930,7 @@ function buildDictionaryTemplates(self) {
     for(var index in self.eanaEltu.dictWordTemplate){
 
         // Template Cleanup...
-        if(nonIpaTypes.indexOf(index) !== -1){
+        if(nonIpaTypes.indexOf(index) !== -1 || validLayouts.indexOf(index) === -1){
             // None of these have any entries of this type, dropping as they aren't needed...
             continue;
         }
@@ -898,16 +957,22 @@ function buildDictionaryTemplates(self) {
             self.eanaEltu.dictWordTemplate[index].parentId = "IPA_ENTRY_ITALIC_DEF";
         }
 
-        if(format.indexOf("(") !== -1){
+        /*if(format.indexOf("(") !== -1){
             format = format.replace("(", "");
             format = format.replace(")", "");
             self.eanaEltu.dictWordTemplate[index].parentId = "IPA_ENTRY_PARENS";
-        }
+        }*/
 
         if(index === "cw" || index === "cww" || index === "loan" || index === "pcw"){
             // These templates have parens in them, strip them out and use the correct parent
             self.eanaEltu.dictWordTemplate[index].parentId += "_PARENS";
         }
+
+        var sub_entry_lemma_def = "{LAYOUTS.SUB_ENTRY_LEMMA_DEF}";
+
+        format = format.replace("\\textbf{#5} \\textit{#6}", sub_entry_lemma_def);
+        format = format.replace("\\textbf{#6} \\textit{#7}", sub_entry_lemma_def);
+        format = format.replace("\\textbf{#7} \\textit{#8}", sub_entry_lemma_def);
 
         var layout = format;
         var result;
@@ -915,38 +980,106 @@ function buildDictionaryTemplates(self) {
             layout = layout.replace(result[0], "{METADATA." + result[1] + "}");
         }
 
-        self.templates['raw'][index] = {
-            format: layout,
-            argc: self.eanaEltu.dictWordTemplate[index].argc,
-            changeable: self.eanaEltu.dictWordTemplate[index].changeable,
-            parentId: self.eanaEltu.dictWordTemplate[index].parentId
-        };
+        if(index === "cww" || index === "derives"){
+            layout += " " + sub_entry_lemma_def;
+        } else if(index === "cw") {
+            layout += " " + sub_entry_lemma_def + " {METADATA.CW_AND_TEXT} " + sub_entry_lemma_def;
+        } else if(index === "derive"){
+            layout += " " + sub_entry_lemma_def + " {METADATA.DERIVE_AND_TEXT} " + sub_entry_lemma_def;
+        }
 
-
-
-        for(var j = 0; j < self.activeLanguages.length; j++){
+        for(var lc in self.languages){
             result = format.match(regex);
             var localizedFormat = format;
             if(result !== null) {
                 var meta = self.metadata[result[1]];
-                if(meta[self.activeLanguages[j]] === undefined){
-                    console.log("MISSING TRANSLATION FOR [" + result[1] + "] in " + self.activeLanguages[j]);
+                if(meta[lc] === undefined){
+                    if(self.languages[lc].active){
+                        console.log("MISSING TRANSLATION FOR [" + result[1] + "] in " + lc);
+                    }
                     continue;
                 }
+
+                var metadata = meta[lc].value;
+
+                metadata = metadata.replace("\\textbf{#5} \\textit{#6}", sub_entry_lemma_def);
+                metadata = metadata.replace("\\textbf{#6} \\textit{#7}", sub_entry_lemma_def);
+                metadata = metadata.replace("\\textbf{#7} \\textit{#8}", sub_entry_lemma_def);
+
                 if(index === "cw" || index === "cww" || index === "loan" || index === "pcw"){
                     // These templates have parens in them, strip them out and use the correct parent
-                    meta[self.activeLanguages[j]].value = meta[self.activeLanguages[j]].value.replace("(", "");
-                    meta[self.activeLanguages[j]].value = meta[self.activeLanguages[j]].value.replace(")", "");
+                    metadata = metadata.replace("(", "");
+                    metadata = metadata.replace(")", "");
                 }
-                localizedFormat = localizedFormat.replace(result[0], meta[self.activeLanguages[j]].value);
+
+                metadata = metadata.trim();
+
+
+
+                if(metadata === ""){
+                    console.log(lc, index, result[1], metadata, meta[lc].value);
+                }
+
+                if(index === "cww" || index === "derives"){
+                    metadata = metadata.replace(sub_entry_lemma_def, "");
+
+                } else if(index === "cw" || index === "derive"){
+
+                    var firstOpenBraceIndex = metadata.indexOf('{');
+                    var firstCloseBraceIndex = metadata.indexOf('} ');
+                    var secondOpenBraceIndex = metadata.indexOf('{', firstCloseBraceIndex);
+                    var firstMetadataPart = metadata.substring(0, firstOpenBraceIndex);
+                    var secondMetadataPart = metadata.substring(firstCloseBraceIndex + 2, secondOpenBraceIndex);
+                    console.log(firstMetadataPart, secondMetadataPart);
+
+                    metadata = firstMetadataPart;
+                    //localizedFormat = metadata;
+                    if(self.metadata[result[1] + "_AND"] === undefined){
+                        self.metadata[result[1] + "_AND"] = {};
+                    }
+                    self.metadata[result[1] + "_AND"][lc] = {
+                        value: secondMetadataPart
+                    };
+                }
+
+                localizedFormat = localizedFormat.replace(result[0], metadata);
+
+                meta[lc].value = metadata === "" ? undefined : metadata;
             }
 
-            //format = processTemplate(format);
-            self.templates[self.activeLanguages[j]][index] = {
+
+
+
+
+            if(localizedFormat.indexOf(sub_entry_lemma_def) !== -1 && layout.indexOf(sub_entry_lemma_def) === -1) {
+                // sub_entry_lemma_def exists in the localized layout but not in the main layout
+                // we need to pull this out and move it to the main...
+
+                console.log(index, layout, localizedFormat);
+
+            }
+
+            localizedFormat = localizedFormat.trim();
+            localizedFormat = (localizedFormat === "") ? undefined : localizedFormat;
+
+            self.templates[lc][index] = {
                 format: localizedFormat,
                 argc: self.eanaEltu.dictWordTemplate[index].argc,
                 changeable: self.eanaEltu.dictWordTemplate[index].changeable
             };
+
+            if(lc === 'en'){
+
+                layout = layout.trim();
+                layout = (layout === "") ? undefined : layout;
+
+                self.templates['raw'][index] = {
+                    format: layout,
+                    argc: self.eanaEltu.dictWordTemplate[index].argc,
+                    changeable: self.eanaEltu.dictWordTemplate[index].changeable,
+                    parentId: self.eanaEltu.dictWordTemplate[index].parentId
+                };
+            }
         }
     }
 }

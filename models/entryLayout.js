@@ -26,17 +26,9 @@ module.exports = function (sequelize, DataTypes) {
         });
     };
 
-    EntryLayout.prototype.getLatex = function(data){
+    EntryLayout.prototype.getFormattedLayout = function(type, data) {
         var self = this;
         return new Promise(function (resolve, reject) {
-
-            // Wrap any METADATA fields in double braces...
-            var regex = /{METADATA\.(.*)}/;
-            var result = self.layout.match(regex);
-            if(result){
-                self.layout = self.layout.replace(result[0], "{" + result[0] + "}");
-            }
-
 
             self.getEntryTemplates().then(function(templates){
                 var stuff = {};
@@ -44,27 +36,37 @@ module.exports = function (sequelize, DataTypes) {
                 for(var i = 0; i < templates.length; i++){
                     var template = templates[i];
                     var layoutTemplate = template.getDataValue('EntryLayoutTemplates');
-                    var latexTemplate = template.getDataValue('latex');
-                    latexTemplate = latexTemplate.replace("{", "{{");
-                    latexTemplate = latexTemplate.replace("}", "}}");
+                    var typeTemplate = template.getDataValue(type);
+                    typeTemplate = typeTemplate.replace("{", "{{");
+                    typeTemplate = typeTemplate.replace("}", "}}");
                     var field = layoutTemplate.getDataValue('field');
 
-                    stuff[field] = latexTemplate.replace("#", "{" + field + "}");
+                    stuff[field] = typeTemplate.replace("#", "{" + field + "}");
+                    if(field === "entry"){
+                        self.layout = self.layout.replace("{entry}", stuff[field]);
+                    }
+                }
+                if(data !== undefined && data !== ""){
+                    stuff['entry'] = data;
+                } else {
+                    self.layout = self.layout.replace("{entry}", "{{entry}}");
                 }
 
+
                 var layout = format(self.layout, stuff);
+                //console.log(self.layout, layout, data, stuff['entry']);
 
                 if(data !== undefined){
                     // Replace {entry} with data passed in
-                    layout = layout.replace("{entry}", data);
+                    //layout = layout.replace("{entry}", data);
                 }
 
 
                 if(self.getDataValue('ParentId') !== undefined && self.getDataValue('ParentId') !== null){
                     // Get Parent Layout
                     self.getParent().then(function(parent){
-                        parent.getLatex(layout).then(function(parentLatex){
-                            resolve(parentLatex);
+                        parent.getFormattedLayout(type, layout).then(function(parentFormattedLayout){
+                            resolve(parentFormattedLayout);
                         });
                     });
                 } else {
@@ -75,53 +77,12 @@ module.exports = function (sequelize, DataTypes) {
         });
     };
 
+    EntryLayout.prototype.getLatex = function(data){
+        return this.getFormattedLayout('latex', data);
+    };
+
     EntryLayout.prototype.getHtml = function(data){
-        var self = this;
-        return new Promise(function (resolve, reject) {
-
-            // Wrap any METADATA fields in double braces...
-            var regex = /{METADATA\.(.*)}/;
-            var result = self.layout.match(regex);
-            if(result){
-                self.layout = self.layout.replace(result[0], "{" + result[0] + "}");
-            }
-
-
-            self.getEntryTemplates().then(function(templates){
-                var stuff = {};
-
-                for(var i = 0; i < templates.length; i++){
-                    var template = templates[i];
-                    var layoutTemplate = template.getDataValue('EntryLayoutTemplates');
-                    var htmlTemplate = template.getDataValue('html');
-                    htmlTemplate = htmlTemplate.replace("{", "{{");
-                    htmlTemplate = htmlTemplate.replace("}", "}}");
-                    var field = layoutTemplate.getDataValue('field');
-
-                    stuff[field] = htmlTemplate.replace("#", "{" + field + "}");
-                }
-
-                var layout = format(self.layout, stuff);
-
-                if(data !== undefined){
-                    // Replace {entry} with data passed in
-                    layout = layout.replace("{entry}", data);
-                }
-
-
-                if(self.getDataValue('ParentId') !== undefined && self.getDataValue('ParentId') !== null){
-                    // Get Parent Layout
-                    self.getParent().then(function(parent){
-                        parent.getHtml(layout).then(function(parentHtml){
-                            resolve(parentHtml);
-                        });
-                    });
-                } else {
-                    resolve(layout);
-                }
-
-            });
-        });
+        return this.getFormattedLayout('html', data);
     };
 
     return EntryLayout;

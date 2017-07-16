@@ -151,6 +151,7 @@ Entry.prototype.parsePartOfSpeech = function(localization) {
 
 function parseSource(entry) {
     // Source
+    var source = "";
     switch(entry.type){
         // Arg 4
         case 'affect':
@@ -162,8 +163,8 @@ function parseSource(entry) {
         case 'marker':
         case 'markerN':
         case 'markerNN':
-            return entry.arg4;
-
+            source = entry.arg4;
+            break;
         // Arg 5
         case 'affix':
         case 'affixN':
@@ -175,8 +176,8 @@ function parseSource(entry) {
         case 'liu':
         case 'pword':
         case 'word':
-            return entry.arg5;
-
+            source = entry.arg5;
+            break;
         // Arg 6
         case 'alloffix':
         case 'alloffixN':
@@ -185,33 +186,37 @@ function parseSource(entry) {
         case 'alloffixxN':
         case 'lenite':
         case 'loan':
-            return entry.arg6;
-
+            source = entry.arg6;
+            break;
         // Arg 7
         case 'cww':
         case 'derives':
         case 'infixcw':
         case 'infixcwN':
         case 'pderives':
-            return entry.arg7;
-
+            source = entry.arg7;
+            break;
         // Arg 8
         case 'deriveall':
         case 'infixcww':
         case 'note':
-            return entry.arg8;
-
+            source = entry.arg8;
+            break;
         // Arg 9
         case 'cw':
         case 'derive':
         case 'infixcwww':
         case 'pcw':
-            return entry.arg9;
-
+            source = entry.arg9;
+            break;
 
     }
 
-    return "";
+    if(source === "PF,D"){
+        source = "PF, D";
+    }
+
+    return source;
 }
 
 function parseIpa(entry) {

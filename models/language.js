@@ -2,9 +2,10 @@
 module.exports = function (sequelize, DataTypes) {
     var Language = sequelize.define('Language', {
         isoCode: { type: DataTypes.STRING, allowNull: false, primaryKey: true },
-        isoName: DataTypes.STRING,
-        nativeName: DataTypes.STRING,
-        active: DataTypes.BOOLEAN
+        isoName: { type: DataTypes.STRING, allowNull: false },
+        nativeName: { type: DataTypes.STRING, allowNull: false },
+        active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+        export: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
     });
 
     Language.associate = function (models) {
