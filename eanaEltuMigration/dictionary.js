@@ -153,7 +153,7 @@ Dictionary.prototype.exportLanguages = function (){
     }
 
     return models.Language.bulkCreate(languages).then(function() {
-        models.Language.findAll().then(function (languages) {
+        return models.Language.findAll().then(function (languages) {
             languages.forEach(function (language) {
                 self.languages[language.isoCode] = language;
             });
@@ -174,7 +174,7 @@ Dictionary.prototype.exportSources = function(){
     }
 
     return models.Source.bulkCreate(sources).then(function() {
-        models.Source.findAll().then(function (sources) {
+        return models.Source.findAll().then(function (sources) {
             sources.forEach(function (source) {
                 self.sources[source.name] = source;
             });
@@ -188,22 +188,28 @@ Dictionary.prototype.exportDictionaryTemplates = function () {
     var templates = [
         {
             id: "localized_end",
-            latex: "__END__"
+            latex: "__END__",
+            html: ""
         }, {
             id: "newpage",
-            latex: "\\newpage"
+            latex: "\\newpage",
+            html: ""
         }, {
             id: "end_hangparas_multicols",
-            latex: "\\end{hangparas}}\\end{multicols}"
+            latex: "\\end{hangparas}}\\end{multicols}",
+            html: ""
         }, {
             id: "end_hangparas",
-            latex: "\\end{hangparas}"
+            latex: "\\end{hangparas}",
+            html: ""
         }, {
             id: "end_document",
-            latex: "\\end{document}"
+            latex: "\\end{document}",
+            html: ""
         }, {
             id: "end_hangparas_multicols_newpage",
-            latex: "\\end{hangparas}}\\end{multicols}+\\newpage"
+            latex: "\\end{hangparas}}\\end{multicols}+\\newpage",
+            html: ""
         }];
 
     for(var id in self.eanaEltu.dictLayout){
@@ -216,7 +222,8 @@ Dictionary.prototype.exportDictionaryTemplates = function () {
         }
         templates.push({
             id: layout.id.toLowerCase(),
-            latex: layout.value
+            latex: layout.value,
+            html: ""
         });
     }
 
@@ -457,6 +464,9 @@ Dictionary.prototype.exportEntryLayouts = function () {
                             metadata: template.metadata
                         });
                     } else {
+                        if(template.format === undefined || template.format === null){
+                            template.format = "<< BLANK >>";
+                        }
                         localizedLayouts.push({
                             EntryTypeId: templateId,
                             LanguageIsoCode: lang,
@@ -602,7 +612,7 @@ Dictionary.prototype.export = function (callback) {
             var secondLayerPromises = [];
             secondLayerPromises.push(self.exportDictionaryBuilds());
             secondLayerPromises.push(self.exportMetadata());
-            secondLayerPromises.push(self.exportPartsOfSpeech());
+            //secondLayerPromises.push(self.exportPartsOfSpeech());
 
             Promise.all(secondLayerPromises).then(function(){
 
@@ -781,7 +791,7 @@ function buildDictionaryMetadata(self) {
         };
         var localization = self.eanaEltu.dictLoc[index];
         for(var lc in localization){
-            if(localization[lc].value === ''){
+            if(localization[lc].value === '' || localization[lc].value === null || localization[lc].value === undefined){
                 if(self.debug){
                     console.log("Missing " + lc + " translation for [" + index + "]");
                 }
@@ -789,12 +799,13 @@ function buildDictionaryMetadata(self) {
                     self.missingMetadataTranslations[lc.toLowerCase()] = [];
                 }
                 self.missingMetadataTranslations[lc.toLowerCase()].push(index);
-            } else {
-                self.metadata[index][lc.toLowerCase()] = {
-                    value: localization[lc].value,
-                    editTime: localization[lc].editTime
-                };
+                localization[lc] = {value: "<< NEEDS TRANSLATED >>"};
             }
+
+            self.metadata[index][lc.toLowerCase()] = {
+                value: localization[lc].value,
+                editTime: localization[lc].editTime
+            };
         }
     }
 }
@@ -1085,7 +1096,7 @@ function buildDictionaryTemplates(self) {
 
                 localizedFormat = localizedFormat.replace(result[0], metadata);
 
-                meta[lc].value = metadata === "" ? undefined : metadata;
+                meta[lc].value = metadata === "" ? "<< NEEDS TRANSLATED >>" : metadata;
             }
 
 

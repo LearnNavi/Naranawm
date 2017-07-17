@@ -5,7 +5,7 @@ var models = require('./index');
 
 module.exports = function (sequelize, DataTypes) {
     var LocalizedEntry = sequelize.define('LocalizedEntry', {
-        odd: DataTypes.STRING
+        odd: DataTypes.TEXT
     });
 
     LocalizedEntry.removeAttribute('id');

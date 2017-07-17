@@ -2,8 +2,8 @@
 module.exports = function (sequelize, DataTypes) {
     var DictionaryTemplate = sequelize.define('DictionaryTemplate', {
         id: { type: DataTypes.STRING, primaryKey: true },
-        latex: { type: DataTypes.TEXT, allowNull: false, defaultValue: "" },
-        html: { type: DataTypes.TEXT, allowNull: false, defaultValue: "" },
+        latex: { type: DataTypes.TEXT, allowNull: false },
+        html: { type: DataTypes.TEXT, allowNull: false },
         placeholders: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 }
     });
 

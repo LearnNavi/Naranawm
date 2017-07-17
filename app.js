@@ -1,5 +1,5 @@
 
-process.env.NODE_ENV = "mamp";
+process.env.NODE_ENV = "development";
 
 var express = require('express');
 var path = require('path');

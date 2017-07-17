@@ -1,7 +1,7 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
     var LocalizedMetadata = sequelize.define('LocalizedMetadata', {
-        value: { type: DataTypes.STRING, allowNull: false }
+        value: { type: DataTypes.TEXT, allowNull: false }
     });
 
     LocalizedMetadata.removeAttribute('id');
