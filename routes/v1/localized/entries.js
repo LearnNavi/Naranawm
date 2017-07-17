@@ -12,4 +12,38 @@ router.get('/', function(req, res, next) {
 
 });
 
+router.get('/:lc/:entryId/:type', function(req, res, next){
+    "use strict";
+    models.LocalizedEntry.findOne({ where:
+        {
+            EntryId: req.params.entryId,
+            LanguageIsoCode: req.params.lc
+        }
+    }).then(function (entry) {
+        "use strict";
+        entry.getFormattedlayout(req.params.type).then(function(data){
+            res.send(data);
+        });
+
+        //res.send(entries);
+    });
+});
+
+router.get('/:lc/:entryId/html', function(req, res, next){
+    "use strict";
+    models.LocalizedEntry.findOne({ where:
+        {
+            EntryId: req.params.entryId,
+            LanguageIsoCode: req.params.lc
+        }
+    }).then(function (entry) {
+        "use strict";
+        entry.getHtml().then(function(html){
+            res.send(html);
+        });
+
+        //res.send(entries);
+    });
+});
+
 module.exports = router;

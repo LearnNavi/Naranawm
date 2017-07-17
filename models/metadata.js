@@ -9,6 +9,10 @@ module.exports = function (sequelize, DataTypes) {
         Metadata.hasMany(models.LocalizedMetadata, {
             onDelete: 'CASCADE'
         });
+
+        Metadata.belongsToMany(models.EntryType, {
+            through: 'EntryTypeMetadata'
+        });
     };
 
     return Metadata;

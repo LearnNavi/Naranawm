@@ -25,28 +25,32 @@ module.exports = function (sequelize, DataTypes) {
             },
             primaryKey: true
         });
+
+        EntryType.belongsToMany(models.Metadata, {
+            through: 'EntryTypeMetadata',
+            as: "Metadata"
+        });
+    };
+
+    EntryType.prototype.getFormattedLayout = function(type){
+        var self = this;
+        return new Promise(function(resolve, reject){
+            self.getEntryLayout().then(function(layout){
+                // Todo: Insert extra layout templates
+
+                layout.getFormattedLayout(type, self.layout).then(function(data){
+                    resolve(data);
+                });
+            });
+        });
     };
 
     EntryType.prototype.getLatex = function (){
-        var self = this;
-        return new Promise(function(resolve, reject){
-            self.getEntryLayout().then(function(layout){
-                layout.getLatex(self.layout).then(function(latex){
-                    resolve(latex);
-                });
-            });
-        });
+        return this.getFormattedLayout("latex");
     };
 
     EntryType.prototype.getHtml = function (){
-        var self = this;
-        return new Promise(function(resolve, reject){
-            self.getEntryLayout().then(function(layout){
-                layout.getHtml(self.layout).then(function(html){
-                    resolve(html);
-                });
-            });
-        });
+        return this.getFormattedLayout("html");
     };
 
     return EntryType;

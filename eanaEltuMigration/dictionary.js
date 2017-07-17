@@ -304,6 +304,18 @@ Dictionary.prototype.createLayoutsWithTemplates = function(layouts) {
     });
 };
 
+Dictionary.prototype.createEntryTypeWithMetada = function(entryType, metadata){
+    "use strict";
+    var self = this;
+    return models.EntryType.create(entryType).then(function(newEntryType){
+        for(var i = 0; i < metadata.length; i++) {
+            console.log(metadata[i]);
+            newEntryType.addMetadata(self.metadata[metadata[i]]);
+        }
+        return newEntryType.save();
+    });
+};
+
 Dictionary.prototype.exportEntryLayouts = function () {
     // Insert Templates
     var self = this;
@@ -441,7 +453,8 @@ Dictionary.prototype.exportEntryLayouts = function () {
                             layout: template.format,
                             argc: template.argc,
                             changeable: template.changeable,
-                            EntryLayoutId: template.parentId
+                            EntryLayoutId: template.parentId,
+                            metadata: template.metadata
                         });
                     } else {
                         localizedLayouts.push({
@@ -456,9 +469,15 @@ Dictionary.prototype.exportEntryLayouts = function () {
             }
         }
 
-        return models.EntryType.bulkCreate(layouts).then(function() {
+        var layoutPromises = [];
+        for(var i = 0; i < layouts.length; i++){
+            layoutPromises.push(self.createEntryTypeWithMetada(layouts[i], layouts[i].metadata));
+        }
+
+        return Promise.all(layoutPromises).then(function(){
             return models.LocalizedEntryLayout.bulkCreate(localizedLayouts);
         });
+
     });
 };
 
@@ -497,6 +516,11 @@ Dictionary.prototype.exportMetadata = function () {
     }
 
     return models.Metadata.bulkCreate(metadata).then(function() {
+        models.Metadata.findAll().then(function (metadataList) {
+            metadataList.forEach(function (metadata) {
+                self.metadata[metadata.id] = metadata;
+            });
+        });
         return models.LocalizedMetadata.bulkCreate(localizedMetadata);
     });
 };
@@ -578,22 +602,27 @@ Dictionary.prototype.export = function (callback) {
             var secondLayerPromises = [];
             secondLayerPromises.push(self.exportDictionaryBuilds());
             secondLayerPromises.push(self.exportMetadata());
-            secondLayerPromises.push(self.exportEntryLayouts());
             secondLayerPromises.push(self.exportPartsOfSpeech());
 
             Promise.all(secondLayerPromises).then(function(){
-                self.exportEntries().then(function () {
-                    models.EntryType.findAll().then(function(entryTypes) {
-                        var promises = [];
-                        entryTypes.forEach(function(entryType){
-                            promises.push(entryType.getHtml().then(function(html){
-                                console.log(entryType.id, "HTML   ", html);
-                                return entryType.getLatex().then(function(latex){
-                                    console.log(entryType.id, "LATEX: ", latex);
-                                });
-                            }));
+
+                var thirdLayerPromises = [];
+                thirdLayerPromises.push(self.exportEntryLayouts());
+
+                Promise.all(thirdLayerPromises).then(function(){
+                    self.exportEntries().then(function () {
+                        models.EntryType.findAll().then(function(entryTypes) {
+                            var promises = [];
+                            entryTypes.forEach(function(entryType){
+                                promises.push(entryType.getHtml().then(function(html){
+                                    console.log(entryType.id, "HTML   ", html);
+                                    return entryType.getLatex().then(function(latex){
+                                        console.log(entryType.id, "LATEX: ", latex);
+                                    });
+                                }));
+                            });
+                            Promise.all(promises).then(callback);
                         });
-                        Promise.all(promises).then(callback);
                     });
                 });
             });
@@ -975,17 +1004,23 @@ function buildDictionaryTemplates(self) {
         format = format.replace("\\textbf{#7} \\textit{#8}", sub_entry_lemma_def);
 
         var layout = format;
+
+        var metadataReferences = [];
+
         var result;
         while(result = layout.match(regex)){
             layout = layout.replace(result[0], "{METADATA." + result[1] + "}");
+            metadataReferences.push(result[1]);
         }
 
         if(index === "cww" || index === "derives"){
             layout += " " + sub_entry_lemma_def;
         } else if(index === "cw") {
             layout += " " + sub_entry_lemma_def + " {METADATA.CW_AND_TEXT} " + sub_entry_lemma_def;
+            metadataReferences.push("CW_AND_TEXT")
         } else if(index === "derive"){
             layout += " " + sub_entry_lemma_def + " {METADATA.DERIVE_AND_TEXT} " + sub_entry_lemma_def;
+            metadataReferences.push("DERIVE_AND_TEXT");
         }
 
         for(var lc in self.languages){
@@ -1034,10 +1069,16 @@ function buildDictionaryTemplates(self) {
 
                     metadata = firstMetadataPart;
                     //localizedFormat = metadata;
-                    if(self.metadata[result[1] + "_AND"] === undefined){
-                        self.metadata[result[1] + "_AND"] = {};
+                    var key;
+                    if(index === "cw"){
+                        key = "CW_AND_TEXT";
+                    } else if(index === "derive"){
+                        key = "DERIVE_AND_TEXT"
                     }
-                    self.metadata[result[1] + "_AND"][lc] = {
+                    if(self.metadata[key] === undefined){
+                        self.metadata[key] = {};
+                    }
+                    self.metadata[key][lc] = {
                         value: secondMetadataPart
                     };
                 }
@@ -1072,12 +1113,12 @@ function buildDictionaryTemplates(self) {
 
                 layout = layout.trim();
                 layout = (layout === "") ? undefined : layout;
-
                 self.templates['raw'][index] = {
                     format: layout,
                     argc: self.eanaEltu.dictWordTemplate[index].argc,
                     changeable: self.eanaEltu.dictWordTemplate[index].changeable,
-                    parentId: self.eanaEltu.dictWordTemplate[index].parentId
+                    parentId: self.eanaEltu.dictWordTemplate[index].parentId,
+                    metadata: metadataReferences
                 };
             }
         }
