@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
-    var DictionaryBlock = sequelize.define('DictionaryBlock', {
+    const DictionaryBlock = sequelize.define('DictionaryBlock', {
         id: { type: DataTypes.INTEGER, primaryKey: true },
         description: { type: DataTypes.STRING }
     });

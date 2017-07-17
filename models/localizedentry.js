@@ -1,10 +1,11 @@
 'use strict';
-var format = require('string-format');
-var Promise = require('bluebird');
-var models = require('./index');
+const format = require('string-format');
+const Promise = require('bluebird');
+const models = require('./index');
 
 module.exports = function (sequelize, DataTypes) {
-    var LocalizedEntry = sequelize.define('LocalizedEntry', {
+
+    const LocalizedEntry = sequelize.define('LocalizedEntry', {
         odd: DataTypes.TEXT
     });
 
@@ -34,14 +35,14 @@ module.exports = function (sequelize, DataTypes) {
     };
 
     LocalizedEntry.prototype.getFormattedlayout = function(type){
-        var self = this;
+        const self = this;
         return new Promise(function (resolve, reject) {
             self.getEntry().then(function(entry){
                 entry.getSource().then(function(source){
                     entry.getEntryType().then(function(entryType) {
                         entryType.getMetadata().then(function(metadata){
-                            var promises = [];
-                            var localMetadata = {};
+                            const promises = [];
+                            const localMetadata = {};
                             metadata.forEach(function(m){
                                 promises.push(m.getLocalizedMetadata({where: {LanguageIsoCode: self.LanguageIsoCode}}).then(function(localizedMetadata){
                                     localizedMetadata.forEach(function(l){
@@ -53,7 +54,7 @@ module.exports = function (sequelize, DataTypes) {
                             Promise.all(promises).then(function(){
                                 entryType.getFormattedLayout(type).then(function (formatString) {
                                     //console.log(formatString);
-                                    var formatData = {
+                                    const formatData = {
                                         lemma: entry.lemma,
                                         ipa: entry.ipa,
                                         source: source.name,

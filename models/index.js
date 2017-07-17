@@ -1,17 +1,15 @@
 "use strict";
 
-var fs        = require("fs");
-var path      = require("path");
-var Sequelize = require("sequelize");
-var env       = process.env.NODE_ENV || "development";
-var vault     = require('../vault');
+const fs        = require("fs");
+const path      = require("path");
+const Sequelize = require("sequelize");
+const env       = process.env.NODE_ENV || "development";
+const vault     = require('../vault');
 
-if (process.env.DATABASE_URL) {
-    var sequelize = new Sequelize(process.env.DATABASE_URL,vault[env].ln_dictionary);
-} else {
-    var sequelize = new Sequelize(vault[env].ln_dictionary.database, vault[env].ln_dictionary.username, vault[env].ln_dictionary.password, vault[env].ln_dictionary);
-}
-var db        = {};
+
+const sequelize = new Sequelize(vault[env].ln_dictionary.database, vault[env].ln_dictionary.username, vault[env].ln_dictionary.password, vault[env].ln_dictionary);
+
+const db        = {};
 
 fs
     .readdirSync(__dirname)
@@ -19,7 +17,7 @@ fs
         return (file.indexOf(".") !== 0) && (file !== "index.js");
     })
     .forEach(function(file) {
-        var model = sequelize.import(path.join(__dirname, file));
+        const model = sequelize.import(path.join(__dirname, file));
         db[model.name] = model;
     });
 

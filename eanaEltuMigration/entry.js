@@ -1,5 +1,5 @@
 
-var format = require('string-format');
+const format = require('string-format');
 
 const nonIpaTypes = [
         'infixNN',
@@ -64,7 +64,7 @@ function Entry(rawEntry) {
 
 Entry.prototype.addLocalization = function (localizedEntry, lc) {
     // Pull out each of the 10 args, if the arg is missing from the localized version, use the primary instead
-    var entry = {
+    const entry = {
         odd: localizedEntry.odd,
         editTime: localizedEntry.editTime,
         lc: localizedEntry.lc,
@@ -92,7 +92,7 @@ Entry.prototype.finalizeEntry = function () {
 
 Entry.prototype.parsePartOfSpeech = function(localization) {
     // Part of Speech
-    var result = "";
+    let result = "";
     switch(this.type){
         // arg 3
         case 'affect':
@@ -151,7 +151,7 @@ Entry.prototype.parsePartOfSpeech = function(localization) {
 
 function parseSource(entry) {
     // Source
-    var source = "";
+    let source = "";
     switch(entry.type){
         // Arg 4
         case 'affect':
@@ -221,7 +221,7 @@ function parseSource(entry) {
 
 function parseIpa(entry) {
     if(nonIpaTypes.indexOf(entry.type) === -1){
-        var rawIpa = entry.arg2;
+        let rawIpa = entry.arg2;
 
         // Need to do some string manipulation to get the correct IPA value out
         //rawIpa = processRegexReplace(/(\\\\)/g, rawIpa, "\\");
@@ -249,7 +249,7 @@ function parseIpa(entry) {
         rawIpa = processRegexReplace(/(\$\\cdot\$)/, rawIpa, "\u22C5");
         rawIpa = processRegexReplace(/(\$\\_\$)/, rawIpa, "_");
 
-        var missed = rawIpa.match(/(\\)/);
+        const missed = rawIpa.match(/(\\)/);
         if(missed !== null){
             console.log(missed, entry.arg1, rawIpa, entry.arg2);
         }
@@ -263,7 +263,7 @@ function parseIpa(entry) {
 }
 
 function processRegexReplace(regex, text, replacementText) {
-    var result = text.match(regex);
+    let result = text.match(regex);
 
     while(result !== null){
         text = text.replace(result[0], replacementText);

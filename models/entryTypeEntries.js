@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
-    var EntryTypeEntries = sequelize.define('EntryTypeEntries', {
+    const EntryTypeEntries = sequelize.define('EntryTypeEntries', {
         position: { type: DataTypes.INTEGER, primaryKey: true, defaultValue: 0 }
     });
 

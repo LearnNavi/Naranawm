@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
-    var EntryTemplate = sequelize.define('EntryTemplate', {
+    const EntryTemplate = sequelize.define('EntryTemplate', {
         id: { type: DataTypes.STRING, primaryKey: true },
         latex: { type: DataTypes.STRING, allowNull: false, defaultValue: "" },
         html: { type: DataTypes.STRING, allowNull: false, defaultValue: "" }

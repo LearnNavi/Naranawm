@@ -1,8 +1,8 @@
 'use strict';
-var Promise = require('bluebird');
+const Promise = require('bluebird');
 
 module.exports = function (sequelize, DataTypes) {
-    var EntryType = sequelize.define('EntryType', {
+    const EntryType = sequelize.define('EntryType', {
         id: { type: DataTypes.STRING, primaryKey: true },
         layout: { type: DataTypes.STRING, allowNull: true },
         argc: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
@@ -33,10 +33,19 @@ module.exports = function (sequelize, DataTypes) {
     };
 
     EntryType.prototype.getFormattedLayout = function(type){
-        var self = this;
+        const self = this;
         return new Promise(function(resolve, reject){
             self.getEntryLayout().then(function(layout){
                 // Todo: Insert extra layout templates
+
+                if(self.layout !== undefined && self.layout !== null){
+                    const regex = /{LAYOUTS\.(.*)}/;
+                    let result;
+                    while(result = self.layout.match(regex)){
+                        console.log(result);
+                        self.layout = self.layout.replace(result[0], "{TEST}");
+                    }
+                }
 
                 layout.getFormattedLayout(type, self.layout).then(function(data){
                     resolve(data);

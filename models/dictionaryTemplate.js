@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
-    var DictionaryTemplate = sequelize.define('DictionaryTemplate', {
+    const DictionaryTemplate = sequelize.define('DictionaryTemplate', {
         id: { type: DataTypes.STRING, primaryKey: true },
         latex: { type: DataTypes.TEXT, allowNull: false },
         html: { type: DataTypes.TEXT, allowNull: false },

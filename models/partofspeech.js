@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
-    var PartOfSpeech = sequelize.define('PartOfSpeech', {
+    const PartOfSpeech = sequelize.define('PartOfSpeech', {
         type: { type: DataTypes.STRING, allowNull: false, primaryKey: true },
         description: { type: DataTypes.STRING, allowNull: true }
     }, {

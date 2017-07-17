@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
-    var LocalizedEntryLayout = sequelize.define('LocalizedEntryLayout', {
+    const LocalizedEntryLayout = sequelize.define('LocalizedEntryLayout', {
         layout: { type: DataTypes.STRING, allowNull: false },
         argc: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
         changeable: { type: DataTypes.STRING, allowNull: false, defaultValue: "" }

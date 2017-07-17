@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
-    var Language = sequelize.define('Language', {
+    const Language = sequelize.define('Language', {
         isoCode: { type: DataTypes.STRING, allowNull: false, primaryKey: true },
         isoName: { type: DataTypes.STRING, allowNull: false },
         nativeName: { type: DataTypes.STRING, allowNull: false },

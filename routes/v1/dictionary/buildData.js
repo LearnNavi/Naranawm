@@ -1,7 +1,7 @@
-var express = require('express');
-var router = express.Router();
-var models = require('../../../models/index');
-var Promise = require('bluebird');
+const express = require('express');
+const router = express.Router();
+const models = require('../../../models/index');
+const Promise = require('bluebird');
 
 /* GET languages listing. */
 router.get('/', function(req, res, next) {

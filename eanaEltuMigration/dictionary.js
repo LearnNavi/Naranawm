@@ -1,9 +1,9 @@
 
-var format = require('string-format');
-var Entry = require('./entry');
-var EanaEltu = require('./eanaEltu');
-var models = require('../models');
-var Promise = require('bluebird');
+const format = require('string-format');
+const Entry = require('./entry');
+const EanaEltu = require('./eanaEltu');
+const models = require('../models');
+const Promise = require('bluebird');
 
 /*
 * This Module / Section is to export data from Eana Eltu
@@ -37,7 +37,7 @@ Dictionary.prototype.buildDictionary = function (callback) {
     if(this.debug){
         console.log("Building Dictionary...");
     }
-    var self = this;
+    const self = this;
     this.eanaEltu.fetchData(function(rawEEdata){
         self.eanaEltu = rawEEdata;
         buildDictionaryLanguages(self);
@@ -54,8 +54,8 @@ Dictionary.prototype.buildDictionary = function (callback) {
 
 Dictionary.prototype.exportDictionaryBuilds = function () {
     // Insert Dictionary Types
-    var self = this;
-    var blocks = [   // Copied out of EE perl script
+    const self = this;
+    const blocks = [   // Copied out of EE perl script
         {
             id: 0,
             description: "Main Block"
@@ -94,15 +94,15 @@ Dictionary.prototype.exportDictionaryBuilds = function () {
             description: "Derivational Morph Block"
         }
     ];
-    var builds = [];
-    var buildData = [];
-    for(var type in self.eanaEltu.dictOrder){
+    const builds = [];
+    const buildData = [];
+    for(let type in self.eanaEltu.dictOrder){
         builds.push({
             id: type,
             description: getDictionaryBuildDescription(type)
         });
-        for(var position in self.eanaEltu.dictOrder[type]){
-            var data = self.eanaEltu.dictOrder[type][position];
+        for(let position in self.eanaEltu.dictOrder[type]){
+            const data = self.eanaEltu.dictOrder[type][position];
 
             if(data.type === "raw"){
                 data.data1 = getDictionaryBuildTemplate(data.data1);
@@ -139,10 +139,10 @@ Dictionary.prototype.exportDictionaryBuilds = function () {
 Dictionary.prototype.exportLanguages = function (){
     "use strict";
     // Insert Languages
-    var self = this;
-    var languages = [];
-    for(var langId in self.languages){
-        var language = self.languages[langId];
+    const self = this;
+    const languages = [];
+    for(let langId in self.languages){
+        const language = self.languages[langId];
         languages.push({
             isoCode: langId,
             isoName: language.engName,
@@ -164,9 +164,9 @@ Dictionary.prototype.exportLanguages = function (){
 Dictionary.prototype.exportSources = function(){
     "use strict";
     // Insert Sources
-    var self = this;
-    var sources = [];
-    for(var source in self.sources){
+    const self = this;
+    const sources = [];
+    for(let source in self.sources){
         sources.push({
             name: source,
             description: getSourceDescription(source)
@@ -184,8 +184,8 @@ Dictionary.prototype.exportSources = function(){
 
 Dictionary.prototype.exportDictionaryTemplates = function () {
     // Insert Templates
-    var self = this;
-    var templates = [
+    const self = this;
+    const templates = [
         {
             id: "localized_end",
             latex: "__END__",
@@ -212,8 +212,8 @@ Dictionary.prototype.exportDictionaryTemplates = function () {
             html: ""
         }];
 
-    for(var id in self.eanaEltu.dictLayout){
-        var layout = self.eanaEltu.dictLayout[id];
+    for(let id in self.eanaEltu.dictLayout){
+        const layout = self.eanaEltu.dictLayout[id];
         if(layout.id === "changelog"){
             layout.value += "\n\\begin{itemize}\n<<CHANGELOG_ITEMS>>\n\\end{itemize}\n\\end{document}";
         }
@@ -232,8 +232,8 @@ Dictionary.prototype.exportDictionaryTemplates = function () {
 
 Dictionary.prototype.exportEntryTemplates = function () {
     // Insert Templates
-    var self = this;
-    var templates = [
+    const self = this;
+    const templates = [
         {
             id: "PAR",
             latex: "\\par#",
@@ -276,10 +276,10 @@ Dictionary.prototype.exportEntryTemplates = function () {
 
 Dictionary.prototype.createLayoutWithTemplates = function(layout){
     "use strict";
-    var self = this;
+    const self = this;
     return models.EntryLayout.create(layout).then(function(entryLayout){
-        for(var i = 0; i < layout.templates.length; i++) {
-            var template = layout.templates[i];
+        for(let i = 0; i < layout.templates.length; i++) {
+            const template = layout.templates[i];
             entryLayout.addEntryTemplate(self.entryTemplates[template.id], {
                 through: {
                     position: template.position,
@@ -295,15 +295,15 @@ Dictionary.prototype.createLayoutWithTemplates = function(layout){
 
 Dictionary.prototype.createLayoutsWithTemplates = function(layouts) {
     "use strict";
-    var self = this;
+    const self = this;
     return new Promise(function(externalResolve, externalReject){
-        var externalPromises = [];
+        const externalPromises = [];
         if(layouts === undefined || layouts.length === 0){
             // Nothing to do... resolve/return
             externalResolve();
             return;
         }
-        for(var k = 0; k < layouts.length; k++){
+        for(let k = 0; k < layouts.length; k++){
             externalPromises.push(self.createLayoutWithTemplates(layouts[k]));
         }
 
@@ -313,9 +313,9 @@ Dictionary.prototype.createLayoutsWithTemplates = function(layouts) {
 
 Dictionary.prototype.createEntryTypeWithMetada = function(entryType, metadata){
     "use strict";
-    var self = this;
+    const self = this;
     return models.EntryType.create(entryType).then(function(newEntryType){
-        for(var i = 0; i < metadata.length; i++) {
+        for(let i = 0; i < metadata.length; i++) {
             console.log(metadata[i]);
             newEntryType.addMetadata(self.metadata[metadata[i]]);
         }
@@ -325,9 +325,9 @@ Dictionary.prototype.createEntryTypeWithMetada = function(entryType, metadata){
 
 Dictionary.prototype.exportEntryLayouts = function () {
     // Insert Templates
-    var self = this;
+    const self = this;
 
-    var data = [
+    const data = [
         {
             id: 'ENTRY',
             layout: '{entry}',
@@ -429,7 +429,7 @@ Dictionary.prototype.exportEntryLayouts = function () {
         "use strict";
 
 
-        var validLayouts = [
+        const validLayouts = [
             'affixN',
             'alloffixN',
             'cw',
@@ -447,12 +447,12 @@ Dictionary.prototype.exportEntryLayouts = function () {
             'note',
             'word'
         ];
-        var layouts = [];
-        var localizedLayouts = [];
-        for(var lang in self.templates){
-            for(var templateId in self.templates[lang]){
+        const layouts = [];
+        const localizedLayouts = [];
+        for(let lang in self.templates){
+            for(let templateId in self.templates[lang]){
                 if(validLayouts.indexOf(templateId) !== -1){
-                    var template = self.templates[lang][templateId];
+                    const template = self.templates[lang][templateId];
 
                     if(lang === "raw"){
                         layouts.push({
@@ -479,8 +479,8 @@ Dictionary.prototype.exportEntryLayouts = function () {
             }
         }
 
-        var layoutPromises = [];
-        for(var i = 0; i < layouts.length; i++){
+        const layoutPromises = [];
+        for(let i = 0; i < layouts.length; i++){
             layoutPromises.push(self.createEntryTypeWithMetada(layouts[i], layouts[i].metadata));
         }
 
@@ -493,12 +493,12 @@ Dictionary.prototype.exportEntryLayouts = function () {
 
 Dictionary.prototype.exportMetadata = function () {
     // Insert Metadata (Including New entries that we need added for other refactorings elsewhere
-    var self = this;
-    var metadata = [{
+    const self = this;
+    const metadata = [{
         id: "__STANDARD_IPA_ENTRY_TEMPLATE__"
     }];
-    var localizedMetadata = [];
-    for(var isoCode in self.languages){
+    const localizedMetadata = [];
+    for(let isoCode in self.languages){
         localizedMetadata.push({
             LanguageIsoCode: isoCode,
             MetadatumId: "__STANDARD_IPA_ENTRY_TEMPLATE__",
@@ -506,8 +506,8 @@ Dictionary.prototype.exportMetadata = function () {
         });
     }
 
-    for(var index in self.metadata){
-        for(var lc in self.metadata[index]){
+    for(let index in self.metadata){
+        for(let lc in self.metadata[index]){
 
             if(lc === "en"){
                 metadata.push({
@@ -537,10 +537,10 @@ Dictionary.prototype.exportMetadata = function () {
 
 Dictionary.prototype.exportPartsOfSpeech = function () {
     // Insert Parts of Speech
-    var self = this;
-    var partsOfSpeech = [];
-    for (var langId in self.partsOfSpeech) {
-        for (var pos in self.partsOfSpeech[langId]) {
+    const self = this;
+    const partsOfSpeech = [];
+    for (let  langId in self.partsOfSpeech) {
+        for (let  pos in self.partsOfSpeech[langId]) {
             if (pos === "") {
                 continue;
             }
@@ -556,11 +556,11 @@ Dictionary.prototype.exportPartsOfSpeech = function () {
 
 Dictionary.prototype.exportEntries = function () {
     // Insert Entries
-    var self = this;
-    var entries = [];
-    var localizedEntries = [];
-    for(var id in self.entries){
-        var entry = self.entries[id];
+    const self = this;
+    const entries = [];
+    const localizedEntries = [];
+    for(let id in self.entries){
+        const entry = self.entries[id];
         entries.push({
             id: entry.id,
             pubId: entry.pubId,
@@ -575,8 +575,8 @@ Dictionary.prototype.exportEntries = function () {
             createdAt: entry.editTime * 1000
         });
 
-        for(var lc in entry.localizations){
-            var localizedEntry = entry.localizations[lc];
+        for(let lc in entry.localizations){
+            const localizedEntry = entry.localizations[lc];
             localizedEntries.push({
                 EntryId: entry.id,
                 LanguageIsoCode: lc,
@@ -595,12 +595,12 @@ Dictionary.prototype.export = function (callback) {
     if(this.debug){
         console.log("Exporting Dictionary to new Database...");
     }
-    var self = this;
+    const self = this;
 
     // Using force: true to drop all tables first
     models.sequelize.sync({force: true}).then(function() {
 
-        var topLayerPromises = [];
+        const topLayerPromises = [];
         topLayerPromises.push(self.exportLanguages());
         topLayerPromises.push(self.exportSources());
         topLayerPromises.push(self.exportDictionaryTemplates());
@@ -609,20 +609,20 @@ Dictionary.prototype.export = function (callback) {
         Promise.all(topLayerPromises).then(function(){
             "use strict";
             // These need the topLayerPromises to be resolved first, as they require data that they provide
-            var secondLayerPromises = [];
+            const secondLayerPromises = [];
             secondLayerPromises.push(self.exportDictionaryBuilds());
             secondLayerPromises.push(self.exportMetadata());
             //secondLayerPromises.push(self.exportPartsOfSpeech());
 
             Promise.all(secondLayerPromises).then(function(){
 
-                var thirdLayerPromises = [];
+                const thirdLayerPromises = [];
                 thirdLayerPromises.push(self.exportEntryLayouts());
 
                 Promise.all(thirdLayerPromises).then(function(){
                     self.exportEntries().then(function () {
                         models.EntryType.findAll().then(function(entryTypes) {
-                            var promises = [];
+                            const promises = [];
                             entryTypes.forEach(function(entryType){
                                 promises.push(entryType.getHtml().then(function(html){
                                     console.log(entryType.id, "HTML   ", html);
@@ -727,7 +727,7 @@ function getDictionaryBuildDescription(type){
 }
 
 function getSourceDescription(source) {
-    var result = source.replace("PF", "Dr. Paul Frommer");
+    let result = source.replace("PF", "Dr. Paul Frommer");
     if(source === "G"){
         result = result.replace("G", "The Avatar Games");
     }
@@ -758,8 +758,8 @@ function getSourceDescription(source) {
 }
 
 function buildDictionaryLanguages(self) {
-    for(var index in self.eanaEltu.dictLanguages){
-        var language = self.eanaEltu.dictLanguages[index];
+    for(let index in self.eanaEltu.dictLanguages){
+        const language = self.eanaEltu.dictLanguages[index];
         self.languages[index] = {
             engName: language.engName,
             nativeName: language.nativeName,
@@ -774,7 +774,7 @@ function buildActiveLanguages (self) {
         return [];
     }
 
-    for(var index in self.languages){
+    for(let index in self.languages){
         if(self.languages[index].active){
             self.activeLanguages.push(index);
         }
@@ -782,15 +782,16 @@ function buildActiveLanguages (self) {
 }
 
 function buildDictionaryMetadata(self) {
-    for(var index in self.eanaEltu.dictMeta){
+    for(let index in self.eanaEltu.dictMeta){
         self.metadata[index] = {
             en: {
                 value: self.eanaEltu.dictMeta[index].value,
                 editTime: self.eanaEltu.dictMeta[index].editTime
             }
         };
-        var localization = self.eanaEltu.dictLoc[index];
-        for(var lc in localization){
+
+        const localization = self.eanaEltu.dictLoc[index];
+        for(let lc in localization){
             if(localization[lc].value === '' || localization[lc].value === null || localization[lc].value === undefined){
                 if(self.debug){
                     console.log("Missing " + lc + " translation for [" + index + "]");
@@ -940,7 +941,7 @@ function buildDictionaryTemplates(self) {
             'derivingaffixNN',
             'markerNN',
             'eanaInfix'];
-    var validLayouts = [
+    const validLayouts = [
         'affixN',
         'alloffixN',
         'cw',
@@ -959,15 +960,15 @@ function buildDictionaryTemplates(self) {
         'word'
     ];
     // Need to get list of languages
-    for(var lcCode in self.languages){
+    for(let lcCode in self.languages){
         self.templates[lcCode] = {};
     }
     self.templates['raw'] = {};
 
-    var regex = /__(.*)__/;
-    var generic_template = "\\par\\textbf{#LEMMA}: [\\textipa{#IPA}] $_{#SOURCE}$ #PART_OF_SPEECH";
+    const regex = /__(.*)__/;
+    const generic_template = "\\par\\textbf{#LEMMA}: [\\textipa{#IPA}] $_{#SOURCE}$ #PART_OF_SPEECH";
 
-    for(var index in self.eanaEltu.dictWordTemplate){
+    for(let index in self.eanaEltu.dictWordTemplate){
 
         // Template Cleanup...
         if(nonIpaTypes.indexOf(index) !== -1 || validLayouts.indexOf(index) === -1){
@@ -976,7 +977,7 @@ function buildDictionaryTemplates(self) {
         }
 
         self.eanaEltu.dictWordTemplate[index].parentId = "IPA_ENTRY";
-        var format = self.eanaEltu.dictWordTemplate[index].format;
+        let format = self.eanaEltu.dictWordTemplate[index].format;
 
         format = format.replace("#1", "#LEMMA");
         format = format.replace("#2", "#IPA");
@@ -1008,17 +1009,17 @@ function buildDictionaryTemplates(self) {
             self.eanaEltu.dictWordTemplate[index].parentId += "_PARENS";
         }
 
-        var sub_entry_lemma_def = "{LAYOUTS.SUB_ENTRY_LEMMA_DEF}";
+        const sub_entry_lemma_def = "{LAYOUTS.SUB_ENTRY_LEMMA_DEF}";
 
         format = format.replace("\\textbf{#5} \\textit{#6}", sub_entry_lemma_def);
         format = format.replace("\\textbf{#6} \\textit{#7}", sub_entry_lemma_def);
         format = format.replace("\\textbf{#7} \\textit{#8}", sub_entry_lemma_def);
 
-        var layout = format;
+        let layout = format;
 
-        var metadataReferences = [];
+        const metadataReferences = [];
 
-        var result;
+        let result;
         while(result = layout.match(regex)){
             layout = layout.replace(result[0], "{METADATA." + result[1] + "}");
             metadataReferences.push(result[1]);
@@ -1034,11 +1035,11 @@ function buildDictionaryTemplates(self) {
             metadataReferences.push("DERIVE_AND_TEXT");
         }
 
-        for(var lc in self.languages){
+        for(let lc in self.languages){
             result = format.match(regex);
-            var localizedFormat = format;
+            let localizedFormat = format;
             if(result !== null) {
-                var meta = self.metadata[result[1]];
+                const meta = self.metadata[result[1]];
                 if(meta[lc] === undefined){
                     if(self.languages[lc].active){
                         console.log("MISSING TRANSLATION FOR [" + result[1] + "] in " + lc);
@@ -1046,7 +1047,7 @@ function buildDictionaryTemplates(self) {
                     continue;
                 }
 
-                var metadata = meta[lc].value;
+                let metadata = meta[lc].value;
 
                 metadata = metadata.replace("\\textbf{#5} \\textit{#6}", sub_entry_lemma_def);
                 metadata = metadata.replace("\\textbf{#6} \\textit{#7}", sub_entry_lemma_def);
@@ -1071,16 +1072,16 @@ function buildDictionaryTemplates(self) {
 
                 } else if(index === "cw" || index === "derive"){
 
-                    var firstOpenBraceIndex = metadata.indexOf('{');
-                    var firstCloseBraceIndex = metadata.indexOf('} ');
-                    var secondOpenBraceIndex = metadata.indexOf('{', firstCloseBraceIndex);
-                    var firstMetadataPart = metadata.substring(0, firstOpenBraceIndex);
-                    var secondMetadataPart = metadata.substring(firstCloseBraceIndex + 2, secondOpenBraceIndex);
+                    const firstOpenBraceIndex = metadata.indexOf('{');
+                    const firstCloseBraceIndex = metadata.indexOf('} ');
+                    const secondOpenBraceIndex = metadata.indexOf('{', firstCloseBraceIndex);
+                    const firstMetadataPart = metadata.substring(0, firstOpenBraceIndex);
+                    const secondMetadataPart = metadata.substring(firstCloseBraceIndex + 2, secondOpenBraceIndex);
                     console.log(firstMetadataPart, secondMetadataPart);
 
                     metadata = firstMetadataPart;
                     //localizedFormat = metadata;
-                    var key;
+                    let key;
                     if(index === "cw"){
                         key = "CW_AND_TEXT";
                     } else if(index === "derive"){
@@ -1137,10 +1138,10 @@ function buildDictionaryTemplates(self) {
 }
 
 function buildDictionaryEntries(self) {
-    for(var id in self.eanaEltu.dictWordMeta){
-        var rawEntry = self.eanaEltu.dictWordMeta[id];
+    for(let id in self.eanaEltu.dictWordMeta){
+        const rawEntry = self.eanaEltu.dictWordMeta[id];
 
-        var entry = new Entry(rawEntry);
+        const entry = new Entry(rawEntry);
         self.sources[entry.source] = entry.source;
 
         if(entry.source === "") {
@@ -1150,13 +1151,13 @@ function buildDictionaryEntries(self) {
             self.missingSources.push({id: entry.id, lemma: entry.lemma});
         }
 
-        for(var lc in self.languages){
+        for(let lc in self.languages){
             if(self.eanaEltu.dictWordLoc[id] === undefined){
                 // No localizations have been added yet...
                 // adding an empty object to keep from failing out
                 self.eanaEltu.dictWordLoc[id] = {};
             }
-            var localizedEntry = self.eanaEltu.dictWordLoc[id][lc];
+            let localizedEntry = self.eanaEltu.dictWordLoc[id][lc];
 
             if (lc === 'en') {
                 localizedEntry = rawEntry;
@@ -1172,7 +1173,7 @@ function buildDictionaryEntries(self) {
                 self.missingEntryTranslations[lc].push({id: id, lemma: entry.lemma});
 
             } else {
-                var processedLocalizedEntry = entry.addLocalization(localizedEntry, lc);
+                const processedLocalizedEntry = entry.addLocalization(localizedEntry, lc);
 
                 if(entry.block === 0){
                     if(self.partsOfSpeech[processedLocalizedEntry.lc] === undefined){
@@ -1190,10 +1191,10 @@ function buildDictionaryEntries(self) {
         entry.finalizeEntry();
         self.entries[entry.id] = entry;
     }
-    var keys = Object.keys(self.partsOfSpeech);
+    const keys = Object.keys(self.partsOfSpeech);
 
-     for(var j = 0; j < keys.length; j++){
-     var types = Object.keys(self.partsOfSpeech[keys[j]]).sort();
+     for(let j = 0; j < keys.length; j++){
+         const types = Object.keys(self.partsOfSpeech[keys[j]]).sort();
          if(self.debug){
              console.log(keys[j] + " <|> " + types.join(" | "));
          }
@@ -1201,7 +1202,7 @@ function buildDictionaryEntries(self) {
 }
 
 function processRegexReplace(regex, text, replacementTextStart, replacementTextEnd) {
-    var result = text.match(regex);
+    let result = text.match(regex);
 
     while(result !== null){
         text = text.replace(result[0], replacementTextStart + result[1] + replacementTextEnd);
@@ -1212,13 +1213,13 @@ function processRegexReplace(regex, text, replacementTextStart, replacementTextE
 
 function processTemplate(template) {
 
-    var ipaRegex = /\\textipa\s*\{#(\d*)\}/;
-    var boldRegex = /\\textbf\s*\{#(\d*)\}/;
-    var italicRegex = /\\textit\s*\{#(\d*)\}/;
-    var subscriptRegex = /\$_\{#(\d*)\}\$/;
-    var smallCapsRegex = /\{\\sc\s*\#(\d*)\}/;
-    var numRegex = /#(\d*)/;
-    var parRegex = /\\par(.*)/;
+    const ipaRegex = /\\textipa\s*\{#(\d*)\}/;
+    const boldRegex = /\\textbf\s*\{#(\d*)\}/;
+    const italicRegex = /\\textit\s*\{#(\d*)\}/;
+    const subscriptRegex = /\$_\{#(\d*)\}\$/;
+    const smallCapsRegex = /\{\\sc\s*\#(\d*)\}/;
+    const numRegex = /#(\d*)/;
+    const parRegex = /\\par(.*)/;
 
     template = processRegexReplace(ipaRegex, template, "{", "}");
     template = processRegexReplace(boldRegex, template, "<b>{", "}</b>");
@@ -1243,7 +1244,7 @@ function processTemplate(template) {
  audio: primaryEntry.audio
  */
 
-var dictionary = new Dictionary();
+const dictionary = new Dictionary();
 
 module.exports = dictionary;
 

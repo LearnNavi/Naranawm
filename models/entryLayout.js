@@ -1,9 +1,9 @@
 'use strict';
-var format = require('string-format');
-var Promise = require('bluebird');
+const format = require('string-format');
+const Promise = require('bluebird');
 
 module.exports = function (sequelize, DataTypes) {
-    var EntryLayout = sequelize.define('EntryLayout', {
+    const EntryLayout = sequelize.define('EntryLayout', {
         id: { type: DataTypes.STRING, primaryKey: true },
         layout: { type: DataTypes.STRING, allowNull: false }
     });
@@ -27,19 +27,19 @@ module.exports = function (sequelize, DataTypes) {
     };
 
     EntryLayout.prototype.getFormattedLayout = function(type, data) {
-        var self = this;
+        const self = this;
         return new Promise(function (resolve, reject) {
 
             self.getEntryTemplates().then(function(templates){
-                var stuff = {};
+                const stuff = {};
 
-                for(var i = 0; i < templates.length; i++){
-                    var template = templates[i];
-                    var layoutTemplate = template.getDataValue('EntryLayoutTemplates');
-                    var typeTemplate = template.getDataValue(type);
+                for(let i = 0; i < templates.length; i++){
+                    const template = templates[i];
+                    const layoutTemplate = template.getDataValue('EntryLayoutTemplates');
+                    let typeTemplate = template.getDataValue(type);
                     typeTemplate = typeTemplate.replace("{", "{{");
                     typeTemplate = typeTemplate.replace("}", "}}");
-                    var field = layoutTemplate.getDataValue('field');
+                    const field = layoutTemplate.getDataValue('field');
 
                     stuff[field] = typeTemplate.replace("#", "{" + field + "}");
                     if(field === "entry"){
@@ -53,7 +53,7 @@ module.exports = function (sequelize, DataTypes) {
                 }
 
 
-                var layout = format(self.layout, stuff);
+                const layout = format(self.layout, stuff);
                 //console.log(self.layout, layout, data, stuff['entry']);
 
                 if(data !== undefined){

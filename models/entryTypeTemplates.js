@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
-    var EntryTypeTemplates = sequelize.define('EntryTypeTemplates', {
+    const EntryTypeTemplates = sequelize.define('EntryTypeTemplates', {
         position: { type: DataTypes.INTEGER, primaryKey: true, defaultValue: 0 },
         field: { type: DataTypes.STRING, primaryKey: true }
     });

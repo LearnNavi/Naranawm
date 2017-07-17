@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
-    var Source = sequelize.define('Source', {
+    const Source = sequelize.define('Source', {
         name: { type: DataTypes.STRING, unique: true },
         description: DataTypes.STRING
     });

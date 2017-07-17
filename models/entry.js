@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    var Entry = sequelize.define('Entry', {
+    const Entry = sequelize.define('Entry', {
         pubId: { type: DataTypes.INTEGER },
         lemma: { type: DataTypes.STRING, allowNull: false },
         ipa: { type: DataTypes.STRING },

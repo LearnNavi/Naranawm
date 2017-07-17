@@ -1,6 +1,6 @@
 
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
 router.use('/dictionary/blocks', require('./v1/dictionary/blocks'));
 router.use('/dictionary/builds', require('./v1/dictionary/builds'));

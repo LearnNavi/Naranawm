@@ -1,6 +1,7 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
-    var LocalizedMetadata = sequelize.define('LocalizedMetadata', {
+
+    const LocalizedMetadata = sequelize.define('LocalizedMetadata', {
         value: { type: DataTypes.TEXT, allowNull: false }
     });
 

@@ -1,9 +1,9 @@
 
-var mysql = require('mysql');
+const mysql = require('mysql');
 
 // vault.js is an encrypted module that contains connection info for the db.
-var env       = process.env.NODE_ENV || "development";
-var vault = require('../vault');
+const env       = process.env.NODE_ENV || "development";
+const vault = require('../vault');
 
 function EanaEltu() {
     this.debug = false;
@@ -19,13 +19,13 @@ function EanaEltu() {
 EanaEltu.prototype.fetchHashTableData = function (query, id, group, callback) {
     this.dbConnection.query(query, function (err, rows, fields) {
         if (err) throw err;
-        var data;
+        let data;
         if (id !== undefined) {
             data = {};
         } else {
             data = [];
         }
-        for (var i = 0; i < rows.length; i++) {
+        for (let i = 0; i < rows.length; i++) {
             if (id !== undefined) {
                 if (data[rows[i][id]] === undefined) {
                     data[rows[i][id]] = {};
@@ -34,11 +34,11 @@ EanaEltu.prototype.fetchHashTableData = function (query, id, group, callback) {
                     if (data[rows[i][id]][rows[i][group]] === undefined) {
                         data[rows[i][id]][rows[i][group]] = {};
                     }
-                    for (var j = 0; j < fields.length; j++) {
+                    for (let j = 0; j < fields.length; j++) {
                         data[rows[i][id]][rows[i][group]][fields[j].name] = rows[i][fields[j].name];
                     }
                 } else {
-                    for (var j = 0; j < fields.length; j++) {
+                    for (let j = 0; j < fields.length; j++) {
                         data[rows[i][id]][fields[j].name] = rows[i][fields[j].name];
                     }
                 }
@@ -53,7 +53,7 @@ EanaEltu.prototype.fetchHashTableData = function (query, id, group, callback) {
 };
 
 EanaEltu.prototype.fetchData = function (callback) {
-    var self = this;
+    const self = this;
     if(this.debug){
         console.log("Fetching EanaEltu Data...");
     }
