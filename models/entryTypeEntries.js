@@ -15,7 +15,7 @@ module.exports = function (sequelize, DataTypes) {
             onDelete: 'CASCADE'
         });
 
-        EntryTypeEntries.belongsTo(models.Entry, {
+        EntryTypeEntries.belongsTo(models.Lemma, {
 
         });
     };

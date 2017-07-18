@@ -10,7 +10,7 @@ module.exports = function (sequelize, DataTypes) {
 
     Language.associate = function (models) {
         // associations can be defined here
-        Language.hasMany(models.LocalizedEntry, {
+        Language.hasMany(models.LocalizedDefinition, {
             onDelete: 'CASCADE'
         });
         Language.hasMany(models.PartOfSpeech, {

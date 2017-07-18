@@ -18,7 +18,7 @@ module.exports = function (sequelize, DataTypes) {
             onDelete: 'CASCADE'
         });
 
-        EntryType.belongsToMany(models.Entry, {
+        EntryType.belongsToMany(models.Lemma, {
             through: {
                 model: models.EntryTypeEntries,
                 unique: false

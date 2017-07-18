@@ -7,7 +7,7 @@ module.exports = function (sequelize, DataTypes) {
 
     Source.associate = function (models) {
         // associations can be defined here
-        Source.hasMany(models.Entry);
+        Source.hasMany(models.Lemma);
     };
 
     return Source;

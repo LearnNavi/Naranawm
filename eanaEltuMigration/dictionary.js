@@ -1,6 +1,6 @@
 
 const format = require('string-format');
-const Entry = require('./entry');
+const Lemma = require('./lemma');
 const EanaEltu = require('./eanaEltu');
 const models = require('../models');
 const Promise = require('bluebird');
@@ -24,11 +24,11 @@ function Dictionary () {
     this.metadata = {};
     this.templates = {};
     this.entryTemplates = {};
-    this.entries = {};
+    this.lemmas = {};
     this.sources = {};
     this.partsOfSpeech = {};
     this.missingMetadataTranslations = {};
-    this.missingEntryTranslations = {};
+    this.missingDefinitionTranslations = {};
     this.missingSources = [];
 
 }
@@ -44,7 +44,7 @@ Dictionary.prototype.buildDictionary = function (callback) {
         buildActiveLanguages(self);
         buildDictionaryMetadata(self);
         buildDictionaryTemplates(self);
-        buildDictionaryEntries(self);
+        buildDictionaryLemmas(self);
         if(self.debug){
             console.log("Complete");
         }
@@ -96,12 +96,12 @@ Dictionary.prototype.exportDictionaryBuilds = function () {
     ];
     const builds = [];
     const buildData = [];
-    for(let type in self.eanaEltu.dictOrder){
+    for(const type of Object.keys(self.eanaEltu.dictOrder)){
         builds.push({
             id: type,
             description: getDictionaryBuildDescription(type)
         });
-        for(let position in self.eanaEltu.dictOrder[type]){
+        for(const position of Object.keys(self.eanaEltu.dictOrder[type])){
             const data = self.eanaEltu.dictOrder[type][position];
 
             if(data.type === "raw"){
@@ -141,7 +141,7 @@ Dictionary.prototype.exportLanguages = function (){
     // Insert Languages
     const self = this;
     const languages = [];
-    for(let langId in self.languages){
+    for(const langId of Object.keys(self.languages)){
         const language = self.languages[langId];
         languages.push({
             isoCode: langId,
@@ -166,7 +166,7 @@ Dictionary.prototype.exportSources = function(){
     // Insert Sources
     const self = this;
     const sources = [];
-    for(let source in self.sources){
+    for(const source of Object.keys(self.sources)){
         sources.push({
             name: source,
             description: getSourceDescription(source)
@@ -212,7 +212,7 @@ Dictionary.prototype.exportDictionaryTemplates = function () {
             html: ""
         }];
 
-    for(let id in self.eanaEltu.dictLayout){
+    for(const id of Object.keys(self.eanaEltu.dictLayout)){
         const layout = self.eanaEltu.dictLayout[id];
         if(layout.id === "changelog"){
             layout.value += "\n\\begin{itemize}\n<<CHANGELOG_ITEMS>>\n\\end{itemize}\n\\end{document}";
@@ -449,8 +449,8 @@ Dictionary.prototype.exportEntryLayouts = function () {
         ];
         const layouts = [];
         const localizedLayouts = [];
-        for(let lang in self.templates){
-            for(let templateId in self.templates[lang]){
+        for(const lang of Object.keys(self.templates)){
+            for(const templateId of Object.keys(self.templates[lang])){
                 if(validLayouts.indexOf(templateId) !== -1){
                     const template = self.templates[lang][templateId];
 
@@ -492,13 +492,13 @@ Dictionary.prototype.exportEntryLayouts = function () {
 };
 
 Dictionary.prototype.exportMetadata = function () {
-    // Insert Metadata (Including New entries that we need added for other refactorings elsewhere
+    // Insert Metadata (Including New lemmas that we need added for other refactorings elsewhere
     const self = this;
     const metadata = [{
         id: "__STANDARD_IPA_ENTRY_TEMPLATE__"
     }];
     const localizedMetadata = [];
-    for(let isoCode in self.languages){
+    for(const isoCode of Object.keys(self.languages)){
         localizedMetadata.push({
             LanguageIsoCode: isoCode,
             MetadatumId: "__STANDARD_IPA_ENTRY_TEMPLATE__",
@@ -506,8 +506,8 @@ Dictionary.prototype.exportMetadata = function () {
         });
     }
 
-    for(let index in self.metadata){
-        for(let lc in self.metadata[index]){
+    for(const index of Object.keys(self.metadata)){
+        for(const lc of Object.keys(self.metadata[index])){
 
             if(lc === "en"){
                 metadata.push({
@@ -539,8 +539,8 @@ Dictionary.prototype.exportPartsOfSpeech = function () {
     // Insert Parts of Speech
     const self = this;
     const partsOfSpeech = [];
-    for (let  langId in self.partsOfSpeech) {
-        for (let  pos in self.partsOfSpeech[langId]) {
+    for (const langId of Object.keys(self.partsOfSpeech)) {
+        for (const pos of Object.keys(self.partsOfSpeech[langId])) {
             if (pos === "") {
                 continue;
             }
@@ -554,40 +554,40 @@ Dictionary.prototype.exportPartsOfSpeech = function () {
     return models.PartOfSpeech.bulkCreate(partsOfSpeech);
 };
 
-Dictionary.prototype.exportEntries = function () {
+Dictionary.prototype.exportLemmas = function () {
     // Insert Entries
     const self = this;
-    const entries = [];
-    const localizedEntries = [];
-    for(let id in self.entries){
-        const entry = self.entries[id];
-        entries.push({
-            id: entry.id,
-            pubId: entry.pubId,
-            lemma: entry.lemma,
-            ipa: entry.ipa,
+    const lemmas = [];
+    const localizedDefinitions = [];
+    for(const id of Object.keys(self.lemmas)){
+        const lemma = self.lemmas[id];
+        lemmas.push({
+            id: lemma.id,
+            pubId: lemma.pubId,
+            lemma: lemma.lemma,
+            ipa: lemma.ipa,
             //partOfSpeech: entry.partOfSpeech,
             //odd: entry.odd,
-            audio: entry.pubId + ".mp3",
-            SourceId: self.sources[entry.source].id,
-            DictionaryBlockId: entry.block,
-            EntryTypeId: entry.type,
-            createdAt: entry.editTime * 1000
+            audio: lemma.pubId + ".mp3",
+            SourceId: self.sources[lemma.source].id,
+            DictionaryBlockId: lemma.block,
+            EntryTypeId: lemma.type,
+            createdAt: lemma.editTime * 1000
         });
 
-        for(let lc in entry.localizations){
-            const localizedEntry = entry.localizations[lc];
-            localizedEntries.push({
-                EntryId: entry.id,
+        for(const lc of Object.keys(lemma.localizations)){
+            const localizedDefinition = lemma.localizations[lc];
+            localizedDefinitions.push({
+                LemmaId: lemma.id,
                 LanguageIsoCode: lc,
-                odd: localizedEntry.odd,
-                createdAt: localizedEntry.editTime * 1000
+                odd: localizedDefinition.odd,
+                createdAt: localizedDefinition.editTime * 1000
             });
 
         }
     }
-    return models.Entry.bulkCreate(entries).then(function(){
-        return models.LocalizedEntry.bulkCreate(localizedEntries);
+    return models.Lemma.bulkCreate(lemmas).then(function(){
+        return models.LocalizedDefinition.bulkCreate(localizedDefinitions);
     });
 };
 
@@ -620,7 +620,7 @@ Dictionary.prototype.export = function (callback) {
                 thirdLayerPromises.push(self.exportEntryLayouts());
 
                 Promise.all(thirdLayerPromises).then(function(){
-                    self.exportEntries().then(function () {
+                    self.exportLemmas().then(function () {
                         models.EntryType.findAll().then(function(entryTypes) {
                             const promises = [];
                             entryTypes.forEach(function(entryType){
@@ -927,8 +927,6 @@ function partOfSpeechLocation(type) {
         case 'allofix':
             return "#9";
     }
-
-    return;
 }
 
 function buildDictionaryTemplates(self) {
@@ -972,7 +970,7 @@ function buildDictionaryTemplates(self) {
 
         // Template Cleanup...
         if(nonIpaTypes.indexOf(index) !== -1 || validLayouts.indexOf(index) === -1){
-            // None of these have any entries of this type, dropping as they aren't needed...
+            // None of these have any lemmas of this type, dropping as they aren't needed...
             continue;
         }
 
@@ -1137,18 +1135,18 @@ function buildDictionaryTemplates(self) {
     }
 }
 
-function buildDictionaryEntries(self) {
+function buildDictionaryLemmas(self) {
     for(let id in self.eanaEltu.dictWordMeta){
-        const rawEntry = self.eanaEltu.dictWordMeta[id];
+        const rawLemma = self.eanaEltu.dictWordMeta[id];
 
-        const entry = new Entry(rawEntry);
-        self.sources[entry.source] = entry.source;
+        const lemma = new Lemma(rawLemma);
+        self.sources[lemma.source] = lemma.source;
 
-        if(entry.source === "") {
+        if(lemma.source === "") {
             if(self.debug){
-                console.log("Missing Source: " + entry.lemma, entry.type, entry.id);
+                console.log("Missing Source: " + lemma.lemma, lemma.type, lemma.id);
             }
-            self.missingSources.push({id: entry.id, lemma: entry.lemma});
+            self.missingSources.push({id: lemma.id, lemma: lemma.lemma});
         }
 
         for(let lc in self.languages){
@@ -1157,39 +1155,39 @@ function buildDictionaryEntries(self) {
                 // adding an empty object to keep from failing out
                 self.eanaEltu.dictWordLoc[id] = {};
             }
-            let localizedEntry = self.eanaEltu.dictWordLoc[id][lc];
+            let localizedDefinition = self.eanaEltu.dictWordLoc[id][lc];
 
             if (lc === 'en') {
-                localizedEntry = rawEntry;
+                localizedDefinition = rawLemma;
             }
 
-            if(localizedEntry === undefined){
+            if(localizedDefinition === undefined){
                 if(self.debug){
-                    console.log("<" + entry.lemma + "> Missing [" + lc + "] Localization for " + id);
+                    console.log("<" + lemma.lemma + "> Missing [" + lc + "] Localization for " + id);
                 }
-                if(self.missingEntryTranslations[lc] === undefined){
-                    self.missingEntryTranslations[lc] = [];
+                if(self.missingDefinitionTranslations[lc] === undefined){
+                    self.missingDefinitionTranslations[lc] = [];
                 }
-                self.missingEntryTranslations[lc].push({id: id, lemma: entry.lemma});
+                self.missingDefinitionTranslations[lc].push({id: id, lemma: lemma.lemma});
 
             } else {
-                const processedLocalizedEntry = entry.addLocalization(localizedEntry, lc);
+                const processedLocalizedDefinition = lemma.addLocalization(localizedDefinition, lc);
 
-                if(entry.block === 0){
-                    if(self.partsOfSpeech[processedLocalizedEntry.lc] === undefined){
-                        self.partsOfSpeech[processedLocalizedEntry.lc] = {};
+                if(lemma.block === 0){
+                    if(self.partsOfSpeech[processedLocalizedDefinition.lc] === undefined){
+                        self.partsOfSpeech[processedLocalizedDefinition.lc] = {};
                     }
-                    if(self.partsOfSpeech[processedLocalizedEntry.lc][processedLocalizedEntry.partOfSpeech] === undefined){
-                        self.partsOfSpeech[processedLocalizedEntry.lc][processedLocalizedEntry.partOfSpeech] = {};
+                    if(self.partsOfSpeech[processedLocalizedDefinition.lc][processedLocalizedDefinition.partOfSpeech] === undefined){
+                        self.partsOfSpeech[processedLocalizedDefinition.lc][processedLocalizedDefinition.partOfSpeech] = {};
 
                     }
-                    self.partsOfSpeech[processedLocalizedEntry.lc][processedLocalizedEntry.partOfSpeech][entry.type] = entry.block;
+                    self.partsOfSpeech[processedLocalizedDefinition.lc][processedLocalizedDefinition.partOfSpeech][lemma.type] = lemma.block;
                 }
             }
         }
 
-        entry.finalizeEntry();
-        self.entries[entry.id] = entry;
+        lemma.finalizeLemma();
+        self.lemmas[lemma.id] = lemma;
     }
     const keys = Object.keys(self.partsOfSpeech);
 
@@ -1237,11 +1235,11 @@ function processTemplate(template) {
 /*
  Each dictionary entry should have the word in na'vi and the ipa at the top level
  -Under that, each translation should exist in its own field as an object
- odd: primaryEntry.odd,
- type: primaryEntry.type,
- editTime: primaryEntry.editTime,
- block: primaryEntry.block,
- audio: primaryEntry.audio
+ odd: primaryLemma.odd,
+ type: primaryLemma.type,
+ editTime: primaryLemma.editTime,
+ block: primaryLemma.block,
+ audio: primaryLemma.audio
  */
 
 const dictionary = new Dictionary();

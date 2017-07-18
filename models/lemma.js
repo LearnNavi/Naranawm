@@ -1,33 +1,33 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const Entry = sequelize.define('Entry', {
+    const Lemma = sequelize.define('Lemma', {
         pubId: { type: DataTypes.INTEGER },
         lemma: { type: DataTypes.STRING, allowNull: false },
         ipa: { type: DataTypes.STRING },
         audio: { type: DataTypes.STRING }
     });
 
-    Entry.associate = function (models) {
+    Lemma.associate = function (models) {
         // associations can be defined here
-        Entry.hasMany(models.LocalizedEntry, {
+        Lemma.hasMany(models.LocalizedDefinition, {
             onDelete: 'CASCADE'
         });
-        Entry.belongsTo(models.Source, {
+        Lemma.belongsTo(models.Source, {
             foreignKey: {
                 allowNull: false
             },
             constraints: true,
             onDelete: 'cascade'
         });
-        Entry.belongsTo(models.DictionaryBlock, {
+        Lemma.belongsTo(models.DictionaryBlock, {
             foreignKey: {
                 allowNull: false
             },
             constraints: true,
             onDelete: 'cascade'
         });
-        Entry.belongsTo(models.EntryType, {
+        Lemma.belongsTo(models.EntryType, {
             foreignKey: {
                 allowNull: false
             },
@@ -36,5 +36,5 @@ module.exports = function (sequelize, DataTypes) {
         });
     };
 
-    return Entry;
+    return Lemma;
 };

@@ -45,40 +45,40 @@ const nonIpaTypes = [
     ];
 
 
-function Entry(rawEntry) {
-    this.id = rawEntry.id;
-    this.pubId = rawEntry.id << 2; // No clue why all public IDs use a bit shift of 2 vs internal...
-    this.lemma = rawEntry.arg1;
-    this.type = rawEntry.type;
-    this.odd = rawEntry.odd;
-    this.block = rawEntry.block;
-    this.editTime = rawEntry.editTime;
-    this.audio = rawEntry.audio;
-    this.source = parseSource(rawEntry);
-    this.partOfSpeech = this.parsePartOfSpeech(rawEntry);
-    this.ipa = parseIpa(rawEntry);
+function Lemma(rawLemma) {
+    this.id = rawLemma.id;
+    this.pubId = rawLemma.id << 2; // No clue why all public IDs use a bit shift of 2 vs internal...
+    this.lemma = rawLemma.arg1;
+    this.type = rawLemma.type;
+    this.odd = rawLemma.odd;
+    this.block = rawLemma.block;
+    this.editTime = rawLemma.editTime;
+    this.audio = rawLemma.audio;
+    this.source = parseSource(rawLemma);
+    this.partOfSpeech = this.parsePartOfSpeech(rawLemma);
+    this.ipa = parseIpa(rawLemma);
     this.localizations = {};
 
-    this.rawEntry = rawEntry;
+    this.rawLemma = rawLemma;
 }
 
-Entry.prototype.addLocalization = function (localizedEntry, lc) {
+Lemma.prototype.addLocalization = function (localizedDefinition, lc) {
     // Pull out each of the 10 args, if the arg is missing from the localized version, use the primary instead
     const entry = {
-        odd: localizedEntry.odd,
-        editTime: localizedEntry.editTime,
-        lc: localizedEntry.lc,
-        partOfSpeech: this.parsePartOfSpeech(localizedEntry),
-        arg1: localizedEntry.arg1,
-        arg2: localizedEntry.arg2,
-        arg3: localizedEntry.arg3,
-        arg4: localizedEntry.arg4,
-        arg5: localizedEntry.arg5,
-        arg6: localizedEntry.arg6,
-        arg7: localizedEntry.arg7,
-        arg8: localizedEntry.arg8,
-        arg9: localizedEntry.arg9,
-        arg10: localizedEntry.arg10
+        odd: localizedDefinition.odd,
+        editTime: localizedDefinition.editTime,
+        lc: localizedDefinition.lc,
+        partOfSpeech: this.parsePartOfSpeech(localizedDefinition),
+        arg1: localizedDefinition.arg1,
+        arg2: localizedDefinition.arg2,
+        arg3: localizedDefinition.arg3,
+        arg4: localizedDefinition.arg4,
+        arg5: localizedDefinition.arg5,
+        arg6: localizedDefinition.arg6,
+        arg7: localizedDefinition.arg7,
+        arg8: localizedDefinition.arg8,
+        arg9: localizedDefinition.arg9,
+        arg10: localizedDefinition.arg10
     };
 
     this.localizations[lc] = entry;
@@ -86,11 +86,11 @@ Entry.prototype.addLocalization = function (localizedEntry, lc) {
     return entry;
 };
 
-Entry.prototype.finalizeEntry = function () {
-    delete this.rawEntry;
+Lemma.prototype.finalizeLemma = function () {
+    delete this.rawLemma;
 };
 
-Entry.prototype.parsePartOfSpeech = function(localization) {
+Lemma.prototype.parsePartOfSpeech = function(localization) {
     // Part of Speech
     let result = "";
     switch(this.type){
@@ -272,4 +272,4 @@ function processRegexReplace(regex, text, replacementText) {
     return text;
 }
 
-module.exports = Entry;
+module.exports = Lemma;

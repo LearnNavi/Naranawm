@@ -7,7 +7,7 @@ router.use('/dictionary/builds', require('./v1/dictionary/builds'));
 router.use('/dictionary/buildData', require('./v1/dictionary/buildData'));
 router.use('/dictionary/templates', require('./v1/dictionary/templates'));
 
-router.use('/entries', require('./v1/entries'));
+router.use('/lemmas', require('./v1/lemmas'));
 
 router.use('/entry/layouts', require('./v1/entry/layouts'));
 router.use('/entry/layoutTemplates', require('./v1/entry/layoutTemplates'));
@@ -18,7 +18,7 @@ router.use('/entry/typeTemplates', require('./v1/entry/typeTemplates'));
 
 router.use('/languages', require('./v1/languages'));
 
-router.use('/localized/entries', require('./v1/localized/entries'));
+router.use('/localized/definitions', require('./v1/localized/definitions'));
 router.use('/localized/entry/layouts', require('./v1/localized/entryLayouts'));
 router.use('/localized/metadata', require('./v1/localized/metadata'));
 

@@ -4,27 +4,27 @@ const models = require('../../../models/index');
 
 /* GET languages listing. */
 router.get('/:lc', function(req, res, next) {
-    models.LocalizedEntry.findAll({ where:
+    models.LocalizedDefinition.findAll({ where:
         {
             LanguageIsoCode: req.params.lc
         }
-    }).then(function (entries) {
+    }).then(function (definitions) {
         "use strict";
-        res.send(entries);
+        res.send(definitions);
     });
 
 });
 
-router.get('/:lc/:entryId/:type', function(req, res, next){
+router.get('/:lc/:lemmaId/:type', function(req, res, next){
     "use strict";
-    models.LocalizedEntry.findOne({ where:
+    models.LocalizedDefinition.findOne({ where:
         {
-            EntryId: req.params.entryId,
+            LemmaId: req.params.lemmaId,
             LanguageIsoCode: req.params.lc
         }
-    }).then(function (entry) {
+    }).then(function (definition) {
         "use strict";
-        entry.getFormattedlayout(req.params.type).then(function(data){
+        definition.getFormattedlayout(req.params.type).then(function(data){
             res.send(data);
         });
 

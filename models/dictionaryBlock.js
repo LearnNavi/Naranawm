@@ -7,7 +7,7 @@ module.exports = function (sequelize, DataTypes) {
 
     DictionaryBlock.associate = function (models) {
         // associations can be defined here
-        DictionaryBlock.hasMany(models.Entry, {
+        DictionaryBlock.hasMany(models.Lemma, {
             onDelete: 'CASCADE'
         });
     };

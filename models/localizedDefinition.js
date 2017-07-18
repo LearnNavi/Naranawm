@@ -5,15 +5,15 @@ const models = require('./index');
 
 module.exports = function (sequelize, DataTypes) {
 
-    const LocalizedEntry = sequelize.define('LocalizedEntry', {
+    const LocalizedDefinition = sequelize.define('LocalizedDefinition', {
         odd: DataTypes.TEXT
     });
 
-    LocalizedEntry.removeAttribute('id');
+    LocalizedDefinition.removeAttribute('id');
 
-    LocalizedEntry.associate = function (models) {
+    LocalizedDefinition.associate = function (models) {
         // associations can be defined here
-        LocalizedEntry.belongsTo(models.Entry, {
+        LocalizedDefinition.belongsTo(models.Lemma, {
             foreignKey: {
                 primaryKey: true,
                 allowNull: false
@@ -21,7 +21,7 @@ module.exports = function (sequelize, DataTypes) {
             constraints: true,
             onDelete: 'cascade'
         });
-        LocalizedEntry.belongsTo(models.Language, {
+        LocalizedDefinition.belongsTo(models.Language, {
             foreignKey: {
                 primaryKey: true,
                 allowNull: false
@@ -29,17 +29,17 @@ module.exports = function (sequelize, DataTypes) {
             constraints: true,
             onDelete: 'cascade'
         });
-        LocalizedEntry.belongsTo(models.PartOfSpeech, {
+        LocalizedDefinition.belongsTo(models.PartOfSpeech, {
             onDelete: 'cascade'
         });
     };
 
-    LocalizedEntry.prototype.getFormattedlayout = function(type){
+    LocalizedDefinition.prototype.getFormattedlayout = function(type){
         const self = this;
         return new Promise(function (resolve, reject) {
-            self.getEntry().then(function(entry){
-                entry.getSource().then(function(source){
-                    entry.getEntryType().then(function(entryType) {
+            self.getLemma().then(function(lemma){
+                lemma.getSource().then(function(source){
+                    lemma.getEntryType().then(function(entryType) {
                         entryType.getMetadata().then(function(metadata){
                             const promises = [];
                             const localMetadata = {};
@@ -55,8 +55,8 @@ module.exports = function (sequelize, DataTypes) {
                                 entryType.getFormattedLayout(type).then(function (formatString) {
                                     //console.log(formatString);
                                     const formatData = {
-                                        lemma: entry.lemma,
-                                        ipa: entry.ipa,
+                                        lemma: lemma.lemma,
+                                        ipa: lemma.ipa,
                                         source: source.name,
                                         partOfSpeech: 'not implemented',
                                         definition: 'not implemented',
@@ -74,13 +74,13 @@ module.exports = function (sequelize, DataTypes) {
         });
     };
 
-    LocalizedEntry.prototype.getHtml = function() {
+    LocalizedDefinition.prototype.getHtml = function() {
         return this.getFormattedlayout("html");
     };
 
-    LocalizedEntry.prototype.getLatex = function() {
+    LocalizedDefinition.prototype.getLatex = function() {
         return this.getFormattedlayout("latex");
     };
 
-    return LocalizedEntry;
+    return LocalizedDefinition;
 };
