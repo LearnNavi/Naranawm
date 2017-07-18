@@ -637,7 +637,7 @@ Dictionary.prototype.exportLemmas = function () {
         }
     }
     return models.Lemma.bulkCreate(lemmas).then(function(){
-        models.Lemma.findAll().then(function(newLemmas){
+        return models.Lemma.findAll().then(function(newLemmas){
             "use strict";
             const promises = [];
             for(let i = 0; i < newLemmas.length; i++){
