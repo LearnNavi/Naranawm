@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const models = require('../../../models/index');
+const models = require('../../models/index');
 
 /* GET languages listing. */
 router.get('/:lc', function(req, res, next) {

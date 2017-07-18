@@ -558,7 +558,7 @@ Dictionary.prototype.exportLemmas = function () {
     // Insert Entries
     const self = this;
     const lemmas = [];
-    const localizedDefinitions = [];
+    const definitions = [];
     for(const id of Object.keys(self.lemmas)){
         const lemma = self.lemmas[id];
         lemmas.push({
@@ -575,19 +575,19 @@ Dictionary.prototype.exportLemmas = function () {
             createdAt: lemma.editTime * 1000
         });
 
-        for(const lc of Object.keys(lemma.localizations)){
-            const localizedDefinition = lemma.localizations[lc];
-            localizedDefinitions.push({
+        for(const lc of Object.keys(lemma.definitions)){
+            const definition = lemma.definitions[lc];
+            definitions.push({
                 LemmaId: lemma.id,
                 LanguageIsoCode: lc,
-                odd: localizedDefinition.odd,
-                createdAt: localizedDefinition.editTime * 1000
+                odd: definition.odd,
+                createdAt: definition.editTime * 1000
             });
 
         }
     }
     return models.Lemma.bulkCreate(lemmas).then(function(){
-        return models.LocalizedDefinition.bulkCreate(localizedDefinitions);
+        return models.Definition.bulkCreate(definitions);
     });
 };
 
@@ -1155,13 +1155,13 @@ function buildDictionaryLemmas(self) {
                 // adding an empty object to keep from failing out
                 self.eanaEltu.dictWordLoc[id] = {};
             }
-            let localizedDefinition = self.eanaEltu.dictWordLoc[id][lc];
+            let definition = self.eanaEltu.dictWordLoc[id][lc];
 
             if (lc === 'en') {
-                localizedDefinition = rawLemma;
+                definition = rawLemma;
             }
 
-            if(localizedDefinition === undefined){
+            if(definition === undefined){
                 if(self.debug){
                     console.log("<" + lemma.lemma + "> Missing [" + lc + "] Localization for " + id);
                 }
@@ -1171,17 +1171,17 @@ function buildDictionaryLemmas(self) {
                 self.missingDefinitionTranslations[lc].push({id: id, lemma: lemma.lemma});
 
             } else {
-                const processedLocalizedDefinition = lemma.addLocalization(localizedDefinition, lc);
+                const processedDefinition = lemma.addDefinition(definition, lc);
 
                 if(lemma.block === 0){
-                    if(self.partsOfSpeech[processedLocalizedDefinition.lc] === undefined){
-                        self.partsOfSpeech[processedLocalizedDefinition.lc] = {};
+                    if(self.partsOfSpeech[processedDefinition.lc] === undefined){
+                        self.partsOfSpeech[processedDefinition.lc] = {};
                     }
-                    if(self.partsOfSpeech[processedLocalizedDefinition.lc][processedLocalizedDefinition.partOfSpeech] === undefined){
-                        self.partsOfSpeech[processedLocalizedDefinition.lc][processedLocalizedDefinition.partOfSpeech] = {};
+                    if(self.partsOfSpeech[processedDefinition.lc][processedDefinition.partOfSpeech] === undefined){
+                        self.partsOfSpeech[processedDefinition.lc][processedDefinition.partOfSpeech] = {};
 
                     }
-                    self.partsOfSpeech[processedLocalizedDefinition.lc][processedLocalizedDefinition.partOfSpeech][lemma.type] = lemma.block;
+                    self.partsOfSpeech[processedDefinition.lc][processedDefinition.partOfSpeech][lemma.type] = lemma.block;
                 }
             }
         }

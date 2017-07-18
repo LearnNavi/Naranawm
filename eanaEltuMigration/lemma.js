@@ -57,31 +57,31 @@ function Lemma(rawLemma) {
     this.source = parseSource(rawLemma);
     this.partOfSpeech = this.parsePartOfSpeech(rawLemma);
     this.ipa = parseIpa(rawLemma);
-    this.localizations = {};
+    this.definitions = {};
 
     this.rawLemma = rawLemma;
 }
 
-Lemma.prototype.addLocalization = function (localizedDefinition, lc) {
+Lemma.prototype.addDefinition = function (definition, lc) {
     // Pull out each of the 10 args, if the arg is missing from the localized version, use the primary instead
     const entry = {
-        odd: localizedDefinition.odd,
-        editTime: localizedDefinition.editTime,
-        lc: localizedDefinition.lc,
-        partOfSpeech: this.parsePartOfSpeech(localizedDefinition),
-        arg1: localizedDefinition.arg1,
-        arg2: localizedDefinition.arg2,
-        arg3: localizedDefinition.arg3,
-        arg4: localizedDefinition.arg4,
-        arg5: localizedDefinition.arg5,
-        arg6: localizedDefinition.arg6,
-        arg7: localizedDefinition.arg7,
-        arg8: localizedDefinition.arg8,
-        arg9: localizedDefinition.arg9,
-        arg10: localizedDefinition.arg10
+        odd: definition.odd,
+        editTime: definition.editTime,
+        lc: definition.lc,
+        partOfSpeech: this.parsePartOfSpeech(definition),
+        arg1: definition.arg1,
+        arg2: definition.arg2,
+        arg3: definition.arg3,
+        arg4: definition.arg4,
+        arg5: definition.arg5,
+        arg6: definition.arg6,
+        arg7: definition.arg7,
+        arg8: definition.arg8,
+        arg9: definition.arg9,
+        arg10: definition.arg10
     };
 
-    this.localizations[lc] = entry;
+    this.definitions[lc] = entry;
 
     return entry;
 };
@@ -90,7 +90,7 @@ Lemma.prototype.finalizeLemma = function () {
     delete this.rawLemma;
 };
 
-Lemma.prototype.parsePartOfSpeech = function(localization) {
+Lemma.prototype.parsePartOfSpeech = function(definition) {
     // Part of Speech
     let result = "";
     switch(this.type){
@@ -128,7 +128,7 @@ Lemma.prototype.parsePartOfSpeech = function(localization) {
         case 'pderives':
         case 'pword':
         case 'word':
-            result += localization.arg3;
+            result += definition.arg3;
             break;
 
         // Arg 4
@@ -137,12 +137,12 @@ Lemma.prototype.parsePartOfSpeech = function(localization) {
         case 'alloffixNN':
         case 'alloffixx':
         case 'alloffixxN':
-            result += localization.arg4;
+            result += definition.arg4;
             break;
 
         // Arg 9
         case 'allofix':
-            result += localization.arg9;
+            result += definition.arg9;
             break;
     }
 

@@ -10,7 +10,7 @@ module.exports = function (sequelize, DataTypes) {
 
     Lemma.associate = function (models) {
         // associations can be defined here
-        Lemma.hasMany(models.LocalizedDefinition, {
+        Lemma.hasMany(models.Definition, {
             onDelete: 'CASCADE'
         });
         Lemma.belongsTo(models.Source, {

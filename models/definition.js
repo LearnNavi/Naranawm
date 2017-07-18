@@ -5,15 +5,15 @@ const models = require('./index');
 
 module.exports = function (sequelize, DataTypes) {
 
-    const LocalizedDefinition = sequelize.define('LocalizedDefinition', {
+    const Definition = sequelize.define('Definition', {
         odd: DataTypes.TEXT
     });
 
-    LocalizedDefinition.removeAttribute('id');
+    Definition.removeAttribute('id');
 
-    LocalizedDefinition.associate = function (models) {
+    Definition.associate = function (models) {
         // associations can be defined here
-        LocalizedDefinition.belongsTo(models.Lemma, {
+        Definition.belongsTo(models.Lemma, {
             foreignKey: {
                 primaryKey: true,
                 allowNull: false
@@ -21,7 +21,7 @@ module.exports = function (sequelize, DataTypes) {
             constraints: true,
             onDelete: 'cascade'
         });
-        LocalizedDefinition.belongsTo(models.Language, {
+        Definition.belongsTo(models.Language, {
             foreignKey: {
                 primaryKey: true,
                 allowNull: false
@@ -29,12 +29,12 @@ module.exports = function (sequelize, DataTypes) {
             constraints: true,
             onDelete: 'cascade'
         });
-        LocalizedDefinition.belongsTo(models.PartOfSpeech, {
+        Definition.belongsTo(models.PartOfSpeech, {
             onDelete: 'cascade'
         });
     };
 
-    LocalizedDefinition.prototype.getFormattedlayout = function(type){
+    Definition.prototype.getFormattedlayout = function(type){
         const self = this;
         return new Promise(function (resolve, reject) {
             self.getLemma().then(function(lemma){
@@ -74,13 +74,13 @@ module.exports = function (sequelize, DataTypes) {
         });
     };
 
-    LocalizedDefinition.prototype.getHtml = function() {
+    Definition.prototype.getHtml = function() {
         return this.getFormattedlayout("html");
     };
 
-    LocalizedDefinition.prototype.getLatex = function() {
+    Definition.prototype.getLatex = function() {
         return this.getFormattedlayout("latex");
     };
 
-    return LocalizedDefinition;
+    return Definition;
 };

@@ -16,9 +16,9 @@ router.use('/entry/typeEntries', require('./v1/entry/typeTemplates'));
 router.use('/entry/types', require('./v1/entry/types'));
 router.use('/entry/typeTemplates', require('./v1/entry/typeTemplates'));
 
+router.use('/definitions', require('./v1/definitions'));
 router.use('/languages', require('./v1/languages'));
 
-router.use('/localized/definitions', require('./v1/localized/definitions'));
 router.use('/localized/entry/layouts', require('./v1/localized/entryLayouts'));
 router.use('/localized/metadata', require('./v1/localized/metadata'));
 
