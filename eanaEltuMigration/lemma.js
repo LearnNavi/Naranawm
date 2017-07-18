@@ -55,7 +55,7 @@ function Lemma(rawLemma) {
     this.editTime = rawLemma.editTime;
     this.audio = rawLemma.audio;
     this.source = parseSource(rawLemma);
-    this.partOfSpeech = this.parsePartOfSpeech(rawLemma);
+    this.classTypes = this.parseLemmaClasses(rawLemma);
     this.ipa = parseIpa(rawLemma);
     this.definitions = {};
 
@@ -68,7 +68,7 @@ Lemma.prototype.addDefinition = function (definition, lc) {
         odd: definition.odd,
         editTime: definition.editTime,
         lc: definition.lc,
-        partOfSpeech: this.parsePartOfSpeech(definition),
+        classTypes: this.parseLemmaClasses(definition),
         arg1: definition.arg1,
         arg2: definition.arg2,
         arg3: definition.arg3,
@@ -90,7 +90,7 @@ Lemma.prototype.finalizeLemma = function () {
     delete this.rawLemma;
 };
 
-Lemma.prototype.parsePartOfSpeech = function(definition) {
+Lemma.prototype.parseLemmaClasses = function(definition) {
     // Part of Speech
     let result = "";
     switch(this.type){
@@ -145,8 +145,11 @@ Lemma.prototype.parsePartOfSpeech = function(definition) {
             result += definition.arg9;
             break;
     }
-
-    return result.trim();
+    const types = result.split(",");
+    for(let type of types){
+        type = type.trim();
+    }
+    return types;
 };
 
 function parseSource(entry) {

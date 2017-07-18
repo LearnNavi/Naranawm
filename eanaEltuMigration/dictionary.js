@@ -26,7 +26,7 @@ function Dictionary () {
     this.entryTemplates = {};
     this.lemmas = {};
     this.sources = {};
-    this.partsOfSpeech = {};
+    this.lemmaClassTypes = {};
     this.missingMetadataTranslations = {};
     this.missingDefinitionTranslations = {};
     this.missingSources = [];
@@ -338,7 +338,6 @@ Dictionary.prototype.createEntryTypeWithMetada = function(entryType, metadata){
     const self = this;
     return models.EntryType.create(entryType).then(function(newEntryType){
         for(let i = 0; i < metadata.length; i++) {
-            console.log(metadata[i]);
             newEntryType.addMetadata(self.metadata[metadata[i]]);
         }
         return newEntryType.save();
@@ -362,7 +361,7 @@ Dictionary.prototype.exportEntryLayouts = function () {
             children: [
                 {
                     id: 'IPA_ENTRY',
-                    layout: '{lemma}: [{ipa}] {source} {partOfSpeech} {entry}',
+                    layout: '{lemma}: [{ipa}] {source} {lemma_class} {entry}',
                     ParentId: "ENTRY",
                     templates: [
                         {
@@ -380,7 +379,7 @@ Dictionary.prototype.exportEntryLayouts = function () {
                         },{
                             id: 'TEXT',
                             position: 3,
-                            field: 'partOfSpeech'
+                            field: 'lemma_class'
                         },{
                             id: 'TEXT',
                             position: 4,
@@ -557,23 +556,51 @@ Dictionary.prototype.exportMetadata = function () {
     });
 };
 
-Dictionary.prototype.exportPartsOfSpeech = function () {
+Dictionary.prototype.exportLemmaClassTypes = function () {
     // Insert Parts of Speech
     const self = this;
-    const partsOfSpeech = [];
-    for (const langId of Object.keys(self.partsOfSpeech)) {
-        for (const pos of Object.keys(self.partsOfSpeech[langId])) {
-            if (pos === "") {
-                continue;
+    const classTypes = [];
+    for (const classType of Object.keys(self.lemmaClassTypes)) {
+        const newClassType = {
+            LanguageIsoCode: "nav",
+            id: classType,
+            name: classType,
+            abbreviation: classType,
+            description: classType
+        };
+        for (const lc of Object.keys(self.lemmaClassTypes[classType].localizations)) {
+            const lcClassType = self.lemmaClassTypes[classType].localizations[lc];
+            if(lcClassType !== null && lcClassType !== undefined && lcClassType !== "null"){
+                if(lc !== "nav"){
+                    //console.log(classType, lc);
+                    classTypes.push({
+                        LanguageIsoCode: lc,
+                        id: classType,
+                        name: lcClassType,
+                        abbreviation: lcClassType,
+                        description: lcClassType
+                    });
+                } else {
+                    // Overriding with 'nav' values for the master element
+                    newClassType.name = lcClassType;
+                    newClassType.abbreviation = lcClassType;
+                    newClassType.description = lcClassType;
+                }
             }
-            partsOfSpeech.push({
-                LanguageIsoCode: langId,
-                type: pos
-            });
         }
+        classTypes.push(newClassType);
     }
 
-    return models.PartOfSpeech.bulkCreate(partsOfSpeech);
+    //console.log(classTypes);
+
+    return models.LemmaClassType.bulkCreate(classTypes).then(function(){
+        "use strict";
+        return models.LemmaClassType.findAll({where: {LanguageIsoCode: "nav"}}).then(function(lemmaClassTypes){
+            for(let i = 0; i < lemmaClassTypes.length; i ++){
+                self.lemmaClassTypes[lemmaClassTypes[i].id] = lemmaClassTypes[i];
+            }
+        })
+    });
 };
 
 Dictionary.prototype.exportLemmas = function () {
@@ -610,7 +637,24 @@ Dictionary.prototype.exportLemmas = function () {
         }
     }
     return models.Lemma.bulkCreate(lemmas).then(function(){
-        return models.Definition.bulkCreate(definitions);
+        models.Lemma.findAll().then(function(newLemmas){
+            "use strict";
+            const promises = [];
+            for(let i = 0; i < newLemmas.length; i++){
+                const newLemma = newLemmas[i];
+                const lemma = self.lemmas[newLemma.id];
+                const classTypes = [];
+                for(let j = 0; j < lemma.classTypes.length; j++){
+                    const classType = lemma.classTypes[j].trim();
+                    classTypes.push(self.lemmaClassTypes[classType]);
+                }
+                newLemma.setLemmaClassTypes(classTypes);
+                promises.push(newLemma.save());
+            }
+            return Promise.all(promises).then(function(){
+                return models.Definition.bulkCreate(definitions);
+            });
+        });
     });
 };
 
@@ -635,7 +679,7 @@ Dictionary.prototype.export = function (callback) {
             secondLayerPromises.push(self.exportDictionaryTemplates());
             secondLayerPromises.push(self.exportDictionaryBuilds());
             secondLayerPromises.push(self.exportMetadata());
-            //secondLayerPromises.push(self.exportPartsOfSpeech());
+            secondLayerPromises.push(self.exportLemmaClassTypes());
 
             Promise.all(secondLayerPromises).then(function(){
 
@@ -679,7 +723,7 @@ function getDictionaryBuildTemplate(data){
         case "\\end{hangparas}}\\end{multicols}+\\newpage":
             return "end_hangparas_multicols_newpage";
         default:
-            console.log(data);
+            console.log(723, data);
             return;
     }
 }
@@ -1085,7 +1129,7 @@ function buildDictionaryTemplates(self) {
 
 
                 if(metadata === ""){
-                    console.log(lc, index, result[1], metadata, meta[lc].value);
+                    console.log(1129, lc, index, result[1], metadata, meta[lc].value);
                 }
 
                 if(index === "cww" || index === "derives"){
@@ -1098,7 +1142,7 @@ function buildDictionaryTemplates(self) {
                     const secondOpenBraceIndex = metadata.indexOf('{', firstCloseBraceIndex);
                     const firstMetadataPart = metadata.substring(0, firstOpenBraceIndex);
                     const secondMetadataPart = metadata.substring(firstCloseBraceIndex + 2, secondOpenBraceIndex);
-                    console.log(firstMetadataPart, secondMetadataPart);
+                    //console.log(1142, firstMetadataPart, secondMetadataPart);
 
                     metadata = firstMetadataPart;
                     //localizedFormat = metadata;
@@ -1129,7 +1173,7 @@ function buildDictionaryTemplates(self) {
                 // sub_entry_lemma_def exists in the localized layout but not in the main layout
                 // we need to pull this out and move it to the main...
 
-                console.log(index, layout, localizedFormat);
+                console.log(1173, index, layout, localizedFormat);
 
             }
 
@@ -1158,6 +1202,23 @@ function buildDictionaryTemplates(self) {
     }
 }
 
+function processLemmaClass(self, classType){
+    "use strict";
+    if(self.lemmaClassTypes[classType.trim()] === undefined){
+        self.lemmaClassTypes[classType.trim()] = {
+            id: classType.trim(),
+            localizations: {}
+        };
+    }
+}
+
+function processLocalizedLemmaClass(self, classType, localizedClassType, lc){
+    "use strict";
+    if(localizedClassType !== null && localizedClassType !== undefined){
+        self.lemmaClassTypes[classType.trim()].localizations[lc] = localizedClassType.trim();
+    }
+}
+
 function buildDictionaryLemmas(self) {
     for(let id in self.eanaEltu.dictWordMeta){
         const rawLemma = self.eanaEltu.dictWordMeta[id];
@@ -1170,6 +1231,10 @@ function buildDictionaryLemmas(self) {
                 console.log("Missing Source: " + lemma.lemma, lemma.type, lemma.id);
             }
             self.missingSources.push({id: lemma.id, lemma: lemma.lemma});
+        }
+
+        for(const classType of lemma.classTypes){
+            processLemmaClass(self, classType);
         }
 
         for(let lc in self.languages){
@@ -1196,15 +1261,15 @@ function buildDictionaryLemmas(self) {
             } else {
                 const processedDefinition = lemma.addDefinition(definition, lc);
 
-                if(lemma.block === 0){
-                    if(self.partsOfSpeech[processedDefinition.lc] === undefined){
-                        self.partsOfSpeech[processedDefinition.lc] = {};
+                if(lemma.block === 0 && processedDefinition.classTypes !== undefined && processedDefinition.classTypes.length > 0){
+                    if(processedDefinition.classTypes.length !== lemma.classTypes.length){
+                        //console.log(1263, "LENGTH MISMATCH!!!", lemma.id, lemma.classTypes, processedDefinition.classTypes);
+                    } else {
+                        for(let i = 0; i < processedDefinition.classTypes.length; i++){
+                            //console.log(classType, processedDefinition.lc);
+                            processLocalizedLemmaClass(self, lemma.classTypes[i], processedDefinition.classTypes[i], processedDefinition.lc);
+                        }
                     }
-                    if(self.partsOfSpeech[processedDefinition.lc][processedDefinition.partOfSpeech] === undefined){
-                        self.partsOfSpeech[processedDefinition.lc][processedDefinition.partOfSpeech] = {};
-
-                    }
-                    self.partsOfSpeech[processedDefinition.lc][processedDefinition.partOfSpeech][lemma.type] = lemma.block;
                 }
             }
         }
@@ -1212,12 +1277,12 @@ function buildDictionaryLemmas(self) {
         lemma.finalizeLemma();
         self.lemmas[lemma.id] = lemma;
     }
-    const keys = Object.keys(self.partsOfSpeech);
+    const keys = Object.keys(self.lemmaClassTypes);
 
      for(let j = 0; j < keys.length; j++){
-         const types = Object.keys(self.partsOfSpeech[keys[j]]).sort();
+         const types = Object.keys(self.lemmaClassTypes[keys[j]]).sort();
          if(self.debug){
-             console.log(keys[j] + " <|> " + types.join(" | "));
+             console.log(1282, keys[j] + " <|> " + types.join(" | "));
          }
      }
 }

@@ -43,6 +43,9 @@ module.exports = function (sequelize, DataTypes) {
             constraints: true,
             onDelete: 'cascade'
         });
+        Lemma.belongsToMany(models.LemmaClassType, {
+            through: "LemmaClassTypeAssociations"
+        });
     };
 
     return Lemma;

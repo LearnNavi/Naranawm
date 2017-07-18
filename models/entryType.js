@@ -42,7 +42,6 @@ module.exports = function (sequelize, DataTypes) {
                     const regex = /{LAYOUTS\.(.*)}/;
                     let result;
                     while(result = self.layout.match(regex)){
-                        console.log(result);
                         self.layout = self.layout.replace(result[0], "{TEST}");
                     }
                 }

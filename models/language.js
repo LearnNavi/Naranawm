@@ -13,9 +13,7 @@ module.exports = function (sequelize, DataTypes) {
         Language.hasMany(models.Definition, {
             onDelete: 'CASCADE'
         });
-        Language.hasMany(models.PartOfSpeech, {
-            onDelete: 'CASCADE'
-        });
+
     };
 
     return Language;
