@@ -7,6 +7,14 @@ module.exports = function (sequelize, DataTypes) {
 
     DictionaryBlock.associate = function (models) {
         // associations can be defined here
+        DictionaryBlock.belongsTo(models.Language, {
+            foreignKey: {
+                allowNull: false,
+                primaryKey: true
+            },
+            constraints: true,
+            onDelete: 'cascade'
+        });
         DictionaryBlock.hasMany(models.Lemma, {
             onDelete: 'CASCADE'
         });

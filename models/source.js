@@ -7,6 +7,14 @@ module.exports = function (sequelize, DataTypes) {
 
     Source.associate = function (models) {
         // associations can be defined here
+        Source.belongsTo(models.Language, {
+            foreignKey: {
+                allowNull: false,
+                primaryKey: true
+            },
+            constraints: true,
+            onDelete: 'cascade'
+        });
         Source.hasMany(models.Lemma);
     };
 

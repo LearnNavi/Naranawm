@@ -17,6 +17,15 @@ module.exports = function (sequelize, DataTypes) {
             onDelete: 'cascade'
         });
 
+        DictionaryBuildData.belongsTo(models.Language, {
+            foreignKey: {
+                primaryKey: true,
+                allowNull: false
+            },
+            constraints: true,
+            onDelete: 'cascade'
+        });
+
         DictionaryBuildData.belongsTo(models.DictionaryBlock, {
             foreignKey: {
                 allowNull: true

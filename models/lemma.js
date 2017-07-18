@@ -10,6 +10,15 @@ module.exports = function (sequelize, DataTypes) {
 
     Lemma.associate = function (models) {
         // associations can be defined here
+        Lemma.belongsTo(models.Language, {
+            foreignKey: {
+                allowNull: false,
+                primaryKey: true
+            },
+            constraints: true,
+            onDelete: 'cascade'
+        });
+
         Lemma.hasMany(models.Definition, {
             onDelete: 'CASCADE'
         });

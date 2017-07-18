@@ -9,7 +9,14 @@ module.exports = function (sequelize, DataTypes) {
 
     DictionaryTemplate.associate = function (models) {
         // associations can be defined here
-        
+        DictionaryTemplate.belongsTo(models.Language, {
+            foreignKey: {
+                allowNull: false,
+                primaryKey: true
+            },
+            constraints: true,
+            onDelete: 'cascade'
+        });
     };
 
     return DictionaryTemplate;

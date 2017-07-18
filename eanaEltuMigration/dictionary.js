@@ -58,40 +58,52 @@ Dictionary.prototype.exportDictionaryBuilds = function () {
     const blocks = [   // Copied out of EE perl script
         {
             id: 0,
-            description: "Main Block"
+            description: "Main Block",
+            LanguageIsoCode: "nav"
         },{
             id: 1,
-            description: "Invalid Words Block"
+            description: "Invalid Words Block",
+            LanguageIsoCode: "nav"
         },{
             id: 2,
-            description: "Infixes Block"
+            description: "Infixes Block",
+            LanguageIsoCode: "nav"
         },{
             id: 3,
-            description: "Noun Inflections Block"
+            description: "Noun Inflections Block",
+            LanguageIsoCode: "nav"
         },{
             id: 4,
-            description: "Other noun inflections block"
+            description: "Other noun inflections block",
+            LanguageIsoCode: "nav"
         },{
             id: 5,
-            description: "English Shorthand Terms Block [DEPRECATED]"
+            description: "English Shorthand Terms Block [DEPRECATED]",
+            LanguageIsoCode: "nav"
         },{
             id: 6,
-            description: "Proper Nouns Block"
+            description: "Proper Nouns Block",
+            LanguageIsoCode: "nav"
         },{
             id: 7,
-            description: "Proper Nouns Block (Flora)"
+            description: "Proper Nouns Block (Flora)",
+            LanguageIsoCode: "nav"
         },{
             id: 8,
-            description: "Proper Nouns Block (Fauna)"
+            description: "Proper Nouns Block (Fauna)",
+            LanguageIsoCode: "nav"
         },{
             id: 9,
-            description: "Loaned Words Block"
+            description: "Loaned Words Block",
+            LanguageIsoCode: "nav"
         },{
             id: 10,
-            description: "Phrases Block"
+            description: "Phrases Block",
+            LanguageIsoCode: "nav"
         },{
             id: 11,
-            description: "Derivational Morph Block"
+            description: "Derivational Morph Block",
+            LanguageIsoCode: "nav"
         }
     ];
     const builds = [];
@@ -99,7 +111,8 @@ Dictionary.prototype.exportDictionaryBuilds = function () {
     for(const type of Object.keys(self.eanaEltu.dictOrder)){
         builds.push({
             id: type,
-            description: getDictionaryBuildDescription(type)
+            description: getDictionaryBuildDescription(type),
+            LanguageIsoCode: "nav"
         });
         for(const position of Object.keys(self.eanaEltu.dictOrder[type])){
             const data = self.eanaEltu.dictOrder[type][position];
@@ -123,7 +136,8 @@ Dictionary.prototype.exportDictionaryBuilds = function () {
                 TemplateId: data.template,
                 position: data.pos,
                 type: data.type,
-                data: getDictionaryBuildData(data)
+                data: getDictionaryBuildData(data),
+                LanguageIsoCode: "nav"
             });
         }
     }
@@ -169,7 +183,8 @@ Dictionary.prototype.exportSources = function(){
     for(const source of Object.keys(self.sources)){
         sources.push({
             name: source,
-            description: getSourceDescription(source)
+            description: getSourceDescription(source),
+            LanguageIsoCode: "nav"
         });
     }
 
@@ -189,27 +204,33 @@ Dictionary.prototype.exportDictionaryTemplates = function () {
         {
             id: "localized_end",
             latex: "__END__",
-            html: ""
+            html: "",
+            LanguageIsoCode: "nav"
         }, {
             id: "newpage",
             latex: "\\newpage",
-            html: ""
+            html: "",
+            LanguageIsoCode: "nav"
         }, {
             id: "end_hangparas_multicols",
             latex: "\\end{hangparas}}\\end{multicols}",
-            html: ""
+            html: "",
+            LanguageIsoCode: "nav"
         }, {
             id: "end_hangparas",
             latex: "\\end{hangparas}",
-            html: ""
+            html: "",
+            LanguageIsoCode: "nav"
         }, {
             id: "end_document",
             latex: "\\end{document}",
-            html: ""
+            html: "",
+            LanguageIsoCode: "nav"
         }, {
             id: "end_hangparas_multicols_newpage",
             latex: "\\end{hangparas}}\\end{multicols}+\\newpage",
-            html: ""
+            html: "",
+            LanguageIsoCode: "nav"
         }];
 
     for(const id of Object.keys(self.eanaEltu.dictLayout)){
@@ -223,7 +244,8 @@ Dictionary.prototype.exportDictionaryTemplates = function () {
         templates.push({
             id: layout.id.toLowerCase(),
             latex: layout.value,
-            html: ""
+            html: "",
+            LanguageIsoCode: "nav"
         });
     }
 
@@ -563,6 +585,7 @@ Dictionary.prototype.exportLemmas = function () {
         const lemma = self.lemmas[id];
         lemmas.push({
             id: lemma.id,
+            LanguageIsoCode: "nav",
             pubId: lemma.pubId,
             lemma: lemma.lemma,
             ipa: lemma.ipa,
@@ -603,13 +626,13 @@ Dictionary.prototype.export = function (callback) {
         const topLayerPromises = [];
         topLayerPromises.push(self.exportLanguages());
         topLayerPromises.push(self.exportSources());
-        topLayerPromises.push(self.exportDictionaryTemplates());
         topLayerPromises.push(self.exportEntryTemplates());
 
         Promise.all(topLayerPromises).then(function(){
             "use strict";
             // These need the topLayerPromises to be resolved first, as they require data that they provide
             const secondLayerPromises = [];
+            secondLayerPromises.push(self.exportDictionaryTemplates());
             secondLayerPromises.push(self.exportDictionaryBuilds());
             secondLayerPromises.push(self.exportMetadata());
             //secondLayerPromises.push(self.exportPartsOfSpeech());
