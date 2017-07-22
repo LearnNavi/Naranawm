@@ -4,9 +4,9 @@ const models = require('../../models/index');
 
 /* GET languages listing. */
 router.get('/', function(req, res, next) {
-    models.PartOfSpeech.findAll().then(function (partsOfSpeech) {
+    models.LemmaClassType.findAll().then(function (classTypes) {
         "use strict";
-        res.send(partsOfSpeech);
+        res.send(classTypes);
     });
 
 });

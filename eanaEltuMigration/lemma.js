@@ -58,6 +58,8 @@ function Lemma(rawLemma) {
     this.classTypes = this.parseLemmaClasses(rawLemma);
     this.ipa = parseIpa(rawLemma);
     this.definitions = {};
+    this.linkedLemmas = this.parseLinkedLemmas(rawLemma);
+    this.invalid = this.parseInvalidity(rawLemma);
 
     this.rawLemma = rawLemma;
 }
@@ -69,6 +71,8 @@ Lemma.prototype.addDefinition = function (definition, lc) {
         editTime: definition.editTime,
         lc: definition.lc,
         classTypes: this.parseLemmaClasses(definition),
+        linkedLemmas: this.parseLinkedLemmas(definition),
+        definition: this.parseDefinition(definition),
         arg1: definition.arg1,
         arg2: definition.arg2,
         arg3: definition.arg3,
@@ -90,6 +94,62 @@ Lemma.prototype.finalizeLemma = function () {
     delete this.rawLemma;
 };
 
+Lemma.prototype.parseInvalidity = function(rawLemma) {
+    "use strict";
+    if(rawLemma.block === 1){
+        return true;
+    } else {
+        return false;
+    }
+};
+
+Lemma.prototype.parseDefinition = function(definition) {
+    "use strict";
+    switch(this.type){
+        case "cw":
+        case "cww":
+        case "derive":
+        case "derives":
+        case "lenite":
+        case "loan":
+        case "note":
+            return definition.arg4;
+
+        case "alloffixN":
+
+    }
+};
+
+Lemma.prototype.parseLinkedLemmas = function(rawLemma) {
+    "use strict";
+
+    switch(this.type){
+        // Process CW type
+        case "cw":
+        case "derive":
+            return [{
+                lemma: rawLemma.arg5,
+                note: rawLemma.arg6
+            }, {
+                lemma: rawLemma.arg7,
+                note: rawLemma.arg8
+            }];
+
+        case "cww":
+        case "derives":
+            return [{
+                lemma: rawLemma.arg5,
+                note: rawLemma.arg6
+            }];
+
+        case "note":
+            return [{
+                lemma: rawLemma.arg6,
+                note: rawLemma.arg7
+            }];
+    }
+};
+
 Lemma.prototype.parseLemmaClasses = function(definition) {
     // Part of Speech
     let result = "";
@@ -99,7 +159,6 @@ Lemma.prototype.parseLemmaClasses = function(definition) {
         case 'affectN':
         case 'affectNN':
         case 'affix':
-        case 'affixN':
         case 'affixNN':
         case 'cw':
         case 'cww':
@@ -107,13 +166,10 @@ Lemma.prototype.parseLemmaClasses = function(definition) {
         case 'deriveall':
         case 'derives':
         case 'derivingaffix':
-        case 'derivingaffixN':
         case 'derivingaffixNN':
         case 'infix':
-        case 'infixN':
         case 'infixNN':
         case 'infixcw':
-        case 'infixcwN':
         case 'infixcwNN':
         case 'infixcww':
         case 'infixcwww':
@@ -121,7 +177,6 @@ Lemma.prototype.parseLemmaClasses = function(definition) {
         case 'liu':
         case 'loan':
         case 'marker':
-        case 'markerN':
         case 'markerNN':
         case 'note':
         case 'pcw':
@@ -140,9 +195,25 @@ Lemma.prototype.parseLemmaClasses = function(definition) {
             result += definition.arg4;
             break;
 
+        // Arg 7
+        case "markerN":
+        case "derivingaffixN":
+            result += definition.arg7;
+            break;
+
+        // Arg 8
+        case 'infixN':
+            result += definition.arg8;
+            break;
+
         // Arg 9
         case 'allofix':
             result += definition.arg9;
+            break;
+
+        // Arg 10
+        case "infixcwN":
+            result += definition.arg10;
             break;
     }
     const types = result.split(",");

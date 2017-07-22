@@ -24,7 +24,7 @@ router.use('/localized/metadata', require('./v1/localized/metadata'));
 
 router.use('/metadata', require('./v1/metadata'));
 
-router.use('/partsOfSpeech', require('./v1/partsOfSpeech'));
+router.use('/partsOfSpeech', require('./v1/lemmaClassTypes'));
 
 router.use('/sources', require('./v1/sources'));
 

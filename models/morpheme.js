@@ -1,20 +1,19 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const Lemma = sequelize.define('Lemma', {
+    const Morpheme = sequelize.define('Morpheme', {
         pubId: { type: DataTypes.INTEGER },
-        lemma: { type: DataTypes.STRING, allowNull: false },
+        morpheme: { type: DataTypes.STRING, allowNull: false },
         ipa: { type: DataTypes.STRING },
         audio: { type: DataTypes.STRING },
-        // This is for keeping track of lemmas that may have been created for this language,
-        // but were either created in error, or by those not authorized to create new lemmas for the language
-        // This flag lets us document them for completeness, but lets us filter them out
-        invalid: { type: DataTypes.BOOLEAN, defaultValue: false }
+        boundType: { type: DataTypes.ENUM("bound_derivational", "bound_inflectional", "free"), allowNull: true },
+        productive: { type: DataTypes.BOOLEAN },
+        eeType: { type: DataTypes.STRING } // Temporary Field for debugging (TODO: delete field once done)
     });
 
-    Lemma.associate = function (models) {
+    Morpheme.associate = function (models) {
         // associations can be defined here
-        Lemma.belongsTo(models.Language, {
+        Morpheme.belongsTo(models.Language, {
             foreignKey: {
                 allowNull: false,
                 primaryKey: true
@@ -23,34 +22,36 @@ module.exports = function (sequelize, DataTypes) {
             onDelete: 'cascade'
         });
 
-        Lemma.hasMany(models.LemmaDefinition, {
+        Morpheme.hasMany(models.MorphemeDefinition, {
             onDelete: 'CASCADE'
         });
-        Lemma.belongsTo(models.Source, {
+
+        Morpheme.belongsTo(models.Source, {
             foreignKey: {
                 allowNull: false
             },
             constraints: true,
             onDelete: 'cascade'
         });
-        Lemma.belongsTo(models.DictionaryBlock, {
+
+        Morpheme.belongsTo(models.MorphemeAffixType, {
             foreignKey: {
                 allowNull: false
             },
             constraints: true,
             onDelete: 'cascade'
         });
-        Lemma.belongsTo(models.EntryType, {
+
+        Morpheme.belongsTo(models.DictionaryBlock, {
             foreignKey: {
                 allowNull: false
             },
             constraints: true,
             onDelete: 'cascade'
         });
-        Lemma.belongsToMany(models.LemmaClassType, {
-            through: "LemmaClassTypeAssociations"
-        });
+
+
     };
 
-    return Lemma;
+    return Morpheme;
 };

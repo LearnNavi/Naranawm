@@ -1,0 +1,62 @@
+alloffixN
+    block 3
+    not a lemma, but a weird grammar suffix thing
+
+
+note
+    block 0
+    arg4 -> definition
+    arg5 -> note text (localized)
+    arg6 -> lemma reference
+    arg7 -> lemma reference definition
+
+derivingaffix -- Needs Discussion
+    block 0
+    nì-- and si
+    no definition listed
+    adverbial - deriving affix
+
+derivingaffixN
+    blocks 11 / 4
+
+infixN
+    block 2
+    arg4 -> infix position info (1, 2, pre-first)
+    arg8 -> lemmaClassType
+    arg3 -> lemmaClassType Description (long form)
+    arg6 -> na'vi sample sentence
+    arg7 -> translated sample sentence
+
+infixcwN
+    block 2
+    arg4 -> infix position info (1, 2, pre-first)
+    arg10 -> lemmaClassType
+    arg3 -> lemmaClassType Description (long form)
+    arg5 -> lemma reference 1
+    arg6 -> lemma reference 2
+    arg8 -> na'vi sample sentence
+    arg9 -> translated sample sentence
+
+lenite ( may need manual intervention for entries with "odd" data )
+    block 0
+    arg3 -> lemmaClassType
+    arg4 -> definition
+    arg5 -> "variant of" arg5
+    odd -> has cw type language and values... WTF???
+
+liu ( needs to be refactored, this type should really just go away )
+    block 0 and 10
+    arg4 -> latex encoded data
+
+loan
+    arg4 -> definition
+    arg5 -> original word
+    arg7 -> original language
+    odd -> notes
+
+markerN
+    block 4 (1 entry in block 11)
+    arg7 -> lemmaClassType
+    arg5 -> na'vi sample sentence
+    arg6 -> translated sample sentence
+    arg3 -> lemmaClassType Description (long form)

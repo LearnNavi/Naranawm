@@ -4,7 +4,7 @@ const models = require('../../models/index');
 
 /* GET languages listing. */
 router.get('/:lc', function(req, res, next) {
-    models.Definition.findAll({ where:
+    models.LemmaDefinition.findAll({ where:
         {
             LanguageIsoCode: req.params.lc
         }
@@ -17,7 +17,7 @@ router.get('/:lc', function(req, res, next) {
 
 router.get('/:lc/:lemmaId/:type', function(req, res, next){
     "use strict";
-    models.Definition.findOne({ where:
+    models.LemmaDefinition.findOne({ where:
         {
             LemmaId: req.params.lemmaId,
             LanguageIsoCode: req.params.lc

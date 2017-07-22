@@ -5,15 +5,16 @@ const models = require('./index');
 
 module.exports = function (sequelize, DataTypes) {
 
-    const Definition = sequelize.define('Definition', {
+    const LemmaDefinition = sequelize.define('LemmaDefinition', {
+        text: DataTypes.TEXT,
         odd: DataTypes.TEXT
     });
 
-    Definition.removeAttribute('id');
+    LemmaDefinition.removeAttribute('id');
 
-    Definition.associate = function (models) {
+    LemmaDefinition.associate = function (models) {
         // associations can be defined here
-        Definition.belongsTo(models.Lemma, {
+        LemmaDefinition.belongsTo(models.Lemma, {
             foreignKey: {
                 primaryKey: true,
                 allowNull: false
@@ -21,7 +22,7 @@ module.exports = function (sequelize, DataTypes) {
             constraints: true,
             onDelete: 'cascade'
         });
-        Definition.belongsTo(models.Language, {
+        LemmaDefinition.belongsTo(models.Language, {
             foreignKey: {
                 primaryKey: true,
                 allowNull: false
@@ -31,7 +32,7 @@ module.exports = function (sequelize, DataTypes) {
         });
     };
 
-    Definition.prototype.getFormattedlayout = function(type){
+    LemmaDefinition.prototype.getFormattedlayout = function(type){
         const self = this;
         return new Promise(function (resolve, reject) {
             self.getLemma().then(function(lemma){
@@ -78,13 +79,13 @@ module.exports = function (sequelize, DataTypes) {
         });
     };
 
-    Definition.prototype.getHtml = function() {
+    LemmaDefinition.prototype.getHtml = function() {
         return this.getFormattedlayout("html");
     };
 
-    Definition.prototype.getLatex = function() {
+    LemmaDefinition.prototype.getLatex = function() {
         return this.getFormattedlayout("latex");
     };
 
-    return Definition;
+    return LemmaDefinition;
 };

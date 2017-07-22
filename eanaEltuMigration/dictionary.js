@@ -25,6 +25,8 @@ function Dictionary () {
     this.templates = {};
     this.entryTemplates = {};
     this.lemmas = {};
+    this.morphemes = {};
+    this.phrases = {};
     this.sources = {};
     this.lemmaClassTypes = {};
     this.missingMetadataTranslations = {};
@@ -556,6 +558,11 @@ Dictionary.prototype.exportMetadata = function () {
     });
 };
 
+function getLemmaClassTypeName(lemmaClassType){
+    "use strict";
+
+}
+
 Dictionary.prototype.exportLemmaClassTypes = function () {
     // Insert Parts of Speech
     const self = this;
@@ -619,6 +626,7 @@ Dictionary.prototype.exportLemmas = function () {
             //partOfSpeech: entry.partOfSpeech,
             //odd: entry.odd,
             audio: lemma.pubId + ".mp3",
+            invalid: lemma.invalid,
             SourceId: self.sources[lemma.source].id,
             DictionaryBlockId: lemma.block,
             EntryTypeId: lemma.type,
@@ -652,8 +660,453 @@ Dictionary.prototype.exportLemmas = function () {
                 promises.push(newLemma.save());
             }
             return Promise.all(promises).then(function(){
-                return models.Definition.bulkCreate(definitions);
+                return models.LemmaDefinition.bulkCreate(definitions);
             });
+        });
+    });
+};
+
+Dictionary.prototype.exportMorphemeAffixTypes = function(){
+    "use strict";
+    const types = [{
+        id: "infix",
+        LanguageIsoCode: "nav"
+    },{
+        id: "affix",
+        LanguageIsoCode: "nav"
+    }];
+    return models.MorphemeAffixType.bulkCreate(types);
+};
+
+function getMorphemeBoundType (morpheme){
+    "use strict";
+    switch(morpheme.block){
+        case 2:
+        case 3:
+            return "bound_inflectional";
+        case 4:
+        case 11:
+            return "bound_derivational";
+    }
+}
+
+function getMorphemeProductivity (morpheme){
+    "use strict";
+    switch(morpheme.block){
+        case 2:
+        case 3:
+            return true;
+        case 4:
+        case 11:
+            const metaDef = morpheme.rawLemma.arg3;
+            if(metaDef.indexOf("unpro.") !== -1){
+                return false;
+            } else {
+                return (metaDef.indexOf("pro.") !== -1);
+            }
+        default:
+            return false;
+    }
+}
+
+function getMorphemeAffixType (morpheme){
+    "use strict";
+    switch(morpheme.block){
+        case 2:
+            return "infix";
+        default:
+            return "affix";
+    }
+}
+
+Dictionary.prototype.exportMorphemes = function() {
+    "use strict";
+    // Insert Entries
+    const self = this;
+    const morphemes = [];
+    const definitions = [];
+    for(const id of Object.keys(self.morphemes)){
+        const morpheme = self.morphemes[id];
+        morphemes.push({
+            id: morpheme.id,
+            LanguageIsoCode: "nav",
+            pubId: morpheme.pubId,
+            morpheme: morpheme.lemma,
+            ipa: morpheme.ipa,
+            boundType: getMorphemeBoundType(morpheme),
+            productive: getMorphemeProductivity(morpheme),
+            //partOfSpeech: entry.partOfSpeech,
+            //odd: entry.odd,
+            audio: morpheme.pubId + ".mp3",
+            eeType: morpheme.type,
+            SourceId: self.sources[morpheme.source].id,
+            DictionaryBlockId: morpheme.block,
+            MorphemeAffixTypeId: getMorphemeAffixType(morpheme),
+            //EntryTypeId: lemma.type,
+            createdAt: morpheme.editTime * 1000
+        });
+/*
+        for(const lc of Object.keys(lemma.definitions)){
+            const definition = lemma.definitions[lc];
+            definitions.push({
+                LemmaId: lemma.id,
+                LanguageIsoCode: lc,
+                odd: definition.odd,
+                createdAt: definition.editTime * 1000
+            });
+
+        }*/
+    }
+    return models.Morpheme.bulkCreate(morphemes).then(function(){
+        return models.Morpheme.findAll().then(function(newMorphemes){
+            "use strict";
+            const promises = [];
+            /*for(let i = 0; i < newLemmas.length; i++){
+                const newLemma = newLemmas[i];
+                const lemma = self.lemmas[newLemma.id];
+                const classTypes = [];
+                for(let j = 0; j < lemma.classTypes.length; j++){
+                    const classType = lemma.classTypes[j].trim();
+                    classTypes.push(self.lemmaClassTypes[classType]);
+                }
+                newLemma.setLemmaClassTypes(classTypes);
+                promises.push(newLemma.save());
+            }*/
+            return Promise.all(promises);/*.then(function(){
+                return models.LemmaDefinition.bulkCreate(definitions);
+            });*/
+        });
+    });
+};
+
+Dictionary.prototype.exportGraphemes = function(){
+    "use strict";
+    const graphemes = [{
+        id: "'",
+        sortOrder: 1,
+        LanguageIsoCode: "nav"
+    },{
+        id: "a",
+        sortOrder: 2,
+        LanguageIsoCode: "nav"
+    },{
+        id: "aw",
+        sortOrder: 3,
+        LanguageIsoCode: "nav"
+    },{
+        id: "ay",
+        sortOrder: 4,
+        LanguageIsoCode: "nav"
+    },{
+        id: "ä",
+        sortOrder: 5,
+        LanguageIsoCode: "nav"
+    },{
+        id: "e",
+        sortOrder: 6,
+        LanguageIsoCode: "nav"
+    },{
+        id: "ew",
+        sortOrder: 7,
+        LanguageIsoCode: "nav"
+    },{
+        id: "ey",
+        sortOrder: 8,
+        LanguageIsoCode: "nav"
+    },{
+        id: "f",
+        sortOrder: 9,
+        LanguageIsoCode: "nav"
+    },{
+        id: "h",
+        sortOrder: 10,
+        LanguageIsoCode: "nav"
+    },{
+        id: "i",
+        sortOrder: 11,
+        LanguageIsoCode: "nav"
+    },{
+        id: "ì",
+        sortOrder: 12,
+        LanguageIsoCode: "nav"
+    },{
+        id: "k",
+        sortOrder: 13,
+        LanguageIsoCode: "nav"
+    },{
+        id: "kx",
+        sortOrder: 14,
+        LanguageIsoCode: "nav"
+    },{
+        id: "l",
+        sortOrder: 15,
+        LanguageIsoCode: "nav"
+    },{
+        id: "ll",
+        sortOrder: 16,
+        LanguageIsoCode: "nav"
+    },{
+        id: "m",
+        sortOrder: 17,
+        LanguageIsoCode: "nav"
+    },{
+        id: "n",
+        sortOrder: 18,
+        LanguageIsoCode: "nav"
+    },{
+        id: "ng",
+        sortOrder: 19,
+        LanguageIsoCode: "nav"
+    },{
+        id: "o",
+        sortOrder: 20,
+        LanguageIsoCode: "nav"
+    },{
+        id: "p",
+        sortOrder: 21,
+        LanguageIsoCode: "nav"
+    },{
+        id: "px",
+        sortOrder: 22,
+        LanguageIsoCode: "nav"
+    },{
+        id: "r",
+        sortOrder: 23,
+        LanguageIsoCode: "nav"
+    },{
+        id: "rr",
+        sortOrder: 24,
+        LanguageIsoCode: "nav"
+    },{
+        id: "s",
+        sortOrder: 25,
+        LanguageIsoCode: "nav"
+    },{
+        id: "t",
+        sortOrder: 26,
+        LanguageIsoCode: "nav"
+    },{
+        id: "tx",
+        sortOrder: 27,
+        LanguageIsoCode: "nav"
+    },{
+        id: "ts",
+        sortOrder: 28,
+        LanguageIsoCode: "nav"
+    },{
+        id: "u",
+        sortOrder: 29,
+        LanguageIsoCode: "nav"
+    },{
+        id: "v",
+        sortOrder: 30,
+        LanguageIsoCode: "nav"
+    },{
+        id: "w",
+        sortOrder: 31,
+        LanguageIsoCode: "nav"
+    },{
+        id: "y",
+        sortOrder: 32,
+        LanguageIsoCode: "nav"
+    },{
+        id: "z",
+        sortOrder: 33,
+        LanguageIsoCode: "nav"
+    }];
+
+    return models.Grapheme.bulkCreate(graphemes);
+};
+
+Dictionary.prototype.exportPhonemes = function(){
+    "use strict";
+    const phonemes = [{
+        id: "'",
+        ipa: "ʔ",
+        sortOrder: 1,
+        LanguageIsoCode: "nav"
+    },{
+        id: "a",
+        ipa: "a",
+        sortOrder: 2,
+        LanguageIsoCode: "nav"
+    },{
+        id: "aw",
+        ipa: "aw",
+        sortOrder: 3,
+        LanguageIsoCode: "nav"
+    },{
+        id: "ay",
+        ipa: "aj",
+        sortOrder: 4,
+        LanguageIsoCode: "nav"
+    },{
+        id: "ä",
+        ipa: "æ",
+        sortOrder: 5,
+        LanguageIsoCode: "nav"
+    },{
+        id: "e",
+        ipa: "ɛ",
+        sortOrder: 6,
+        LanguageIsoCode: "nav"
+    },{
+        id: "ew",
+        ipa: "ɛw",
+        sortOrder: 7,
+        LanguageIsoCode: "nav"
+    },{
+        id: "ey",
+        ipa: "ɛj",
+        sortOrder: 8,
+        LanguageIsoCode: "nav"
+    },{
+        id: "f",
+        ipa: "f",
+        sortOrder: 9,
+        LanguageIsoCode: "nav"
+    },{
+        id: "h",
+        ipa: "h",
+        sortOrder: 10,
+        LanguageIsoCode: "nav"
+    },{
+        id: "i",
+        ipa: "i",
+        sortOrder: 11,
+        LanguageIsoCode: "nav"
+    },{
+        id: "ì",
+        ipa: "ɪ",
+        sortOrder: 12,
+        LanguageIsoCode: "nav"
+    },{
+        id: "k",
+        ipa: "k",
+        sortOrder: 13,
+        LanguageIsoCode: "nav"
+    },{
+        id: "kx",
+        ipa: "kʼ",
+        sortOrder: 14,
+        LanguageIsoCode: "nav"
+    },{
+        id: "l",
+        ipa: "l",
+        sortOrder: 15,
+        LanguageIsoCode: "nav"
+    },{
+        id: "ll",
+        ipa: "ḷ",
+        sortOrder: 16,
+        LanguageIsoCode: "nav"
+    },{
+        id: "m",
+        ipa: "m",
+        sortOrder: 17,
+        LanguageIsoCode: "nav"
+    },{
+        id: "n",
+        ipa: "n",
+        sortOrder: 18,
+        LanguageIsoCode: "nav"
+    },{
+        id: "ng",
+        ipa: "ŋ",
+        sortOrder: 19,
+        LanguageIsoCode: "nav"
+    },{
+        id: "o",
+        ipa: "o",
+        sortOrder: 20,
+        LanguageIsoCode: "nav"
+    },{
+        id: "p",
+        ipa: "p",
+        sortOrder: 21,
+        LanguageIsoCode: "nav"
+    },{
+        id: "px",
+        ipa: "pʼ",
+        sortOrder: 22,
+        LanguageIsoCode: "nav"
+    },{
+        id: "r",
+        ipa: "ɾ",
+        sortOrder: 23,
+        LanguageIsoCode: "nav"
+    },{
+        id: "rr",
+        ipa: "ṛ",
+        sortOrder: 24,
+        LanguageIsoCode: "nav"
+    },{
+        id: "s",
+        ipa: "s",
+        sortOrder: 25,
+        LanguageIsoCode: "nav"
+    },{
+        id: "t",
+        ipa: "t",
+        sortOrder: 26,
+        LanguageIsoCode: "nav"
+    },{
+        id: "tx",
+        ipa: "tʼ",
+        sortOrder: 27,
+        LanguageIsoCode: "nav"
+    },{
+        id: "ts",
+        ipa: "t͡s",
+        sortOrder: 28,
+        LanguageIsoCode: "nav"
+    },{
+        id: "u",
+        ipa: "u",
+        sortOrder: 29,
+        LanguageIsoCode: "nav"
+    },{
+        id: "v",
+        ipa: "v",
+        sortOrder: 30,
+        LanguageIsoCode: "nav"
+    },{
+        id: "w",
+        ipa: "w",
+        sortOrder: 31,
+        LanguageIsoCode: "nav"
+    },{
+        id: "y",
+        ipa: "j",
+        sortOrder: 32,
+        LanguageIsoCode: "nav"
+    },{
+        id: "z",
+        ipa: "z",
+        sortOrder: 33,
+        LanguageIsoCode: "nav"
+    }];
+
+    return models.Phoneme.bulkCreate(phonemes);
+};
+
+Dictionary.prototype.exportGraphemePhonemeCorrespondence = function(){
+    "use strict";
+    const graphemeMap = {};
+
+    return models.Grapheme.findAll().then(function(graphemes){
+        for(let i = 0; i < graphemes.length; i++){
+            graphemeMap[graphemes[i].id] = graphemes[i];
+        }
+        const promises = [];
+        return models.Phoneme.findAll().then(function(phonemes){
+            // Link them up...
+            for(let i = 0; i < phonemes.length; i++){
+                const phoneme = phonemes[i];
+                phoneme.addGrapheme(graphemeMap[phoneme.id]);
+                promises.push(phoneme.save());
+            }
+            return Promise.all(promises);
         });
     });
 };
@@ -671,6 +1124,8 @@ Dictionary.prototype.export = function (callback) {
         topLayerPromises.push(self.exportLanguages());
         topLayerPromises.push(self.exportSources());
         topLayerPromises.push(self.exportEntryTemplates());
+        topLayerPromises.push(self.exportGraphemes());
+        topLayerPromises.push(self.exportPhonemes());
 
         Promise.all(topLayerPromises).then(function(){
             "use strict";
@@ -680,11 +1135,14 @@ Dictionary.prototype.export = function (callback) {
             secondLayerPromises.push(self.exportDictionaryBuilds());
             secondLayerPromises.push(self.exportMetadata());
             secondLayerPromises.push(self.exportLemmaClassTypes());
+            secondLayerPromises.push(self.exportGraphemePhonemeCorrespondence());
+            secondLayerPromises.push(self.exportMorphemeAffixTypes());
 
             Promise.all(secondLayerPromises).then(function(){
 
                 const thirdLayerPromises = [];
                 thirdLayerPromises.push(self.exportEntryLayouts());
+                thirdLayerPromises.push(self.exportMorphemes());
 
                 Promise.all(thirdLayerPromises).then(function(){
                     self.exportLemmas().then(function () {
@@ -1204,9 +1662,10 @@ function buildDictionaryTemplates(self) {
 
 function processLemmaClass(self, classType){
     "use strict";
-    if(self.lemmaClassTypes[classType.trim()] === undefined){
-        self.lemmaClassTypes[classType.trim()] = {
-            id: classType.trim(),
+    const id = classType.trim();
+    if(self.lemmaClassTypes[id] === undefined){
+        self.lemmaClassTypes[id] = {
+            id: id,
             localizations: {}
         };
     }
@@ -1214,16 +1673,26 @@ function processLemmaClass(self, classType){
 
 function processLocalizedLemmaClass(self, classType, localizedClassType, lc){
     "use strict";
+    const id = classType.trim();
     if(localizedClassType !== null && localizedClassType !== undefined){
-        self.lemmaClassTypes[classType.trim()].localizations[lc] = localizedClassType.trim();
+        self.lemmaClassTypes[id].localizations[lc] = localizedClassType.trim();
     }
 }
 
 function buildDictionaryLemmas(self) {
+    self.eanaEltu.morphemes = {};
+    self.eanaEltu.phrases = {};
+
+    // Remove duplicate entries...
+    delete self.eanaEltu.dictWordMeta[310];
+    delete self.eanaEltu.dictWordMeta[447];
+
     for(let id in self.eanaEltu.dictWordMeta){
         const rawLemma = self.eanaEltu.dictWordMeta[id];
+        const block = rawLemma.block;
 
         const lemma = new Lemma(rawLemma);
+
         self.sources[lemma.source] = lemma.source;
 
         if(lemma.source === "") {
@@ -1231,6 +1700,16 @@ function buildDictionaryLemmas(self) {
                 console.log("Missing Source: " + lemma.lemma, lemma.type, lemma.id);
             }
             self.missingSources.push({id: lemma.id, lemma: lemma.lemma});
+        }
+
+        if(block === 2 || block === 3 || block === 4 || block === 11){
+            // Filter out morphemes...
+            self.morphemes[id] = lemma;
+            continue;
+        } else if (block === 10){
+            // Filter out phrases...
+            self.phrases[id] = lemma;
+            continue;
         }
 
         for(const classType of lemma.classTypes){
