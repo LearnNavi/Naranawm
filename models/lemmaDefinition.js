@@ -36,39 +36,41 @@ module.exports = function (sequelize, DataTypes) {
         const self = this;
         return new Promise(function (resolve, reject) {
             self.getLemma().then(function(lemma){
-                console.log(lemma.get({plain: true}));
-                lemma.getSource().then(function(source){
-                    lemma.getEntryType().then(function(entryType) {
-                        lemma.getLemmaClassTypes({where: {LanguageIsoCode: self.LanguageIsoCode}}).then(function(classTypes){
-                            const lemmaClassTypes = [];
-                            for(let i = 0; i < classTypes.length; i++){
-                                lemmaClassTypes.push(classTypes[i].abbreviation);
-                            }
-                            entryType.getMetadata().then(function(metadata){
-                                const promises = [];
-                                const localMetadata = {};
-                                metadata.forEach(function(m){
-                                    promises.push(m.getLocalizedMetadata({where: {LanguageIsoCode: self.LanguageIsoCode}}).then(function(localizedMetadata){
-                                        localizedMetadata.forEach(function(l){
-                                            localMetadata[l.MetadatumId] = l.getDataValue('value');
-                                        })
-                                    }));
-                                });
+                lemma.getLemmaDefinitions({where: {LanguageIsoCode: self.LanguageIsoCode}}).then(function(definitions){
+                    console.log(lemma.get({plain: true}), definitions.length);
+                    lemma.getSource().then(function(source){
+                        lemma.getEntryType().then(function(entryType) {
+                            lemma.getLemmaClassTypes({where: {LanguageIsoCode: self.LanguageIsoCode}}).then(function(classTypes){
+                                const lemmaClassTypes = [];
+                                for(let i = 0; i < classTypes.length; i++){
+                                    lemmaClassTypes.push(classTypes[i].abbreviation);
+                                }
+                                entryType.getMetadata().then(function(metadata){
+                                    const promises = [];
+                                    const localMetadata = {};
+                                    metadata.forEach(function(m){
+                                        promises.push(m.getLocalizedMetadata({where: {LanguageIsoCode: self.LanguageIsoCode}}).then(function(localizedMetadata){
+                                            localizedMetadata.forEach(function(l){
+                                                localMetadata[l.MetadatumId] = l.getDataValue('value');
+                                            })
+                                        }));
+                                    });
 
-                                Promise.all(promises).then(function(){
-                                    entryType.getFormattedLayout(type).then(function (formatString) {
-                                        //console.log(formatString);
-                                        const formatData = {
-                                            lemma: lemma.lemma,
-                                            ipa: lemma.ipa,
-                                            source: source.name,
-                                            lemma_class: lemmaClassTypes.join(", "),
-                                            definition: 'not implemented',
-                                            METADATA: localMetadata,
-                                            LAYOUTS: {}
-                                        };
-                                        //console.log(formatData);
-                                        resolve(format(formatString, formatData));
+                                    Promise.all(promises).then(function(){
+                                        entryType.getFormattedLayout(type).then(function (formatString) {
+                                            //console.log(formatString);
+                                            const formatData = {
+                                                lemma: lemma.lemma,
+                                                ipa: lemma.ipa,
+                                                source: source.name,
+                                                lemma_class: lemmaClassTypes.join(", "),
+                                                definition: definitions[0].text,
+                                                METADATA: localMetadata,
+                                                LAYOUTS: {}
+                                            };
+                                            //console.log(formatData);
+                                            resolve(format(formatString, formatData));
+                                        });
                                     });
                                 });
                             });

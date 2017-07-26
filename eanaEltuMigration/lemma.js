@@ -106,6 +106,13 @@ Lemma.prototype.parseInvalidity = function(rawLemma) {
 Lemma.prototype.parseDefinition = function(definition) {
     "use strict";
     switch(this.type){
+        case "affixN":
+        case "derivingaffixN":
+        case "infixcwN":
+        case "infixN":
+        case "markerN":
+            return definition.arg3;
+
         case "cw":
         case "cww":
         case "derive":
@@ -115,7 +122,9 @@ Lemma.prototype.parseDefinition = function(definition) {
         case "note":
             return definition.arg4;
 
+
         case "alloffixN":
+            return definition.arg5;
 
     }
 };

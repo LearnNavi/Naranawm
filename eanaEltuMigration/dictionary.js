@@ -638,6 +638,7 @@ Dictionary.prototype.exportLemmas = function () {
             definitions.push({
                 LemmaId: lemma.id,
                 LanguageIsoCode: lc,
+                text: definition.definition,
                 odd: definition.odd,
                 createdAt: definition.editTime * 1000
             });
@@ -745,37 +746,20 @@ Dictionary.prototype.exportMorphemes = function() {
             //EntryTypeId: lemma.type,
             createdAt: morpheme.editTime * 1000
         });
-/*
-        for(const lc of Object.keys(lemma.definitions)){
-            const definition = lemma.definitions[lc];
+
+        for(const lc of Object.keys(morpheme.definitions)){
+            const definition = morpheme.definitions[lc];
             definitions.push({
-                LemmaId: lemma.id,
+                MorphemeId: morpheme.id,
                 LanguageIsoCode: lc,
                 odd: definition.odd,
+                text: definition.definition,
                 createdAt: definition.editTime * 1000
             });
-
-        }*/
+        }
     }
     return models.Morpheme.bulkCreate(morphemes).then(function(){
-        return models.Morpheme.findAll().then(function(newMorphemes){
-            "use strict";
-            const promises = [];
-            /*for(let i = 0; i < newLemmas.length; i++){
-                const newLemma = newLemmas[i];
-                const lemma = self.lemmas[newLemma.id];
-                const classTypes = [];
-                for(let j = 0; j < lemma.classTypes.length; j++){
-                    const classType = lemma.classTypes[j].trim();
-                    classTypes.push(self.lemmaClassTypes[classType]);
-                }
-                newLemma.setLemmaClassTypes(classTypes);
-                promises.push(newLemma.save());
-            }*/
-            return Promise.all(promises);/*.then(function(){
-                return models.LemmaDefinition.bulkCreate(definitions);
-            });*/
-        });
+        return models.MorphemeDefinition.bulkCreate(definitions);
     });
 };
 
@@ -1705,15 +1689,15 @@ function buildDictionaryLemmas(self) {
         if(block === 2 || block === 3 || block === 4 || block === 11){
             // Filter out morphemes...
             self.morphemes[id] = lemma;
-            continue;
+            //continue;
         } else if (block === 10){
             // Filter out phrases...
             self.phrases[id] = lemma;
-            continue;
-        }
-
-        for(const classType of lemma.classTypes){
-            processLemmaClass(self, classType);
+            //continue;
+        } else {
+            for(const classType of lemma.classTypes){
+                processLemmaClass(self, classType);
+            }
         }
 
         for(let lc in self.languages){
@@ -1752,9 +1736,13 @@ function buildDictionaryLemmas(self) {
                 }
             }
         }
+        if(block === 2 || block === 3 || block === 4 || block === 10 || block === 11){
+            continue;
+        } else {
+            lemma.finalizeLemma();
+            self.lemmas[lemma.id] = lemma;
+        }
 
-        lemma.finalizeLemma();
-        self.lemmas[lemma.id] = lemma;
     }
     const keys = Object.keys(self.lemmaClassTypes);
 
