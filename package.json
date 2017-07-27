@@ -20,7 +20,8 @@
     "sequelize": "^4.2.1",
     "sequelize-cli": "^2.7.0",
     "serve-favicon": "~2.4.2",
-    "sqlite3": "^3.1.8"
+    "sqlite3": "^3.1.8",
+    "string-format": "^0.5.0"
   },
   "devDependencies": {
     "nodemon": "^1.11.0"
