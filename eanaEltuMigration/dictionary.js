@@ -645,25 +645,22 @@ Dictionary.prototype.exportLemmas = function () {
 
         }
     }
-    return models.Lemma.bulkCreate(lemmas).then(function(){
-        return models.Lemma.findAll().then(function(newLemmas){
-            "use strict";
-            const promises = [];
-            for(let i = 0; i < newLemmas.length; i++){
-                const newLemma = newLemmas[i];
-                const lemma = self.lemmas[newLemma.id];
-                const classTypes = [];
-                for(let j = 0; j < lemma.classTypes.length; j++){
-                    const classType = lemma.classTypes[j].trim();
-                    classTypes.push(self.lemmaClassTypes[classType]);
-                }
-                newLemma.setLemmaClassTypes(classTypes);
-                promises.push(newLemma.save());
+    const promises = [];
+    for(let i = 0; i < lemmas.length; i++){
+        promises.push(models.Lemma.create(lemmas[i]).then(function(newLemma){
+            const lemma = self.lemmas[newLemma.id];
+            const classTypes = [];
+            for(let j = 0; j < lemma.classTypes.length; j++){
+                const classType = lemma.classTypes[j].trim();
+                classTypes.push(self.lemmaClassTypes[classType]);
             }
-            return Promise.all(promises).then(function(){
-                return models.LemmaDefinition.bulkCreate(definitions);
-            });
-        });
+            newLemma.setLemmaClassTypes(classTypes);
+            return newLemma.save();
+        }));
+    }
+
+    return Promise.all(promises).then(function(){
+        return models.LemmaDefinition.bulkCreate(definitions);
     });
 };
 
