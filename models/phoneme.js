@@ -1,7 +1,7 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
     const Phoneme = sequelize.define('Phoneme', {
-        id: { type: DataTypes.STRING, primaryKey: true },
+        name: { type: DataTypes.STRING, allowNull: false },
         ipa: { type: DataTypes.STRING },
     });
 
@@ -9,8 +9,7 @@ module.exports = function (sequelize, DataTypes) {
         // associations can be defined here
         Phoneme.belongsTo(models.Language, {
             foreignKey: {
-                allowNull: false,
-                primaryKey: true
+                allowNull: false
             },
             constraints: true,
             onDelete: 'cascade'

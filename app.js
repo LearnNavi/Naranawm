@@ -1,5 +1,5 @@
 
-process.env.NODE_ENV = "development";
+process.env.NODE_ENV = "sqlite";
 
 const express = require('express');
 const path = require('path');

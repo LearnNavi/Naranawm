@@ -8,23 +8,9 @@ module.exports = function (sequelize, DataTypes) {
 
     LemmaClassTypeAssociation.associate = function (models) {
         // associations can be defined here
-        LemmaClassTypeAssociation.belongsTo(models.Lemma, {
-            foreignKey: {
-                primaryKey: true,
-                allowNull: false
-            },
-            constraints: true,
-            onDelete: 'cascade'
-        });
+        LemmaClassTypeAssociation.belongsTo(models.Lemma);
 
-        LemmaClassTypeAssociation.belongsTo(models.LemmaClassType, {
-            foreignKey: {
-                primaryKey: true,
-                allowNull: false
-            },
-            constraints: true,
-            onDelete: 'cascade'
-        });
+        LemmaClassTypeAssociation.belongsTo(models.LemmaClassType);
     };
 
     return LemmaClassTypeAssociation;

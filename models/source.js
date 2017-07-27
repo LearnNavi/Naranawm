@@ -9,14 +9,19 @@ module.exports = function (sequelize, DataTypes) {
         // associations can be defined here
         Source.belongsTo(models.Language, {
             foreignKey: {
-                allowNull: false,
-                primaryKey: true
+                allowNull: false
             },
             constraints: true,
             onDelete: 'cascade'
         });
-        Source.hasMany(models.Lemma);
-        Source.hasMany(models.Morpheme);
+
+        Source.hasMany(models.Lemma, {
+            onDelete: 'CASCADE'
+        });
+
+        Source.hasMany(models.Morpheme, {
+            onDelete: 'CASCADE'
+        });
     };
 
     return Source;

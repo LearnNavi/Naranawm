@@ -196,6 +196,8 @@ Dictionary.prototype.exportSources = function(){
                 self.sources[source.name] = source;
             });
         });
+    }).catch(function (err) {
+        console.log(err);
     });
 };
 
@@ -757,135 +759,135 @@ Dictionary.prototype.exportMorphemes = function() {
 Dictionary.prototype.exportGraphemes = function(){
     "use strict";
     const graphemes = [{
-        id: "'",
+        name: "'",
         sortOrder: 1,
         LanguageIsoCode: "nav"
     },{
-        id: "a",
+        name: "a",
         sortOrder: 2,
         LanguageIsoCode: "nav"
     },{
-        id: "aw",
+        name: "aw",
         sortOrder: 3,
         LanguageIsoCode: "nav"
     },{
-        id: "ay",
+        name: "ay",
         sortOrder: 4,
         LanguageIsoCode: "nav"
     },{
-        id: "ä",
+        name: "ä",
         sortOrder: 5,
         LanguageIsoCode: "nav"
     },{
-        id: "e",
+        name: "e",
         sortOrder: 6,
         LanguageIsoCode: "nav"
     },{
-        id: "ew",
+        name: "ew",
         sortOrder: 7,
         LanguageIsoCode: "nav"
     },{
-        id: "ey",
+        name: "ey",
         sortOrder: 8,
         LanguageIsoCode: "nav"
     },{
-        id: "f",
+        name: "f",
         sortOrder: 9,
         LanguageIsoCode: "nav"
     },{
-        id: "h",
+        name: "h",
         sortOrder: 10,
         LanguageIsoCode: "nav"
     },{
-        id: "i",
+        name: "i",
         sortOrder: 11,
         LanguageIsoCode: "nav"
     },{
-        id: "ì",
+        name: "ì",
         sortOrder: 12,
         LanguageIsoCode: "nav"
     },{
-        id: "k",
+        name: "k",
         sortOrder: 13,
         LanguageIsoCode: "nav"
     },{
-        id: "kx",
+        name: "kx",
         sortOrder: 14,
         LanguageIsoCode: "nav"
     },{
-        id: "l",
+        name: "l",
         sortOrder: 15,
         LanguageIsoCode: "nav"
     },{
-        id: "ll",
+        name: "ll",
         sortOrder: 16,
         LanguageIsoCode: "nav"
     },{
-        id: "m",
+        name: "m",
         sortOrder: 17,
         LanguageIsoCode: "nav"
     },{
-        id: "n",
+        name: "n",
         sortOrder: 18,
         LanguageIsoCode: "nav"
     },{
-        id: "ng",
+        name: "ng",
         sortOrder: 19,
         LanguageIsoCode: "nav"
     },{
-        id: "o",
+        name: "o",
         sortOrder: 20,
         LanguageIsoCode: "nav"
     },{
-        id: "p",
+        name: "p",
         sortOrder: 21,
         LanguageIsoCode: "nav"
     },{
-        id: "px",
+        name: "px",
         sortOrder: 22,
         LanguageIsoCode: "nav"
     },{
-        id: "r",
+        name: "r",
         sortOrder: 23,
         LanguageIsoCode: "nav"
     },{
-        id: "rr",
+        name: "rr",
         sortOrder: 24,
         LanguageIsoCode: "nav"
     },{
-        id: "s",
+        name: "s",
         sortOrder: 25,
         LanguageIsoCode: "nav"
     },{
-        id: "t",
+        name: "t",
         sortOrder: 26,
         LanguageIsoCode: "nav"
     },{
-        id: "tx",
+        name: "tx",
         sortOrder: 27,
         LanguageIsoCode: "nav"
     },{
-        id: "ts",
+        name: "ts",
         sortOrder: 28,
         LanguageIsoCode: "nav"
     },{
-        id: "u",
+        name: "u",
         sortOrder: 29,
         LanguageIsoCode: "nav"
     },{
-        id: "v",
+        name: "v",
         sortOrder: 30,
         LanguageIsoCode: "nav"
     },{
-        id: "w",
+        name: "w",
         sortOrder: 31,
         LanguageIsoCode: "nav"
     },{
-        id: "y",
+        name: "y",
         sortOrder: 32,
         LanguageIsoCode: "nav"
     },{
-        id: "z",
+        name: "z",
         sortOrder: 33,
         LanguageIsoCode: "nav"
     }];
@@ -896,167 +898,167 @@ Dictionary.prototype.exportGraphemes = function(){
 Dictionary.prototype.exportPhonemes = function(){
     "use strict";
     const phonemes = [{
-        id: "'",
+        name: "'",
         ipa: "ʔ",
         sortOrder: 1,
         LanguageIsoCode: "nav"
     },{
-        id: "a",
+        name: "a",
         ipa: "a",
         sortOrder: 2,
         LanguageIsoCode: "nav"
     },{
-        id: "aw",
+        name: "aw",
         ipa: "aw",
         sortOrder: 3,
         LanguageIsoCode: "nav"
     },{
-        id: "ay",
+        name: "ay",
         ipa: "aj",
         sortOrder: 4,
         LanguageIsoCode: "nav"
     },{
-        id: "ä",
+        name: "ä",
         ipa: "æ",
         sortOrder: 5,
         LanguageIsoCode: "nav"
     },{
-        id: "e",
+        name: "e",
         ipa: "ɛ",
         sortOrder: 6,
         LanguageIsoCode: "nav"
     },{
-        id: "ew",
+        name: "ew",
         ipa: "ɛw",
         sortOrder: 7,
         LanguageIsoCode: "nav"
     },{
-        id: "ey",
+        name: "ey",
         ipa: "ɛj",
         sortOrder: 8,
         LanguageIsoCode: "nav"
     },{
-        id: "f",
+        name: "f",
         ipa: "f",
         sortOrder: 9,
         LanguageIsoCode: "nav"
     },{
-        id: "h",
+        name: "h",
         ipa: "h",
         sortOrder: 10,
         LanguageIsoCode: "nav"
     },{
-        id: "i",
+        name: "i",
         ipa: "i",
         sortOrder: 11,
         LanguageIsoCode: "nav"
     },{
-        id: "ì",
+        name: "ì",
         ipa: "ɪ",
         sortOrder: 12,
         LanguageIsoCode: "nav"
     },{
-        id: "k",
+        name: "k",
         ipa: "k",
         sortOrder: 13,
         LanguageIsoCode: "nav"
     },{
-        id: "kx",
+        name: "kx",
         ipa: "kʼ",
         sortOrder: 14,
         LanguageIsoCode: "nav"
     },{
-        id: "l",
+        name: "l",
         ipa: "l",
         sortOrder: 15,
         LanguageIsoCode: "nav"
     },{
-        id: "ll",
+        name: "ll",
         ipa: "ḷ",
         sortOrder: 16,
         LanguageIsoCode: "nav"
     },{
-        id: "m",
+        name: "m",
         ipa: "m",
         sortOrder: 17,
         LanguageIsoCode: "nav"
     },{
-        id: "n",
+        name: "n",
         ipa: "n",
         sortOrder: 18,
         LanguageIsoCode: "nav"
     },{
-        id: "ng",
+        name: "ng",
         ipa: "ŋ",
         sortOrder: 19,
         LanguageIsoCode: "nav"
     },{
-        id: "o",
+        name: "o",
         ipa: "o",
         sortOrder: 20,
         LanguageIsoCode: "nav"
     },{
-        id: "p",
+        name: "p",
         ipa: "p",
         sortOrder: 21,
         LanguageIsoCode: "nav"
     },{
-        id: "px",
+        name: "px",
         ipa: "pʼ",
         sortOrder: 22,
         LanguageIsoCode: "nav"
     },{
-        id: "r",
+        name: "r",
         ipa: "ɾ",
         sortOrder: 23,
         LanguageIsoCode: "nav"
     },{
-        id: "rr",
+        name: "rr",
         ipa: "ṛ",
         sortOrder: 24,
         LanguageIsoCode: "nav"
     },{
-        id: "s",
+        name: "s",
         ipa: "s",
         sortOrder: 25,
         LanguageIsoCode: "nav"
     },{
-        id: "t",
+        name: "t",
         ipa: "t",
         sortOrder: 26,
         LanguageIsoCode: "nav"
     },{
-        id: "tx",
+        name: "tx",
         ipa: "tʼ",
         sortOrder: 27,
         LanguageIsoCode: "nav"
     },{
-        id: "ts",
+        name: "ts",
         ipa: "t͡s",
         sortOrder: 28,
         LanguageIsoCode: "nav"
     },{
-        id: "u",
+        name: "u",
         ipa: "u",
         sortOrder: 29,
         LanguageIsoCode: "nav"
     },{
-        id: "v",
+        name: "v",
         ipa: "v",
         sortOrder: 30,
         LanguageIsoCode: "nav"
     },{
-        id: "w",
+        name: "w",
         ipa: "w",
         sortOrder: 31,
         LanguageIsoCode: "nav"
     },{
-        id: "y",
+        name: "y",
         ipa: "j",
         sortOrder: 32,
         LanguageIsoCode: "nav"
     },{
-        id: "z",
+        name: "z",
         ipa: "z",
         sortOrder: 33,
         LanguageIsoCode: "nav"
@@ -1137,6 +1139,8 @@ Dictionary.prototype.export = function (callback) {
                 });
             });
         });
+    }).catch(function(err){
+        console.log(err);
     });
 };
 

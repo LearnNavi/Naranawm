@@ -11,7 +11,6 @@ module.exports = function (sequelize, DataTypes) {
         // associations can be defined here
         LemmaClassType.belongsTo(models.Language, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,
