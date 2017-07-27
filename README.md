@@ -1,4 +1,2 @@
-# MobileDatabase
-Database Builder for LN.org Mobile Apps
-
-The Mobile Database builder talks to MySQL to fetch current Na'vi dictionary data, processes it, and outputs an SQLite database that the mobile apps use to get all of their dictionary data.
+# Naranawm
+Naranawm is a system for creating and managing Conlangs.  It supports creating a PDF of the dictionaries using LaTex, and can also output data in SQLite, and exposes a REST API for interacting with the data.
