@@ -615,6 +615,7 @@ Dictionary.prototype.exportLemmas = function () {
     const self = this;
     const lemmas = [];
     const definitions = [];
+    const classTypeAssociations = [];
     for(const id of Object.keys(self.lemmas)){
         const lemma = self.lemmas[id];
         lemmas.push({
@@ -633,6 +634,11 @@ Dictionary.prototype.exportLemmas = function () {
             createdAt: lemma.editTime * 1000
         });
 
+        for(let j = 0; j < lemma.classTypes.length; j++){
+            const classType = self.lemmaClassTypes[lemma.classTypes[j].trim()];
+            classTypeAssociations.push({ LemmaId: lemma.id, LemmaClassTypeId: classType.id });
+        }
+
         for(const lc of Object.keys(lemma.definitions)){
             const definition = lemma.definitions[lc];
             definitions.push({
@@ -645,22 +651,10 @@ Dictionary.prototype.exportLemmas = function () {
 
         }
     }
-    const promises = [];
-    for(let i = 0; i < lemmas.length; i++){
-        promises.push(models.Lemma.create(lemmas[i]).then(function(newLemma){
-            const lemma = self.lemmas[newLemma.id];
-            const classTypes = [];
-            for(let j = 0; j < lemma.classTypes.length; j++){
-                const classType = lemma.classTypes[j].trim();
-                classTypes.push(self.lemmaClassTypes[classType]);
-            }
-            newLemma.setLemmaClassTypes(classTypes);
-            return newLemma.save();
-        }));
-    }
-
-    return Promise.all(promises).then(function(){
-        return models.LemmaDefinition.bulkCreate(definitions);
+    return models.Lemma.bulkCreate(lemmas).then(function(){
+        return models.LemmaDefinition.bulkCreate(definitions).then(function(){
+            return models.LemmaClassTypeAssociation.bulkCreate(classTypeAssociations);
+        });
     });
 };
 
