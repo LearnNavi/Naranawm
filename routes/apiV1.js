@@ -28,5 +28,6 @@ router.use('/partsOfSpeech', require('./v1/lemmaClassTypes'));
 
 router.use('/sources', require('./v1/sources'));
 
+router.use('/export', require('./v1/export'));
 
 module.exports = router;

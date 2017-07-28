@@ -7,7 +7,7 @@ const env       = process.env.NODE_ENV || "development";
 const vault     = require('../vault');
 
 
-const sequelize = new Sequelize(vault[env].naranawm.database, vault[env].naranawm.username, vault[env].naranawm.password, vault[env].naranawm);
+const sequelize = new Sequelize(vault[env].sqlite);
 
 const db        = {};
 
