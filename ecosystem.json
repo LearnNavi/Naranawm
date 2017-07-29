@@ -21,7 +21,7 @@
       "repo": "git@github.com:LearnNavi/Naranawm.git",
       "path": "/opt/Naranawm",
       "ssh_options": "StrictHostKeyChecking=no",
-      "post-deploy": "npm install && ./bin/rebuild && pm2 startOrRestart ecosystem.json --env production",
+      "post-deploy": "export NODE_ENV=kenten && npm install && ./bin/rebuild && pm2 startOrRestart ecosystem.json --env production",
       "env": {
         "NODE_ENV": "production"
       }
@@ -36,7 +36,7 @@
       "path": "/opt/Naranawm",
       "ssh_options": "StrictHostKeyChecking=no",
       "post-setup": "git-crypt unlock ~/Naranawm.key",
-      "post-deploy": "npm install && ./bin/rebuild && pm2 startOrRestart ecosystem.json --env kenten",
+      "post-deploy": "export NODE_ENV=kenten && npm install && ./bin/rebuild && pm2 startOrRestart ecosystem.json --env kenten",
       "env": {
         "NODE_ENV": "kenten"
       }
