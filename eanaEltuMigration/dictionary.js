@@ -619,10 +619,13 @@ Dictionary.prototype.exportLemmaClassTypes = function () {
 
     return models.LemmaClassType.bulkCreate(classTypes).then(function(){
         "use strict";
-        return models.LemmaClassType.findAll({where: {LanguageIsoCode: "nav"}}).then(function(lemmaClassTypes){
+        return models.LemmaClassType.findAll().then(function(lemmaClassTypes){
             self.lemmaClassTypes = {};
             for(let i = 0; i < lemmaClassTypes.length; i ++){
-                self.lemmaClassTypes[lemmaClassTypes[i].classType] = lemmaClassTypes[i].get({plain: true});
+                if(self.lemmaClassTypes[lemmaClassTypes[i].classType] === undefined){
+                    self.lemmaClassTypes[lemmaClassTypes[i].classType] = [];
+                }
+                self.lemmaClassTypes[lemmaClassTypes[i].classType].push(lemmaClassTypes[i].get({plain: true}).id);
             }
         })
     });
@@ -711,8 +714,10 @@ Dictionary.prototype.exportLemmas = function () {
         });
 
         for(let j = 0; j < lemma.classTypes.length; j++){
-            const classType = self.lemmaClassTypes[lemma.classTypes[j].trim()];
-            classTypeAssociations.push({ LemmaId: lemma.id, LemmaClassTypeId: classType.id });
+            const classTypes = self.lemmaClassTypes[lemma.classTypes[j].trim()];
+            for(let i = 0; i < classTypes.length; i++){
+                classTypeAssociations.push({ LemmaId: lemma.id, LemmaClassTypeId: classTypes[i] });
+            }
         }
 
         for(let i = 0; i < lemma.linkedLemmas.length; i++){
