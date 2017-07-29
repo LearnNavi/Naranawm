@@ -5,10 +5,7 @@
   "scripts": {
     "start": "nodemon ./bin/www",
     "start:dev": "nodemon ./bin/www",
-    "eanaEltuExtract": "./bin/eanaEltuExtract",
-    "postinstall": "bower install",
-    "update-deps": "npm update",
-    "postupdate-deps": "bower update"
+    "update-deps": "npm update"
   },
   "dependencies": {
     "bluebird": "^3.5.0",
@@ -30,7 +27,6 @@
     "tmp": "0.0.31"
   },
   "devDependencies": {
-    "nodemon": "^1.11.0",
-    "bower": "^1.7.7"
+    "nodemon": "^1.11.0"
   }
 }
