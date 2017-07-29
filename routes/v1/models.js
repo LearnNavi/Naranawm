@@ -24,9 +24,13 @@ router.get('/:model/:id', function(req, res, next) {
         return;
     }
 
-    model.findAll().then(function (data) {
+    model.findById(req.params.id).then(function (data) {
         "use strict";
-        res.send(data);
+        if(data === null){
+            res.status(404).send(`Entity for ID [${req.params.id}] does not exist for Model [${req.params.model}]`);
+        } else {
+            res.send(data);
+        }
     });
 
 });

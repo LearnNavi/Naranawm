@@ -26,11 +26,8 @@ if(rebuildDatabase){
     });
 }
 
-
-
 const app = express();
 
-const index = require('./routes/index');
 const apiV1 = require('./routes/apiV1');
 
 // view engine setup
@@ -43,10 +40,9 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', index);
 app.use('/api/v1', apiV1);
+app.use('/', express.static(path.join(__dirname, 'app')));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

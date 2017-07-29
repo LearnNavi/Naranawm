@@ -3,9 +3,9 @@ const router = express.Router();
 const models = require('../../models');
 const sqlite_models = require('../../sqlite_models');
 
-function exportData(model){
+function exportData(lc, model){
     "use strict";
-    return models[model].findAll().then(function(sequlizeData){
+    return models[model].findAll({where: {LanguageIsoCode: lc}}).then(function(sequlizeData){
         const data = sequlizeData.map(function(row){ return row.get({plain: true}); });
         return sqlite_models[model].bulkCreate(data);
     });
@@ -34,9 +34,9 @@ const tables = [
 
 
 /* GET languages listing. */
-router.get('/database.sqlite', function(req, res, next) {
+router.get('/:lc/sqlite', function(req, res, next) {
     for(let i = 0; i < tables.length; i++){
-        exportPromise = exportPromise.then(function(){ return exportData(tables[i]); });
+        exportPromise = exportPromise.then(function(){ return exportData(req.params.lc, tables[i]); });
     }
     exportPromise.then(function(){
         "use strict";
