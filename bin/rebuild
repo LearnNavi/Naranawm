@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+
+const config = require("../config");
+const debug = require('debug')('Naranawm:rebuild');
+
+const Dictionary = require('../eanaEltuMigration/dictionary');
+const dictionary = new Dictionary(config);
+
+debug("Starting Database Rebuild");
+dictionary.buildDictionary(function(){
+    // We have a full Dictionary now to do things with :)
+
+    dictionary.export(function(){
+        debug("Export Complete!!!");
+        process.exit(0);
+    });
+});

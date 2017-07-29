@@ -3,11 +3,9 @@
 const fs        = require("fs");
 const path      = require("path");
 const Sequelize = require("sequelize");
-const env       = process.env.NODE_ENV || "development";
-const vault     = require('../vault');
+const config = require("../config");
 
-
-const sequelize = new Sequelize(vault[env].naranawm.database, vault[env].naranawm.username, vault[env].naranawm.password, vault[env].naranawm);
+const sequelize = new Sequelize(config.databases.naranawm);
 
 const db        = {};
 

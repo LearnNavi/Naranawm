@@ -4,14 +4,14 @@ const Lemma = require('./lemma');
 const EanaEltu = require('./eanaEltu');
 const models = require('../models');
 const Promise = require('bluebird');
+const debug = require('debug')('Naranawm:server');
 
 /*
 * This Module / Section is to export data from Eana Eltu
 * and convert it into a format that we can insert into
 * the new database schema                               */
 
-function Dictionary () {
-    this.debug = false;
+function Dictionary (config) {
     this.eanaEltu = new EanaEltu();
     this.languages = {
         en: {
@@ -38,9 +38,7 @@ function Dictionary () {
 }
 
 Dictionary.prototype.buildDictionary = function (callback) {
-    if(this.debug){
-        console.log("Building Dictionary...");
-    }
+    debug("Building Dictionary...");
     const self = this;
     this.eanaEltu.fetchData(function(rawEEdata){
         self.eanaEltu = rawEEdata;
@@ -49,9 +47,7 @@ Dictionary.prototype.buildDictionary = function (callback) {
         buildDictionaryMetadata(self);
         buildDictionaryTemplates(self);
         buildDictionaryLemmas(self);
-        if(self.debug){
-            console.log("Complete");
-        }
+        debug("Complete");
         callback();
     });
 };
@@ -1132,7 +1128,7 @@ Dictionary.prototype.exportPhonemes = function(){
 Dictionary.prototype.exportGraphemePhonemeCorrespondence = function(){
     "use strict";
     const graphemeMap = {};
-
+    const self = this;
     return models.Grapheme.findAll().then(function(graphemes){
         for(let i = 0; i < graphemes.length; i++){
             graphemeMap[graphemes[i].id] = graphemes[i];
@@ -1151,9 +1147,7 @@ Dictionary.prototype.exportGraphemePhonemeCorrespondence = function(){
 };
 
 Dictionary.prototype.export = function (callback) {
-    if(this.debug){
-        console.log("Exporting Dictionary to new Database...");
-    }
+    debug("Exporting Dictionary to new Database...");
     const self = this;
 
     // Using force: true to drop all tables first
@@ -1220,7 +1214,7 @@ function getDictionaryBuildTemplate(data){
         case "\\end{hangparas}}\\end{multicols}+\\newpage":
             return "end_hangparas_multicols_newpage";
         default:
-            console.log(723, data);
+            debug(723, data);
             return;
     }
 }
@@ -1357,9 +1351,8 @@ function buildDictionaryMetadata(self) {
         const localization = self.eanaEltu.dictLoc[index];
         for(let lc in localization){
             if(localization[lc].value === '' || localization[lc].value === null || localization[lc].value === undefined){
-                if(self.debug){
-                    console.log("Missing " + lc + " translation for [" + index + "]");
-                }
+                debug("Missing " + lc + " translation for [" + index + "]");
+
                 if(self.missingMetadataTranslations[lc.toLowerCase()] === undefined){
                     self.missingMetadataTranslations[lc.toLowerCase()] = [];
                 }
@@ -1604,7 +1597,7 @@ function buildDictionaryTemplates(self) {
                 const meta = self.metadata[result[1]];
                 if(meta[lc] === undefined){
                     if(self.languages[lc].active){
-                        console.log("MISSING TRANSLATION FOR [" + result[1] + "] in " + lc);
+                        debug("MISSING TRANSLATION FOR [" + result[1] + "] in " + lc);
                     }
                     continue;
                 }
@@ -1626,7 +1619,7 @@ function buildDictionaryTemplates(self) {
 
 
                 if(metadata === ""){
-                    console.log(1129, lc, index, result[1], metadata, meta[lc].value);
+                    debug(1129, lc, index, result[1], metadata, meta[lc].value);
                 }
 
                 if(index === "cww" || index === "derives"){
@@ -1670,7 +1663,7 @@ function buildDictionaryTemplates(self) {
                 // sub_entry_lemma_def exists in the localized layout but not in the main layout
                 // we need to pull this out and move it to the main...
 
-                console.log(1173, index, layout, localizedFormat);
+                debug(1173, index, layout, localizedFormat);
 
             }
 
@@ -1736,9 +1729,7 @@ function buildDictionaryLemmas(self) {
         self.sources[lemma.source] = lemma.source;
 
         if(lemma.source === "") {
-            if(self.debug){
-                console.log("Missing Source: " + lemma.lemma, lemma.type, lemma.id);
-            }
+            debug("Missing Source: " + lemma.lemma, lemma.type, lemma.id);
             self.missingSources.push({id: lemma.id, lemma: lemma.lemma});
         }
 
@@ -1778,9 +1769,7 @@ function buildDictionaryLemmas(self) {
             }
 
             if(definition === undefined){
-                if(self.debug){
-                    console.log("<" + lemma.lemma + "> Missing [" + lc + "] Localization for " + id);
-                }
+                debug("<" + lemma.lemma + "> Missing [" + lc + "] Localization for " + id);
                 if(self.missingDefinitionTranslations[lc] === undefined){
                     self.missingDefinitionTranslations[lc] = [];
                 }
@@ -1875,8 +1864,8 @@ function processTemplate(template) {
  audio: primaryLemma.audio
  */
 
-const dictionary = new Dictionary();
+//const dictionary = new Dictionary();
 
-module.exports = dictionary;
+module.exports = Dictionary;
 
 

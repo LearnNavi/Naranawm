@@ -1,2 +1,3 @@
 vault.js filter=git-crypt diff=git-crypt
+*vault* filter=git-crypt diff=git-crypt
 *.tex filter=git-crypt diff=git-crypt

@@ -1,6 +1,5 @@
 
-process.env.NODE_ENV = "development";
-
+const env       = process.env.NODE_ENV || "development";
 const express = require('express');
 const path = require('path');
 const favicon = require('serve-favicon');
@@ -9,22 +8,6 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 
 console.log("ENV: " + process.env.NODE_ENV);
-
-const rebuildDatabase = true;
-
-if(rebuildDatabase){
-    const dictionary = require('./eanaEltuMigration/dictionary');
-
-    dictionary.buildDictionary(function(){
-        // We have a full Dictionary now to do things with :)
-        //console.log(dictionary.missingEntryTranslations);
-        //console.log(dictionary.entries);
-        dictionary.export(function(){
-            console.log("Export Complete!!!");
-            //process.exit(0);
-        });
-    });
-}
 
 const app = express();
 
@@ -42,7 +25,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use('/api/v1', apiV1);
-app.use('/', express.static(path.join(__dirname, 'app')));
+app.use('/', express.static(path.join(__dirname, 'www')));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

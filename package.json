@@ -5,6 +5,7 @@
   "scripts": {
     "start": "nodemon ./bin/www",
     "start:dev": "nodemon ./bin/www",
+    "eanaEltuExtract": "./bin/eanaEltuExtract",
     "postinstall": "bower install",
     "update-deps": "npm update",
     "postupdate-deps": "bower update"
