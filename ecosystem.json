@@ -9,17 +9,6 @@
       "env_kenten": {
         "NODE_ENV": "kenten"
       }
-    },
-    {
-      "name": "Naranawm-RebuildDB",
-      "script": "bin/rebuild",
-      "env_production": {
-        "NODE_ENV": "production"
-      },
-      "env_kenten": {
-        "NODE_ENV": "kenten"
-      },
-      "autorestart": false
     }
   ],
   "deploy": {
@@ -32,7 +21,7 @@
       "repo": "git@github.com:LearnNavi/Naranawm.git",
       "path": "/opt/Naranawm",
       "ssh_options": "StrictHostKeyChecking=no",
-      "post-deploy": "npm install && pm2 startOrRestart ecosystem.json --env production",
+      "post-deploy": "npm install && ./bin/rebuild && pm2 startOrRestart ecosystem.json --env production",
       "env": {
         "NODE_ENV": "production"
       }
@@ -47,7 +36,7 @@
       "path": "/opt/Naranawm",
       "ssh_options": "StrictHostKeyChecking=no",
       "post-setup": "git-crypt unlock ~/Naranawm.key",
-      "post-deploy": "npm install && pm2 startOrRestart ecosystem.json --env kenten",
+      "post-deploy": "npm install && ./bin/rebuild && pm2 startOrRestart ecosystem.json --env kenten",
       "env": {
         "NODE_ENV": "kenten"
       }
