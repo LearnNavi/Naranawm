@@ -10,13 +10,10 @@ module.exports = function (sequelize, DataTypes) {
         odd: DataTypes.TEXT
     });
 
-    MorphemeDefinition.removeAttribute('id');
-
     MorphemeDefinition.associate = function (models) {
         // associations can be defined here
         MorphemeDefinition.belongsTo(models.Morpheme, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,
@@ -24,7 +21,6 @@ module.exports = function (sequelize, DataTypes) {
         });
         MorphemeDefinition.belongsTo(models.Language, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,

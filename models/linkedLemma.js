@@ -5,13 +5,10 @@ module.exports = function (sequelize, DataTypes) {
         note: { type: DataTypes.STRING, allowNull: true }
     });
 
-    LinkedLemma.removeAttribute('id');
-
     LinkedLemma.associate = function (models) {
         // associations can be defined here
         LinkedLemma.belongsTo(models.Lemma, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,
@@ -20,7 +17,6 @@ module.exports = function (sequelize, DataTypes) {
         LinkedLemma.belongsTo(models.Lemma, {
             as: "ReferencesLemma",
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,

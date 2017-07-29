@@ -1,7 +1,7 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
     const DictionaryBuildData = sequelize.define('DictionaryBuildData', {
-        position: { type: DataTypes.INTEGER, primaryKey: true },
+        position: { type: DataTypes.INTEGER, allowNull: false },
         type: { type: DataTypes.STRING},
         data: { type: DataTypes.TEXT, allowNull: true }
     });
@@ -10,7 +10,6 @@ module.exports = function (sequelize, DataTypes) {
         // associations can be defined here
         DictionaryBuildData.belongsTo(models.DictionaryBuild, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,
@@ -19,7 +18,6 @@ module.exports = function (sequelize, DataTypes) {
 
         DictionaryBuildData.belongsTo(models.Language, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,

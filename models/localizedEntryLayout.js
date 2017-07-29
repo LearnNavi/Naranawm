@@ -6,13 +6,10 @@ module.exports = function (sequelize, DataTypes) {
         changeable: { type: DataTypes.STRING, allowNull: false, defaultValue: "" }
     });
 
-    LocalizedEntryLayout.removeAttribute('id');
-
     LocalizedEntryLayout.associate = function (models) {
         // associations can be defined here
         LocalizedEntryLayout.belongsTo(models.EntryType, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,
@@ -20,7 +17,6 @@ module.exports = function (sequelize, DataTypes) {
         });
         LocalizedEntryLayout.belongsTo(models.Language, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,

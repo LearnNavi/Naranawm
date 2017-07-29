@@ -1,8 +1,9 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
     const EntryLayoutTemplates = sequelize.define('EntryLayoutTemplates', {
-        position: { type: DataTypes.INTEGER, primaryKey: true, defaultValue: 0 },
-        field: { type: DataTypes.STRING, primaryKey: true }
+        id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+        position: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+        field: { type: DataTypes.STRING, allowNull: false }
     });
 
     EntryLayoutTemplates.associate = function (models) {
@@ -13,7 +14,6 @@ module.exports = function (sequelize, DataTypes) {
 
         EntryLayoutTemplates.belongsTo(models.EntryLayout, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,

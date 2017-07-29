@@ -2,6 +2,8 @@
 const express = require('express');
 const router = express.Router();
 
+router.use('/crud', require('./v1/crud'));
+
 router.use('/dictionary/blocks', require('./v1/dictionary/blocks'));
 router.use('/dictionary/builds', require('./v1/dictionary/builds'));
 router.use('/dictionary/buildData', require('./v1/dictionary/buildData'));

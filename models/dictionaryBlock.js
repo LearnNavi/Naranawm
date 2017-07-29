@@ -9,8 +9,7 @@ module.exports = function (sequelize, DataTypes) {
         // associations can be defined here
         DictionaryBlock.belongsTo(models.Language, {
             foreignKey: {
-                allowNull: false,
-                primaryKey: true
+                allowNull: false
             },
             constraints: true,
             onDelete: 'cascade'

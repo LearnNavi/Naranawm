@@ -10,7 +10,6 @@ module.exports = function (sequelize, DataTypes) {
         // associations can be defined here
         LemmaClassTypeAssociation.belongsTo(models.Lemma, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,
@@ -19,7 +18,6 @@ module.exports = function (sequelize, DataTypes) {
 
         LemmaClassTypeAssociation.belongsTo(models.LemmaClassType, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,

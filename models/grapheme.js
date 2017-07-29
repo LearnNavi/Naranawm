@@ -1,7 +1,7 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
     const Grapheme = sequelize.define('Grapheme', {
-        id: { type: DataTypes.STRING, primaryKey: true },
+        grapheme: { type: DataTypes.STRING, allowNull: false },
         sortOrder: { type: DataTypes.INTEGER, allowNull: false }
     });
 
@@ -9,8 +9,7 @@ module.exports = function (sequelize, DataTypes) {
         // associations can be defined here
         Grapheme.belongsTo(models.Language, {
             foreignKey: {
-                allowNull: false,
-                primaryKey: true
+                allowNull: false
             },
             constraints: true,
             onDelete: 'cascade'

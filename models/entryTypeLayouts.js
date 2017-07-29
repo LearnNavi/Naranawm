@@ -1,16 +1,13 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
     const EntryTypeLayout = sequelize.define('EntryTypeLayout', {
-        order: { type: DataTypes.INTEGER, primaryKey: true }
+        order: { type: DataTypes.INTEGER, allowNull: false }
     });
-
-    EntryTypeLayout.removeAttribute('id');
 
     EntryTypeLayout.associate = function (models) {
         // associations can be defined here
         EntryTypeLayout.belongsTo(models.EntryType, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,
@@ -19,7 +16,6 @@ module.exports = function (sequelize, DataTypes) {
 
         EntryTypeLayout.belongsTo(models.EntryLayout, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,

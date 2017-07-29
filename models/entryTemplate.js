@@ -12,8 +12,7 @@ module.exports = function (sequelize, DataTypes) {
             through: {
                 model: models.EntryLayoutTemplates,
                 unique: false
-            },
-            primaryKey: true
+            }
         });
     };
 

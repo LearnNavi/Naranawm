@@ -11,8 +11,7 @@ module.exports = function (sequelize, DataTypes) {
         // associations can be defined here
         DictionaryTemplate.belongsTo(models.Language, {
             foreignKey: {
-                allowNull: false,
-                primaryKey: true
+                allowNull: false
             },
             constraints: true,
             onDelete: 'cascade'

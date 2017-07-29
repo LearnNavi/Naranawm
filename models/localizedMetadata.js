@@ -5,13 +5,10 @@ module.exports = function (sequelize, DataTypes) {
         value: { type: DataTypes.TEXT, allowNull: false }
     });
 
-    LocalizedMetadata.removeAttribute('id');
-
     LocalizedMetadata.associate = function (models) {
         // associations can be defined here
         LocalizedMetadata.belongsTo(models.Metadata, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,
@@ -19,7 +16,6 @@ module.exports = function (sequelize, DataTypes) {
         });
         LocalizedMetadata.belongsTo(models.Language, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,

@@ -16,8 +16,7 @@ module.exports = function (sequelize, DataTypes) {
         // associations can be defined here
         Lemma.belongsTo(models.Language, {
             foreignKey: {
-                allowNull: false,
-                primaryKey: true
+                allowNull: false
             },
             constraints: true,
             onDelete: 'cascade'

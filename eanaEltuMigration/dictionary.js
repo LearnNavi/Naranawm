@@ -112,9 +112,11 @@ Dictionary.prototype.exportDictionaryBuilds = function () {
     ];
     const builds = [];
     const buildData = [];
+    let i = 1;
     for(const type of Object.keys(self.eanaEltu.dictOrder)){
         builds.push({
-            id: type,
+            id: i,
+            name: type,
             description: getDictionaryBuildDescription(type),
             LanguageIsoCode: "nav"
         });
@@ -135,7 +137,7 @@ Dictionary.prototype.exportDictionaryBuilds = function () {
             }
 
             buildData.push({
-                DictionaryBuildId: type,
+                DictionaryBuildId: i,
                 DictionaryBlockId: getDictionaryBlockId(data),
                 TemplateId: data.template,
                 position: data.pos,
@@ -144,8 +146,9 @@ Dictionary.prototype.exportDictionaryBuilds = function () {
                 LanguageIsoCode: "nav"
             });
         }
+        i++;
     }
-
+    
     return models.DictionaryBuild.bulkCreate(builds).then(function(){
         "use strict";
         return models.DictionaryBlock.bulkCreate(blocks).then(function(){
@@ -588,7 +591,7 @@ Dictionary.prototype.exportLemmaClassTypes = function () {
     for (const classType of Object.keys(self.lemmaClassTypes)) {
         const newClassType = {
             LanguageIsoCode: "nav",
-            id: classType,
+            classType: classType,
             name: classType,
             abbreviation: classType,
             description: classType
@@ -600,7 +603,7 @@ Dictionary.prototype.exportLemmaClassTypes = function () {
                     //console.log(classType, lc);
                     classTypes.push({
                         LanguageIsoCode: lc,
-                        id: classType,
+                        classType: classType,
                         name: lcClassType,
                         abbreviation: lcClassType,
                         description: lcClassType
@@ -621,8 +624,9 @@ Dictionary.prototype.exportLemmaClassTypes = function () {
     return models.LemmaClassType.bulkCreate(classTypes).then(function(){
         "use strict";
         return models.LemmaClassType.findAll({where: {LanguageIsoCode: "nav"}}).then(function(lemmaClassTypes){
+            self.lemmaClassTypes = {};
             for(let i = 0; i < lemmaClassTypes.length; i ++){
-                self.lemmaClassTypes[lemmaClassTypes[i].id] = lemmaClassTypes[i];
+                self.lemmaClassTypes[lemmaClassTypes[i].classType] = lemmaClassTypes[i].get({plain: true});
             }
         })
     });
@@ -675,7 +679,8 @@ function findLinkedLemma(self, lemma, linkedLemma, position){
             referencedObject.DerivedMorphemeId = self.morphemeLookup[id].id;
             referencedObject.type = "morpheme";
         } else {
-            console.log(linkedLemma.id, id);
+            // TODO: Finish matching up irregular entries
+            //console.log(linkedLemma.id, id);
             referencedObject.type = "unknown";
         }
     }
@@ -849,135 +854,135 @@ Dictionary.prototype.exportMorphemes = function() {
 Dictionary.prototype.exportGraphemes = function(){
     "use strict";
     const graphemes = [{
-        id: "'",
+        grapheme: "'",
         sortOrder: 1,
         LanguageIsoCode: "nav"
     },{
-        id: "a",
+        grapheme: "a",
         sortOrder: 2,
         LanguageIsoCode: "nav"
     },{
-        id: "aw",
+        grapheme: "aw",
         sortOrder: 3,
         LanguageIsoCode: "nav"
     },{
-        id: "ay",
+        grapheme: "ay",
         sortOrder: 4,
         LanguageIsoCode: "nav"
     },{
-        id: "ä",
+        grapheme: "ä",
         sortOrder: 5,
         LanguageIsoCode: "nav"
     },{
-        id: "e",
+        grapheme: "e",
         sortOrder: 6,
         LanguageIsoCode: "nav"
     },{
-        id: "ew",
+        grapheme: "ew",
         sortOrder: 7,
         LanguageIsoCode: "nav"
     },{
-        id: "ey",
+        grapheme: "ey",
         sortOrder: 8,
         LanguageIsoCode: "nav"
     },{
-        id: "f",
+        grapheme: "f",
         sortOrder: 9,
         LanguageIsoCode: "nav"
     },{
-        id: "h",
+        grapheme: "h",
         sortOrder: 10,
         LanguageIsoCode: "nav"
     },{
-        id: "i",
+        grapheme: "i",
         sortOrder: 11,
         LanguageIsoCode: "nav"
     },{
-        id: "ì",
+        grapheme: "ì",
         sortOrder: 12,
         LanguageIsoCode: "nav"
     },{
-        id: "k",
+        grapheme: "k",
         sortOrder: 13,
         LanguageIsoCode: "nav"
     },{
-        id: "kx",
+        grapheme: "kx",
         sortOrder: 14,
         LanguageIsoCode: "nav"
     },{
-        id: "l",
+        grapheme: "l",
         sortOrder: 15,
         LanguageIsoCode: "nav"
     },{
-        id: "ll",
+        grapheme: "ll",
         sortOrder: 16,
         LanguageIsoCode: "nav"
     },{
-        id: "m",
+        grapheme: "m",
         sortOrder: 17,
         LanguageIsoCode: "nav"
     },{
-        id: "n",
+        grapheme: "n",
         sortOrder: 18,
         LanguageIsoCode: "nav"
     },{
-        id: "ng",
+        grapheme: "ng",
         sortOrder: 19,
         LanguageIsoCode: "nav"
     },{
-        id: "o",
+        grapheme: "o",
         sortOrder: 20,
         LanguageIsoCode: "nav"
     },{
-        id: "p",
+        grapheme: "p",
         sortOrder: 21,
         LanguageIsoCode: "nav"
     },{
-        id: "px",
+        grapheme: "px",
         sortOrder: 22,
         LanguageIsoCode: "nav"
     },{
-        id: "r",
+        grapheme: "r",
         sortOrder: 23,
         LanguageIsoCode: "nav"
     },{
-        id: "rr",
+        grapheme: "rr",
         sortOrder: 24,
         LanguageIsoCode: "nav"
     },{
-        id: "s",
+        grapheme: "s",
         sortOrder: 25,
         LanguageIsoCode: "nav"
     },{
-        id: "t",
+        grapheme: "t",
         sortOrder: 26,
         LanguageIsoCode: "nav"
     },{
-        id: "tx",
+        grapheme: "tx",
         sortOrder: 27,
         LanguageIsoCode: "nav"
     },{
-        id: "ts",
+        grapheme: "ts",
         sortOrder: 28,
         LanguageIsoCode: "nav"
     },{
-        id: "u",
+        grapheme: "u",
         sortOrder: 29,
         LanguageIsoCode: "nav"
     },{
-        id: "v",
+        grapheme: "v",
         sortOrder: 30,
         LanguageIsoCode: "nav"
     },{
-        id: "w",
+        grapheme: "w",
         sortOrder: 31,
         LanguageIsoCode: "nav"
     },{
-        id: "y",
+        grapheme: "y",
         sortOrder: 32,
         LanguageIsoCode: "nav"
     },{
-        id: "z",
+        grapheme: "z",
         sortOrder: 33,
         LanguageIsoCode: "nav"
     }];
@@ -988,167 +993,134 @@ Dictionary.prototype.exportGraphemes = function(){
 Dictionary.prototype.exportPhonemes = function(){
     "use strict";
     const phonemes = [{
-        id: "'",
         ipa: "ʔ",
         sortOrder: 1,
         LanguageIsoCode: "nav"
     },{
-        id: "a",
         ipa: "a",
         sortOrder: 2,
         LanguageIsoCode: "nav"
     },{
-        id: "aw",
         ipa: "aw",
         sortOrder: 3,
         LanguageIsoCode: "nav"
     },{
-        id: "ay",
         ipa: "aj",
         sortOrder: 4,
         LanguageIsoCode: "nav"
     },{
-        id: "ä",
         ipa: "æ",
         sortOrder: 5,
         LanguageIsoCode: "nav"
     },{
-        id: "e",
         ipa: "ɛ",
         sortOrder: 6,
         LanguageIsoCode: "nav"
     },{
-        id: "ew",
         ipa: "ɛw",
         sortOrder: 7,
         LanguageIsoCode: "nav"
     },{
-        id: "ey",
         ipa: "ɛj",
         sortOrder: 8,
         LanguageIsoCode: "nav"
     },{
-        id: "f",
         ipa: "f",
         sortOrder: 9,
         LanguageIsoCode: "nav"
     },{
-        id: "h",
         ipa: "h",
         sortOrder: 10,
         LanguageIsoCode: "nav"
     },{
-        id: "i",
         ipa: "i",
         sortOrder: 11,
         LanguageIsoCode: "nav"
     },{
-        id: "ì",
         ipa: "ɪ",
         sortOrder: 12,
         LanguageIsoCode: "nav"
     },{
-        id: "k",
         ipa: "k",
         sortOrder: 13,
         LanguageIsoCode: "nav"
     },{
-        id: "kx",
         ipa: "kʼ",
         sortOrder: 14,
         LanguageIsoCode: "nav"
     },{
-        id: "l",
         ipa: "l",
         sortOrder: 15,
         LanguageIsoCode: "nav"
     },{
-        id: "ll",
         ipa: "ḷ",
         sortOrder: 16,
         LanguageIsoCode: "nav"
     },{
-        id: "m",
         ipa: "m",
         sortOrder: 17,
         LanguageIsoCode: "nav"
     },{
-        id: "n",
         ipa: "n",
         sortOrder: 18,
         LanguageIsoCode: "nav"
     },{
-        id: "ng",
         ipa: "ŋ",
         sortOrder: 19,
         LanguageIsoCode: "nav"
     },{
-        id: "o",
         ipa: "o",
         sortOrder: 20,
         LanguageIsoCode: "nav"
     },{
-        id: "p",
         ipa: "p",
         sortOrder: 21,
         LanguageIsoCode: "nav"
     },{
-        id: "px",
         ipa: "pʼ",
         sortOrder: 22,
         LanguageIsoCode: "nav"
     },{
-        id: "r",
         ipa: "ɾ",
         sortOrder: 23,
         LanguageIsoCode: "nav"
     },{
-        id: "rr",
         ipa: "ṛ",
         sortOrder: 24,
         LanguageIsoCode: "nav"
     },{
-        id: "s",
         ipa: "s",
         sortOrder: 25,
         LanguageIsoCode: "nav"
     },{
-        id: "t",
         ipa: "t",
         sortOrder: 26,
         LanguageIsoCode: "nav"
     },{
-        id: "tx",
         ipa: "tʼ",
         sortOrder: 27,
         LanguageIsoCode: "nav"
     },{
-        id: "ts",
         ipa: "t͡s",
         sortOrder: 28,
         LanguageIsoCode: "nav"
     },{
-        id: "u",
         ipa: "u",
         sortOrder: 29,
         LanguageIsoCode: "nav"
     },{
-        id: "v",
         ipa: "v",
         sortOrder: 30,
         LanguageIsoCode: "nav"
     },{
-        id: "w",
         ipa: "w",
         sortOrder: 31,
         LanguageIsoCode: "nav"
     },{
-        id: "y",
         ipa: "j",
         sortOrder: 32,
         LanguageIsoCode: "nav"
     },{
-        id: "z",
         ipa: "z",
         sortOrder: 33,
         LanguageIsoCode: "nav"
@@ -1212,7 +1184,7 @@ Dictionary.prototype.export = function (callback) {
                 thirdLayerPromises.push(self.exportMorphemes());
 
                 Promise.all(thirdLayerPromises).then(function(){
-                    self.exportLemmas().then(function () {
+                    self.exportLemmas().then(callback);/*function () {
                         models.EntryType.findAll().then(function(entryTypes) {
                             const promises = [];
                             entryTypes.forEach(function(entryType){
@@ -1225,7 +1197,7 @@ Dictionary.prototype.export = function (callback) {
                             });
                             Promise.all(promises).then(callback);
                         });
-                    });
+                    });*/
                 });
             });
         });
@@ -1729,10 +1701,11 @@ function buildDictionaryTemplates(self) {
 
 function processLemmaClass(self, classType){
     "use strict";
-    const id = classType.trim();
-    if(self.lemmaClassTypes[id] === undefined){
-        self.lemmaClassTypes[id] = {
-            id: id,
+    const name = classType.trim();
+    if(self.lemmaClassTypes[name] === undefined){
+        self.lemmaClassTypes[name] = {
+            id: name,
+            name: name,
             localizations: {}
         };
     }
@@ -1740,9 +1713,9 @@ function processLemmaClass(self, classType){
 
 function processLocalizedLemmaClass(self, classType, localizedClassType, lc){
     "use strict";
-    const id = classType.trim();
+    const name = classType.trim();
     if(localizedClassType !== null && localizedClassType !== undefined){
-        self.lemmaClassTypes[id].localizations[lc] = localizedClassType.trim();
+        self.lemmaClassTypes[name].localizations[lc] = localizedClassType.trim();
     }
 }
 

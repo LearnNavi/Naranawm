@@ -10,13 +10,10 @@ module.exports = function (sequelize, DataTypes) {
         odd: DataTypes.TEXT
     });
 
-    LemmaDefinition.removeAttribute('id');
-
     LemmaDefinition.associate = function (models) {
         // associations can be defined here
         LemmaDefinition.belongsTo(models.Lemma, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,
@@ -24,7 +21,6 @@ module.exports = function (sequelize, DataTypes) {
         });
         LemmaDefinition.belongsTo(models.Language, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,

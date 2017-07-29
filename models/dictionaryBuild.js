@@ -1,7 +1,7 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
     const DictionaryBuild = sequelize.define('DictionaryBuild', {
-        id: { type: DataTypes.STRING, primaryKey: true },
+        name: { type: DataTypes.STRING, allowNull: false },
         description: { type: DataTypes.STRING }
     });
 

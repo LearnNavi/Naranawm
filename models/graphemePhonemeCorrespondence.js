@@ -10,7 +10,6 @@ module.exports = function (sequelize, DataTypes) {
         // associations can be defined here
         GraphemePhonemeCorrespondence.belongsTo(models.Grapheme, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,
@@ -19,7 +18,6 @@ module.exports = function (sequelize, DataTypes) {
 
         GraphemePhonemeCorrespondence.belongsTo(models.Phoneme, {
             foreignKey: {
-                primaryKey: true,
                 allowNull: false
             },
             constraints: true,
