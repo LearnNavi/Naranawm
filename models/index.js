@@ -12,7 +12,7 @@ const db        = {};
 fs
     .readdirSync(__dirname)
     .filter(function(file) {
-        return (file.indexOf(".") !== 0) && (file !== "index.js");
+        return (file.indexOf(".") !== 0) && (file !== "index.js") && (file !== "sqlite.js");
     })
     .forEach(function(file) {
         const model = sequelize.import(path.join(__dirname, file));

@@ -26,7 +26,8 @@
     "sequelize-cli": "^2.7.0",
     "serve-favicon": "~2.4.2",
     "sqlite3": "^3.1.8",
-    "string-format": "^0.5.0"
+    "string-format": "^0.5.0",
+    "tmp": "0.0.31"
   },
   "devDependencies": {
     "nodemon": "^1.11.0",

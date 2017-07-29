@@ -8,7 +8,8 @@ module.exports = {
             database: "naranawm",
             username: "mobile",
             password: "mobile",
-            dialect: "mysql"
+            dialect: "mysql",
+            logging: false
         },
         eanaEltu: {
             host: '127.0.0.1',
@@ -19,8 +20,8 @@ module.exports = {
         sqlite: {
             host: "127.0.0.1",
             dialect: "sqlite",
-            storage: "database.sqlite",
-            benchmark: false
+            benchmark: false,
+            logging: false
         }
     }
 

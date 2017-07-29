@@ -3,11 +3,6 @@ module.exports = function (sequelize, DataTypes) {
     const Source = sequelize.define('Source', {
         name: { type: DataTypes.STRING },
         description: DataTypes.STRING
-    }, {
-        indexes: [{
-            unique: true,
-            fields: ["name", "LanguageIsoCode"]
-        }]
     });
 
     Source.associate = function (models) {
