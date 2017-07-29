@@ -2,6 +2,7 @@
 
 // Declare app level module which depends on views, and components
 angular.module('naranawm', [
+    'ui.bootstrap',
   'ngRoute',
   'naranawm.view1',
   'naranawm.view2',

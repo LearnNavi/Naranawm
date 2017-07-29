@@ -1,25 +1,26 @@
 /* app css stylesheet */
 
-.menu {
-  list-style: none;
-  border-bottom: 0.1em solid black;
-  margin-bottom: 2em;
-  padding: 0 0 0.5em;
+body {
+  padding-top: 70px;
+  padding-bottom: 30px;
 }
 
-.menu:before {
-  content: "[";
+.theme-dropdown .dropdown-menu {
+  position: static;
+  display: block;
+  margin-bottom: 20px;
 }
 
-.menu:after {
-  content: "]";
+.theme-showcase > p > .btn {
+  margin: 5px 0;
 }
 
-.menu > li {
-  display: inline;
+.theme-showcase .navbar .container {
+  width: auto;
 }
 
-.menu > li + li:before {
-  content: "|";
-  padding-right: 0.3em;
+.navbar-brand>img {
+  margin-top: -7px;
 }
+
+.nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
