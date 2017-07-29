@@ -30,6 +30,11 @@ module.exports = function (sequelize, DataTypes) {
             through: 'EntryTypeMetadata',
             as: "Metadata"
         });
+
+        EntryType.hasMany(models.EntryTypeLayout, {
+            onDelete: 'CASCADE',
+            as: "EntryTypeLayout"
+        });
     };
 
     EntryType.prototype.getFormattedLayout = function(type){
@@ -37,14 +42,14 @@ module.exports = function (sequelize, DataTypes) {
         return new Promise(function(resolve, reject){
             self.getEntryLayout().then(function(layout){
                 // Todo: Insert extra layout templates
-
+                /*
                 if(self.layout !== undefined && self.layout !== null){
                     const regex = /{LAYOUTS\.(.*)}/;
                     let result;
                     while(result = self.layout.match(regex)){
                         self.layout = self.layout.replace(result[0], "{TEST}");
                     }
-                }
+                }*/
 
                 layout.getFormattedLayout(type, self.layout).then(function(data){
                     resolve(data);

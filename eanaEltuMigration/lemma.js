@@ -71,7 +71,7 @@ Lemma.prototype.addDefinition = function (definition, lc) {
         editTime: definition.editTime,
         lc: definition.lc,
         classTypes: this.parseLemmaClasses(definition),
-        linkedLemmas: this.parseLinkedLemmas(definition),
+        //linkedLemmas: this.parseLinkedLemmas(definition, ),
         definition: this.parseDefinition(definition),
         arg1: definition.arg1,
         arg2: definition.arg2,
@@ -96,11 +96,7 @@ Lemma.prototype.finalizeLemma = function () {
 
 Lemma.prototype.parseInvalidity = function(rawLemma) {
     "use strict";
-    if(rawLemma.block === 1){
-        return true;
-    } else {
-        return false;
-    }
+    return (rawLemma.block === 1);
 };
 
 Lemma.prototype.parseDefinition = function(definition) {
@@ -120,6 +116,7 @@ Lemma.prototype.parseDefinition = function(definition) {
         case "lenite":
         case "loan":
         case "note":
+        case "word":
             return definition.arg4;
 
 
@@ -137,25 +134,28 @@ Lemma.prototype.parseLinkedLemmas = function(rawLemma) {
         case "cw":
         case "derive":
             return [{
-                lemma: rawLemma.arg5,
+                id: rawLemma.arg5,
                 note: rawLemma.arg6
             }, {
-                lemma: rawLemma.arg7,
+                id: rawLemma.arg7,
                 note: rawLemma.arg8
             }];
 
         case "cww":
         case "derives":
             return [{
-                lemma: rawLemma.arg5,
+                id: rawLemma.arg5,
                 note: rawLemma.arg6
             }];
 
         case "note":
             return [{
-                lemma: rawLemma.arg6,
+                id: rawLemma.arg6,
                 note: rawLemma.arg7
             }];
+
+        default:
+            return [];
     }
 };
 

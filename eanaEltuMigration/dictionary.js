@@ -25,7 +25,9 @@ function Dictionary () {
     this.templates = {};
     this.entryTemplates = {};
     this.lemmas = {};
+    this.lemmaLookup = {};
     this.morphemes = {};
+    this.morphemeLookup = {};
     this.phrases = {};
     this.sources = {};
     this.lemmaClassTypes = {};
@@ -471,6 +473,7 @@ Dictionary.prototype.exportEntryLayouts = function () {
             'word'
         ];
         const layouts = [];
+        const entryTypeLayouts = [];
         const localizedLayouts = [];
         for(const lang of Object.keys(self.templates)){
             for(const templateId of Object.keys(self.templates[lang])){
@@ -478,6 +481,18 @@ Dictionary.prototype.exportEntryLayouts = function () {
                     const template = self.templates[lang][templateId];
 
                     if(lang === "raw"){
+                        if(template.format !== undefined){
+                            const count = (template.format.match(/{LAYOUTS\.SUB_ENTRY_LEMMA_DEF}/g) || []).length;
+                            for(let i = 0; i < count; i++){
+                                template.format = template.format.replace("{LAYOUTS.SUB_ENTRY_LEMMA_DEF}", "{LAYOUTS.SUB_ENTRY_LEMMA_DEF." + i + "}");
+                                entryTypeLayouts.push({
+                                    order: i,
+                                    EntryTypeId: templateId,
+                                    EntryLayoutId: "SUB_ENTRY_LEMMA_DEF"
+                                });
+                            }
+                        }
+
                         layouts.push({
                             id: templateId,
                             layout: template.format,
@@ -486,6 +501,7 @@ Dictionary.prototype.exportEntryLayouts = function () {
                             EntryLayoutId: template.parentId,
                             metadata: template.metadata
                         });
+
                     } else {
                         if(template.format === undefined || template.format === null){
                             template.format = "<< BLANK >>";
@@ -508,7 +524,9 @@ Dictionary.prototype.exportEntryLayouts = function () {
         }
 
         return Promise.all(layoutPromises).then(function(){
-            return models.LocalizedEntryLayout.bulkCreate(localizedLayouts);
+            return models.LocalizedEntryLayout.bulkCreate(localizedLayouts).then(function(){
+                return models.EntryTypeLayout.bulkCreate(entryTypeLayouts);
+            });
         });
 
     });
@@ -610,12 +628,69 @@ Dictionary.prototype.exportLemmaClassTypes = function () {
     });
 };
 
+function findLinkedLemma(self, lemma, linkedLemma, position){
+    "use strict";
+
+    let referencedObject = {
+        order: position,
+        note: linkedLemma.note,
+        LemmaId: lemma.id
+    };
+
+    if(self.lemmaLookup[linkedLemma.id] !== undefined){
+        referencedObject.ReferencesLemmaId = self.lemmaLookup[linkedLemma.id].id;
+        referencedObject.type = "lemma";
+    } else if(self.morphemeLookup[linkedLemma.id] !== undefined){
+        referencedObject.DerivedMorphemeId = self.morphemeLookup[linkedLemma.id].id;
+        referencedObject.type = "morpheme";
+    } else {
+        // No perfect match found
+
+        let id = linkedLemma.id.replace("-", "").replace("-", "")
+            .replace("+", "")
+            .replace("(", "")
+            .replace(")", "")
+            .replace("'", "");
+
+        const regex = /«(.*)»/;
+        let result;
+        while(result = id.match(regex)){
+            const optionalChars = result[1];
+            if(id.replace("«" + optionalChars + "»", "") !== ""){
+                id = id.replace("«" + optionalChars + "»", "");
+            } else {
+                id = id.replace("«" + optionalChars + "»", optionalChars);
+            }
+
+        }
+
+        if(id === "ftxi"){
+            id = "ftxì";
+        }
+
+        if(self.lemmaLookup[id] !== undefined){
+            referencedObject.ReferencesLemmaId = self.lemmaLookup[id].id;
+            referencedObject.type = "lemma";
+        } else if(self.morphemeLookup[id] !== undefined){
+            referencedObject.DerivedMorphemeId = self.morphemeLookup[id].id;
+            referencedObject.type = "morpheme";
+        } else {
+            console.log(linkedLemma.id, id);
+            referencedObject.type = "unknown";
+        }
+    }
+
+    return referencedObject;
+}
+
 Dictionary.prototype.exportLemmas = function () {
     // Insert Entries
     const self = this;
     const lemmas = [];
     const definitions = [];
     const classTypeAssociations = [];
+    const lemmaReferences = [];
+    const morphemeReferences = [];
     for(const id of Object.keys(self.lemmas)){
         const lemma = self.lemmas[id];
         lemmas.push({
@@ -639,6 +714,19 @@ Dictionary.prototype.exportLemmas = function () {
             classTypeAssociations.push({ LemmaId: lemma.id, LemmaClassTypeId: classType.id });
         }
 
+        for(let i = 0; i < lemma.linkedLemmas.length; i++){
+            const linkedLemma = findLinkedLemma(self, lemma, lemma.linkedLemmas[i], i);
+            switch(linkedLemma.type){
+                case "lemma":
+                    lemmaReferences.push(linkedLemma);
+                    break;
+                case "morpheme":
+                    morphemeReferences.push(linkedLemma);
+                    break;
+            }
+
+        }
+
         for(const lc of Object.keys(lemma.definitions)){
             const definition = lemma.definitions[lc];
             definitions.push({
@@ -651,9 +739,13 @@ Dictionary.prototype.exportLemmas = function () {
 
         }
     }
+    //console.log(lemmaReferences);
     return models.Lemma.bulkCreate(lemmas).then(function(){
         return models.LemmaDefinition.bulkCreate(definitions).then(function(){
-            return models.LemmaClassTypeAssociation.bulkCreate(classTypeAssociations);
+            return models.LinkedLemma.bulkCreate(lemmaReferences).then(function(){
+                "use strict";
+                return models.LemmaClassTypeAssociation.bulkCreate(classTypeAssociations);
+            });
         });
     });
 };
@@ -1657,7 +1749,7 @@ function processLocalizedLemmaClass(self, classType, localizedClassType, lc){
 function buildDictionaryLemmas(self) {
     self.eanaEltu.morphemes = {};
     self.eanaEltu.phrases = {};
-
+    self.eanaEltu.dictWordMetaLookup = {};
     // Remove duplicate entries...
     delete self.eanaEltu.dictWordMeta[310];
     delete self.eanaEltu.dictWordMeta[447];
@@ -1680,6 +1772,15 @@ function buildDictionaryLemmas(self) {
         if(block === 2 || block === 3 || block === 4 || block === 11){
             // Filter out morphemes...
             self.morphemes[id] = lemma;
+            self.morphemeLookup[lemma.lemma] = lemma;
+            const strippedId = lemma.lemma.replace("-", "").replace("-", "")
+                .replace("+", "")
+                .replace("«", "")
+                .replace("»", "");
+            if(lemma.lemma !== strippedId){
+                //console.log(id);
+                self.morphemeLookup[strippedId] = lemma;
+            }
             //continue;
         } else if (block === 10){
             // Filter out phrases...
@@ -1727,22 +1828,35 @@ function buildDictionaryLemmas(self) {
                 }
             }
         }
-        if(block === 2 || block === 3 || block === 4 || block === 10 || block === 11){
-            continue;
-        } else {
+        if(!(block === 2 || block === 3 || block === 4 || block === 10 || block === 11)){
             lemma.finalizeLemma();
             self.lemmas[lemma.id] = lemma;
+            self.lemmaLookup[lemma.lemma] = lemma;
+            const id = lemma.lemma.replace("-", "").replace("-", "")
+                .replace("+", "")
+                .replace("«", "")
+                .replace("»", "")
+                .replace("'", "");
+            if(lemma.lemma !== id){
+                //console.log(id);
+                self.lemmaLookup[id] = lemma;
+            }
+            const regex = /\((.*)\)/;
+            let result;
+            let lemmaName = lemma.lemma;
+            while(result = lemmaName.match(regex)){
+                const optionalChars = result[1];
+                lemmaName = lemmaName.replace("(" + optionalChars + ")", "");
+                const extended = lemmaName.replace("(" + optionalChars + ")", optionalChars);
+                self.lemmaLookup[lemmaName] = lemma;
+                self.lemmaLookup[extended] = lemma;
+            }
+            if(lemma.lemma === "sämunge"){
+                self.lemmaLookup["smung"] = lemma;
+            }
         }
 
     }
-    const keys = Object.keys(self.lemmaClassTypes);
-
-     for(let j = 0; j < keys.length; j++){
-         const types = Object.keys(self.lemmaClassTypes[keys[j]]).sort();
-         if(self.debug){
-             console.log(1282, keys[j] + " <|> " + types.join(" | "));
-         }
-     }
 }
 
 function processRegexReplace(regex, text, replacementTextStart, replacementTextEnd) {

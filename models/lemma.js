@@ -24,7 +24,8 @@ module.exports = function (sequelize, DataTypes) {
         });
 
         Lemma.hasMany(models.LemmaDefinition, {
-            onDelete: 'CASCADE'
+            onDelete: 'CASCADE',
+            as: "LemmaDefinition"
         });
         Lemma.belongsTo(models.Source, {
             foreignKey: {
@@ -48,7 +49,12 @@ module.exports = function (sequelize, DataTypes) {
             onDelete: 'cascade'
         });
         Lemma.belongsToMany(models.LemmaClassType, {
-            through: "LemmaClassTypeAssociations"
+            through: "LemmaClassTypeAssociations",
+            as: "LemmaClassTypes"
+        });
+        Lemma.hasMany(models.LinkedLemma, {
+            onDelete: 'CASCADE',
+            as: "LinkedLemma"
         });
     };
 
