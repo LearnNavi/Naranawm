@@ -3,3 +3,4 @@ MobileDatabase.iml
 node_modules
 .DS_Store
 /bower_components
+/app/bower_components
