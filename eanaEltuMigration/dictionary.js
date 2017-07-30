@@ -135,7 +135,7 @@ Dictionary.prototype.exportDictionaryBuilds = function () {
             buildData.push({
                 DictionaryBuildId: i,
                 DictionaryBlockId: getDictionaryBlockId(data),
-                TemplateId: data.template,
+                DictionaryTemplateId: data.template,
                 position: data.pos,
                 type: data.type,
                 data: getDictionaryBuildData(data),

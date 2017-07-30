@@ -3,7 +3,6 @@ module.exports = function (sequelize, DataTypes) {
     const DictionaryBuildData = sequelize.define('DictionaryBuildData', {
         position: { type: DataTypes.INTEGER, allowNull: false },
         type: { type: DataTypes.STRING},
-        data: { type: DataTypes.TEXT, allowNull: true }
     });
 
     DictionaryBuildData.associate = function (models) {

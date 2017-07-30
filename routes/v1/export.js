@@ -69,4 +69,15 @@ router.get('/:lc/sqlite', function(req, res, next) {
     });
 });
 
+router.get('/dictionary/:id/:type/:lc', function(req, res, next){
+    "use strict";
+
+    // Step 1: Get DictionaryBuild?
+    models.DictionaryBuild.findById(req.params.id).then(function(dictionaryBuild){
+         dictionaryBuild.build(req.params.lc, req.params.type).then(function(latex){
+             res.send(latex);
+         });
+    });
+});
+
 module.exports = router;
