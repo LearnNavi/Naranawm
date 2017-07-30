@@ -60,3 +60,46 @@ markerN
     arg5 -> na'vi sample sentence
     arg6 -> translated sample sentence
     arg3 -> lemmaClassType Description (long form)
+
+
+fìut* is fì'ut from fì'u (from fì- 'u) and -t
+ke'aw / kaw, from ke and 'aw
+tsam si from tsam (and si, a dependent morpheme)
+txokefyaw from txo ke fya'o
+tìranyu from tìran (root verb; starting with tì is coincidence) and -yu
+kefya / ke fìfya from ke fya'o / ke fì- fya'o
+fì'uri, from fì'u (from fì-'u) and -ri
+ngeyä from nga and -yä
+ke aw again?
+txon'ong from txon and 'ong
+tsaut* (tsa'ut) from tsa'u (from tsa- 'u) and -t (where are these words coming from and why are most of them missing apos?)
+tsauri* (tsa'uri) from tsa'u (from tsa- 'u) and -ri
+fìkrr from fì- and krr
+eltur from eltu and -r
+in (is this supposed to be 'ìn?) a root verb.
+fìul* (fì'ul) from fì'u (from fì- 'u) and -l
+fìkrr again?
+fkeytok from kifkeyti tok, from kifkey -ti tok
+hufweherwì hufwe, herwì
+vospxì from vosìng (from vol, tsìng) and hapxì
+zìsìtä from zìsìt and -ä
+ke aw again?
+yem sìn .. these are already two lemmas
+pen from pxen (lenited form)
+tìtstew from tì- tstew
+payvi from pay, -vi
+ke ärìp? Thinking this is supposed to be kä'ärìp, from kä and 'ärìp
+ke lonu? two lemmas already
+ke tungzup already lemmas
+tanhìtsyìp from tanhì and -tsyìp
+saylahe from sì ay-lahe?
+txep aleady a lemma
+anawm from a- and nawm
+vozam from vol and zam
+pasuk utral already lemmas
+akalin from a- kalin
+a fngä' (missing trailing ') already two lemmas
+txanwawea from txanwawe (from txan and wawe) and -a
+txan; olo' (where are the apos going? o.o) two lemmas.
+nawm Toruk (nothing to do here)
+ftxì (i -> ì) also nothing to do here

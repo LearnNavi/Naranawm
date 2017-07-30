@@ -4,6 +4,8 @@
     <exclude-output />
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/ee_output" />
+      <excludeFolder url="file://$MODULE_DIR$/www/assets/js" />
+      <excludeFolder url="file://$MODULE_DIR$/www/assets/library" />
       <excludeFolder url="file://$MODULE_DIR$/www/library" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />

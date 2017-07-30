@@ -1,1 +1,24 @@
-<p>This is the partial for view 1.</p>
+<div class="col-md-12">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Lemma</th>
+            <th>IPA</th>
+            <th>Audio</th>
+            <th>Invalid</th>
+            <th>Block</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="row in lemmas">
+            <td>{{ row.id }}</td>
+            <td>{{ row.lemma }}</td>
+            <td>{{ row.ipa }}</td>
+            <td><a href="http://temp.learnnavi.org/audio/{{row.audio}}">{{ row.audio }}</a></td>
+            <td>{{ row.invalid }}</td>
+            <td>{{ row.DictionaryBlockId }}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>

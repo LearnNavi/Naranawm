@@ -17,6 +17,10 @@ module.exports = {
             username: 'mobile',
             password: 'mobile'
         },
+        forum: {
+            database: "learnnavi_forum",
+            table: "smf_members"
+        },
         sqlite: {
             host: "127.0.0.1",
             dialect: "sqlite",

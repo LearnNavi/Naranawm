@@ -2,14 +2,14 @@
 
 // Declare app level module which depends on views, and components
 angular.module('naranawm', [
-    'ui.bootstrap',
   'ngRoute',
+  'ngResource',
   'naranawm.view1',
   'naranawm.view2',
-  'naranawm.version'
+  'naranawm.version',
+  'ui.bootstrap'
 ]).
 config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
   $locationProvider.hashPrefix('!');
-
-  $routeProvider.otherwise({redirectTo: '/view1'});
+  $routeProvider.otherwise({redirectTo: '/view2'});
 }]);
