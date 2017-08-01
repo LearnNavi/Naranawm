@@ -3,6 +3,17 @@ const router = express.Router();
 const models = require('../../models/index');
 
 /* GET listing. */
+
+// Get list of defined models
+router.get('/', function (req, res, next) {
+    let definedModels = Object.keys(models).filter(function(model){
+        "use strict";
+        return model.toLowerCase() !== "sequelize";
+    });
+
+    res.send(definedModels);
+});
+
 router.get('/:model', function(req, res, next) {
     const model = models[req.params.model];
     if(model === undefined){
