@@ -37,19 +37,24 @@ module.exports = function (sequelize, DataTypes) {
                     ],
                     order: [['position', 'ASC']]
                 }).then(function (buildData) {
-                    let document = "";
+                    const documentParts = new Array(buildData.length);
                     for(let i = 0; i < buildData.length; i++){
                         switch(buildData[i].type){
                             case "template":
-                                document += buildData[i].DictionaryTemplate[type];
+                                documentParts[i] = buildData[i].DictionaryTemplate[type];
                                 break;
 
                             case "mainblock":
                                 //document += buildData[i].DictionaryBlock
                                 break;
+
+                            case "block":
+
+                                break;
                         }
                     }
 
+                    let document = documentParts.join('\n');
                     for(let i = 0; i < localizedMetadata.length; i++){
                         document = document.replace(new RegExp(`__${localizedMetadata[i].MetadatumId}__`, "g"), localizedMetadata[i].value);
                     }

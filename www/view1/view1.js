@@ -12,6 +12,6 @@ angular.module('naranawm.view1', ['ngRoute'])
 
 .controller('View1Ctrl', ["$scope", "Models", function($scope, Models) {
     $scope.lemmas = Models.query({model: "Lemma"}, function() {
-        console.log($scope.lemmas);
+
     }); //query() returns all the entries
 }]);

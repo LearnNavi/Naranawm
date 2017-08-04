@@ -5,7 +5,8 @@ module.exports = function (sequelize, DataTypes) {
         isoName: { type: DataTypes.STRING, allowNull: false },
         nativeName: { type: DataTypes.STRING, allowNull: false },
         active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
-        export: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
+        export: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+        primary: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
     });
 
     Language.associate = function (models) {

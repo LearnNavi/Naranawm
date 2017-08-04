@@ -165,7 +165,8 @@ Dictionary.prototype.exportLanguages = function (){
             isoName: language.engName,
             nativeName: language.nativeName,
             active: language.active,
-            export: language.active
+            export: language.active,
+            primary: (langId === "nav")
         });
     }
 

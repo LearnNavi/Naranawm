@@ -4,6 +4,7 @@
 angular.module('naranawm', [
   'ngRoute',
   'ngResource',
+  'naranawm.languages',
   'naranawm.view1',
   'naranawm.view2',
   'naranawm.version',

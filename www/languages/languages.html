@@ -1,0 +1,27 @@
+<div class="page-header">
+    <h1>Languages</h1>
+</div>
+<div class="col-md-12">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>ISO Code</th>
+            <th>Name</th>
+            <th>Native Name</th>
+            <th>Active</th>
+            <th>Export</th>
+            <th>Primary</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="row in languages">
+            <td>{{ row.isoCode }}</td>
+            <td>{{ row.isoName }}</td>
+            <td>{{ row.nativeName }}</td>
+            <td>{{ row.active }}</td>
+            <td>{{ row.export }}</td>
+            <td>{{ row.primary }}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
