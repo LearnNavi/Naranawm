@@ -1,0 +1,21 @@
+<div class="page-header">
+    <h1>Sources</h1>
+</div>
+<div class="col-md-12">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Language</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="row in sources">
+            <td>{{ row.name }}</td>
+            <td>{{ row.description }}</td>
+            <td>{{ row.LanguageIsoCode }}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>

@@ -5,6 +5,7 @@ angular.module('naranawm', [
   'ngRoute',
   'ngResource',
   'naranawm.languages',
+  'naranawm.sources',
   'naranawm.view1',
   'naranawm.view2',
   'naranawm.version',
@@ -12,5 +13,5 @@ angular.module('naranawm', [
 ]).
 config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
   $locationProvider.hashPrefix('!');
-  $routeProvider.otherwise({redirectTo: '/view2'});
+  $routeProvider.otherwise({redirectTo: '/languages'});
 }]);

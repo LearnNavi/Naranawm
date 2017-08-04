@@ -20,10 +20,12 @@ router.get('/:model', function(req, res, next) {
         res.status(400).send(`Model [${req.params.model}] does not exist`);
         return;
     }
-
-    model.findAll().then(function (data) {
+    console.log(req.query);
+    model.findAll({ where: req.query }).then(function (data) {
         "use strict";
         res.send(data);
+    }).catch(function (error) {
+        res.status(400).send(`[${error.name}] ${error.original.code}`);
     });
 
 });
