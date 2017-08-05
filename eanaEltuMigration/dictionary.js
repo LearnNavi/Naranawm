@@ -4,14 +4,14 @@ const Lemma = require('./lemma');
 const EanaEltu = require('./eanaEltu');
 const models = require('../models');
 const Promise = require('bluebird');
-const debug = require('debug')('Naranawm:server');
+const debug = require('debug')('Naranawm:rebuild');
 
 /*
 * This Module / Section is to export data from Eana Eltu
 * and convert it into a format that we can insert into
 * the new database schema                               */
 
-function Dictionary (config) {
+function Dictionary () {
     this.eanaEltu = new EanaEltu();
     this.languages = {
         en: {

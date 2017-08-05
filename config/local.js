@@ -19,7 +19,8 @@ module.exports = {
         },
         forum: {
             database: "learnnavi_forum",
-            table: "smf_members"
+            table: "smf_members",
+            attachmentTable: "smf_attachments"
         },
         sqlite: {
             host: "127.0.0.1",
@@ -27,6 +28,8 @@ module.exports = {
             benchmark: false,
             logging: false
         }
-    }
+    },
+
+    jwtKey: "arocxg9e8xgh;rchukuthhaetubmapx9i9xcgeu09k"
 
 };

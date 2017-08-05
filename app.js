@@ -6,7 +6,7 @@ const favicon = require('serve-favicon');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-
+const auth = require("./auth.js");
 console.log("ENV: " + process.env.NODE_ENV);
 
 const app = express();
@@ -22,8 +22,13 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(auth.initialize());
 
-app.use('/api/v1', apiV1);
+app.use('/api/v1', auth.authenticateJwt(), apiV1);
+app.post('/login', auth.authenticateUser(), auth.createToken, function(req, res){
+  "use strict";
+  res.send({ user: req.user, token: req.token});
+});
 app.use('/', express.static(path.join(__dirname, 'www')));
 
 // catch 404 and forward to error handler

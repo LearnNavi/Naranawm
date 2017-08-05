@@ -2,16 +2,26 @@
 
 // Declare app level module which depends on views, and components
 angular.module('naranawm', [
-  'ngRoute',
-  'ngResource',
-  'naranawm.languages',
-  'naranawm.sources',
-  'naranawm.view1',
-  'naranawm.view2',
-  'naranawm.version',
-  'ui.bootstrap'
-]).
-config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
-  $locationProvider.hashPrefix('!');
-  $routeProvider.otherwise({redirectTo: '/languages'});
+    'ngRoute',
+    'ngResource',
+    'ngStorage',
+    'naranawm.vezeyko',
+    'naranawm.version',
+    'ui.bootstrap'
+]).config(['$locationProvider', '$routeProvider', '$httpProvider', function ($locationProvider, $routeProvider, $httpProvider) {
+
+
+    $routeProvider.when('/kelku', {
+        templateUrl: 'kelku/kelku.html',
+        controller: 'KelkuCtrl'
+    });
+
+    $routeProvider.otherwise({redirectTo: '/kelku'});
+
+    $httpProvider.interceptors.push('Interceptors');
+
+}]).run(['$rootScope', '$location', function($rootScope, $location){
+
+
+
 }]);

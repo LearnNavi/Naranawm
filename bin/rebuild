@@ -4,7 +4,7 @@ const config = require("../config");
 const debug = require('debug')('Naranawm:rebuild');
 
 const Dictionary = require('../eanaEltuMigration/dictionary');
-const dictionary = new Dictionary(config);
+const dictionary = new Dictionary(debug);
 
 debug("Starting Database Rebuild");
 dictionary.buildDictionary(function(){

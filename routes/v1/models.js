@@ -20,8 +20,21 @@ router.get('/:model', function(req, res, next) {
         res.status(400).send(`Model [${req.params.model}] does not exist`);
         return;
     }
-    console.log(req.query);
-    model.findAll({ where: req.query }).then(function (data) {
+
+    const queryOptions = {};
+
+    if(req.query.limit !== undefined){
+        queryOptions.limit = parseInt(req.query.limit);
+        delete req.query.limit;
+    }
+
+    if(req.query.offset !== undefined){
+        queryOptions.offset = parseInt(req.query.offset);
+        delete req.query.offset;
+    }
+
+    queryOptions.where = req.query;
+    model.findAll(queryOptions).then(function (data) {
         "use strict";
         res.send(data);
     }).catch(function (error) {
