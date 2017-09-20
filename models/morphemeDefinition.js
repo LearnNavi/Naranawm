@@ -28,7 +28,7 @@ module.exports = function (sequelize, DataTypes) {
         });
     };
 
-    MorphemeDefinition.prototype.getFormattedlayout = function(type){
+    MorphemeDefinition.prototype.getFormattedLayout = function(type){
         const self = this;
         return new Promise(function (resolve, reject) {
             self.getMorpheme().then(function(morpheme){
@@ -76,11 +76,11 @@ module.exports = function (sequelize, DataTypes) {
     };
 
     MorphemeDefinition.prototype.getHtml = function() {
-        return this.getFormattedlayout("html");
+        return this.getFormattedLayout("html");
     };
 
     MorphemeDefinition.prototype.getLatex = function() {
-        return this.getFormattedlayout("latex");
+        return this.getFormattedLayout("latex");
     };
 
     return MorphemeDefinition;

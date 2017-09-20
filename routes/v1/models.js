@@ -34,7 +34,7 @@ router.get('/:model', function(req, res, next) {
     }
 
     queryOptions.where = req.query;
-    model.findAll(queryOptions).then(function (data) {
+    model.cache.findAll(queryOptions).then(function (data) {
         "use strict";
         res.send(data);
     }).catch(function (error) {
@@ -50,7 +50,7 @@ router.get('/:model/:id', function(req, res, next) {
         return;
     }
 
-    model.findById(req.params.id).then(function (data) {
+    model.cache.findOne({where: {id: req.params.id}}).then(function (data) {
         "use strict";
         if(data === null){
             res.status(404).send(`Entity for ID [${req.params.id}] does not exist for Model [${req.params.model}]`);

@@ -3,6 +3,7 @@ const router = express.Router();
 const models = require('../../models');
 const Sqlite_models = require('../../models/sqlite');
 const debug = require('debug')('Naranawm:API_V1_EXPORT');
+const Dictionary = require('../../controllers/dictionary');
 
 const tablesThatNeedLanguageIsoCode = [
     "LemmaDefinition",
@@ -71,13 +72,17 @@ router.get('/:lc/sqlite', function(req, res, next) {
 
 router.get('/dictionary/:id/:type/:lc', function(req, res, next){
     "use strict";
-
-    // Step 1: Get DictionaryBuild?
-    models.DictionaryBuild.findById(req.params.id).then(function(dictionaryBuild){
-         dictionaryBuild.build(req.params.lc, req.params.type).then(function(latex){
-             res.send(latex);
-         });
+    models.DictionaryBuild.cache.findOne({
+        where: {
+            id: req.params.id
+        }
+    }).then(function(dictionaryBuild) {
+        const dictionary = new Dictionary(dictionaryBuild.LanguageIsoCode, req.params.lc);
+        dictionary.build(dictionaryBuild.id, req.params.type).then(function(data){
+            res.send(data);
+        });
     });
+
 });
 
 module.exports = router;

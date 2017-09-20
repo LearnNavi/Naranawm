@@ -49,6 +49,7 @@ function Lemma(rawLemma) {
     this.id = rawLemma.id;
     this.pubId = rawLemma.id << 2; // No clue why all public IDs use a bit shift of 2 vs internal...
     this.lemma = rawLemma.arg1;
+    this.grapheme = parseGrapheme(rawLemma.arg1);
     this.type = rawLemma.type;
     this.odd = rawLemma.odd;
     this.block = rawLemma.block;
@@ -59,7 +60,7 @@ function Lemma(rawLemma) {
     this.ipa = parseIpa(rawLemma);
     this.definitions = {};
     this.linkedLemmas = this.parseLinkedLemmas(rawLemma);
-    this.invalid = this.parseInvalidity(rawLemma);
+    this.rejected = this.parseRejected(rawLemma);
 
     this.rawLemma = rawLemma;
 }
@@ -73,6 +74,7 @@ Lemma.prototype.addDefinition = function (definition, lc) {
         classTypes: this.parseLemmaClasses(definition),
         //linkedLemmas: this.parseLinkedLemmas(definition, ),
         definition: this.parseDefinition(definition),
+        note: this.parseNote(definition),
         arg1: definition.arg1,
         arg2: definition.arg2,
         arg3: definition.arg3,
@@ -94,7 +96,7 @@ Lemma.prototype.finalizeLemma = function () {
     delete this.rawLemma;
 };
 
-Lemma.prototype.parseInvalidity = function(rawLemma) {
+Lemma.prototype.parseRejected = function(rawLemma) {
     "use strict";
     return (rawLemma.block === 1);
 };
@@ -126,6 +128,15 @@ Lemma.prototype.parseDefinition = function(definition) {
     }
 };
 
+Lemma.prototype.parseNote = function(definition) {
+    "use strict";
+    switch(this.type){
+        case "note":
+            return definition.arg5;
+
+    }
+};
+
 Lemma.prototype.parseLinkedLemmas = function(rawLemma) {
     "use strict";
 
@@ -152,6 +163,10 @@ Lemma.prototype.parseLinkedLemmas = function(rawLemma) {
             return [{
                 id: rawLemma.arg6,
                 note: rawLemma.arg7
+            }];
+        case "lenite":
+            return [{
+                id: rawLemma.arg5
             }];
 
         default:
@@ -231,6 +246,11 @@ Lemma.prototype.parseLemmaClasses = function(definition) {
     }
     return types;
 };
+
+function parseGrapheme(lemma){
+    "use strict";
+
+}
 
 function parseSource(entry) {
     // Source

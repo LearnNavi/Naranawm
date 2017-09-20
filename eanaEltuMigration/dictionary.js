@@ -24,6 +24,7 @@ function Dictionary () {
     this.metadata = {};
     this.templates = {};
     this.entryTemplates = {};
+    this.graphemes = {};
     this.lemmas = {};
     this.lemmaLookup = {};
     this.morphemes = {};
@@ -59,6 +60,7 @@ Dictionary.prototype.exportDictionaryBuilds = function () {
         {
             id: 0,
             description: "Main Block",
+            useGraphemeHeaders: true,
             LanguageIsoCode: "nav"
         },{
             id: 1,
@@ -240,11 +242,16 @@ Dictionary.prototype.exportDictionaryTemplates = function () {
     for(const id of Object.keys(self.eanaEltu.dictLayout)){
         const layout = self.eanaEltu.dictLayout[id];
         if(layout.id === "changelog"){
-            layout.value += "\n\\begin{itemize}\n<<CHANGELOG_ITEMS>>\n\\end{itemize}\n\\end{document}";
+            // TODO: Changelog
+            layout.value += "\n\\begin{itemize}\n__CHANGELOG__\n\\end{itemize}\n\\end{document}";
         }
         if(id === "__PANDORAPEDIA__"){
             continue;
         }
+        // Replace Chars...
+        layout.value = layout.value.replace("$<", "«");
+        layout.value = layout.value.replace(">$", "»");
+
         templates.push({
             id: layout.id.toLowerCase(),
             latex: layout.value,
@@ -447,6 +454,17 @@ Dictionary.prototype.exportEntryLayouts = function () {
                 }
             ],
             children: []
+        },{
+            id: 'SUB_ENTRY_LEMMA',
+            layout: '{lemma}',
+            templates: [
+                {
+                    id: 'BOLD',
+                    position: 0,
+                    field: 'lemma'
+                }
+            ],
+            children: []
         }
     ];
 
@@ -482,13 +500,20 @@ Dictionary.prototype.exportEntryLayouts = function () {
 
                     if(lang === "raw"){
                         if(template.format !== undefined){
-                            const count = (template.format.match(/{LAYOUTS\.SUB_ENTRY_LEMMA_DEF}/g) || []).length;
+                            let count = (template.format.match(/{LAYOUTS\..*?}/g) || []).length;
+                            const layouts = [];
+                            let result;
+                            const regex = /{LAYOUTS\.(.*?)}/g;
+                            while(result = regex.exec(template.format)){
+                                layouts.push(result[1]);
+                            }
+
                             for(let i = 0; i < count; i++){
-                                template.format = template.format.replace("{LAYOUTS.SUB_ENTRY_LEMMA_DEF}", "{LAYOUTS.SUB_ENTRY_LEMMA_DEF." + i + "}");
+                                template.format = template.format.replace(`{LAYOUTS.${layouts[i]}}`, `{LAYOUTS.${layouts[i]}.${i}}`);
                                 entryTypeLayouts.push({
                                     order: i,
                                     EntryTypeId: templateId,
-                                    EntryLayoutId: "SUB_ENTRY_LEMMA_DEF"
+                                    EntryLayoutId: layouts[i]
                                 });
                             }
                         }
@@ -688,6 +713,20 @@ function findLinkedLemma(self, lemma, linkedLemma, position){
     return referencedObject;
 }
 
+function assignGrapheme(self, lemma) {
+    "use strict";
+    const firstOne = lemma.lemma.substring(0,1).toLowerCase();
+    const firstTwo = lemma.lemma.substring(0,2).toLowerCase();
+
+    if(self.graphemes[firstTwo] !== undefined){
+        return self.graphemes[firstTwo].id;
+    } else if(self.graphemes[firstOne] !== undefined){
+        return self.graphemes[firstOne].id;
+    } else {
+        debug(firstOne, firstTwo, lemma.lemma, lemma.rejected);
+    }
+}
+
 Dictionary.prototype.exportLemmas = function () {
     // Insert Entries
     const self = this;
@@ -707,10 +746,11 @@ Dictionary.prototype.exportLemmas = function () {
             //partOfSpeech: entry.partOfSpeech,
             //odd: entry.odd,
             audio: lemma.pubId + ".mp3",
-            invalid: lemma.invalid,
+            rejected: lemma.rejected,
             SourceId: self.sources[lemma.source].id,
             DictionaryBlockId: lemma.block,
             EntryTypeId: lemma.type,
+            GraphemeId: assignGrapheme(self, lemma),
             createdAt: lemma.editTime * 1000
         });
 
@@ -740,6 +780,7 @@ Dictionary.prototype.exportLemmas = function () {
                 LemmaId: lemma.id,
                 LanguageIsoCode: lc,
                 text: definition.definition,
+                note: definition.note,
                 odd: definition.odd,
                 createdAt: definition.editTime * 1000
             });
@@ -855,6 +896,7 @@ Dictionary.prototype.exportMorphemes = function() {
 
 Dictionary.prototype.exportGraphemes = function(){
     "use strict";
+    const self = this;
     const graphemes = [{
         grapheme: "'",
         sortOrder: 1,
@@ -989,7 +1031,13 @@ Dictionary.prototype.exportGraphemes = function(){
         LanguageIsoCode: "nav"
     }];
 
-    return models.Grapheme.bulkCreate(graphemes);
+    return models.Grapheme.bulkCreate(graphemes).then(function(){
+        return models.Grapheme.findAll().then(function (graphemes) {
+            graphemes.forEach(function (grapheme) {
+                self.graphemes[grapheme.grapheme] = grapheme;
+            });
+        });
+    });
 };
 
 Dictionary.prototype.exportPhonemes = function(){
@@ -1570,11 +1618,22 @@ function buildDictionaryTemplates(self) {
             self.eanaEltu.dictWordTemplate[index].parentId += "_PARENS";
         }
 
+        const sub_entry_lemma = "{LAYOUTS.SUB_ENTRY_LEMMA}";
         const sub_entry_lemma_def = "{LAYOUTS.SUB_ENTRY_LEMMA_DEF}";
 
         format = format.replace("\\textbf{#5} \\textit{#6}", sub_entry_lemma_def);
         format = format.replace("\\textbf{#6} \\textit{#7}", sub_entry_lemma_def);
         format = format.replace("\\textbf{#7} \\textit{#8}", sub_entry_lemma_def);
+
+
+
+        if(index === "note"){
+            format = format.replace("#5", "{note}")
+        }
+
+        if(index === "liu"){
+            format = format.replace("#4", "");
+        }
 
         let layout = format;
 
@@ -1594,6 +1653,8 @@ function buildDictionaryTemplates(self) {
         } else if(index === "derive"){
             layout += " " + sub_entry_lemma_def + " {METADATA.DERIVE_AND_TEXT} " + sub_entry_lemma_def;
             metadataReferences.push("DERIVE_AND_TEXT");
+        } else if(index === "lenite"){
+            layout += " " + sub_entry_lemma;
         }
 
         for(let lc in self.languages){
@@ -1613,6 +1674,7 @@ function buildDictionaryTemplates(self) {
                 metadata = metadata.replace("\\textbf{#5} \\textit{#6}", sub_entry_lemma_def);
                 metadata = metadata.replace("\\textbf{#6} \\textit{#7}", sub_entry_lemma_def);
                 metadata = metadata.replace("\\textbf{#7} \\textit{#8}", sub_entry_lemma_def);
+                metadata = metadata.replace("\\textbf{#5}", sub_entry_lemma);
 
                 if(index === "cw" || index === "cww" || index === "loan" || index === "pcw"){
                     // These templates have parens in them, strip them out and use the correct parent
@@ -1654,6 +1716,8 @@ function buildDictionaryTemplates(self) {
                     self.metadata[key][lc] = {
                         value: secondMetadataPart
                     };
+                } else if(index === "lenite"){
+                    metadata = metadata.replace(sub_entry_lemma, "");
                 }
 
                 localizedFormat = localizedFormat.replace(result[0], metadata);
@@ -1724,6 +1788,7 @@ function buildDictionaryLemmas(self) {
     self.eanaEltu.dictWordMetaLookup = {};
     // Remove duplicate entries...
     delete self.eanaEltu.dictWordMeta[310];
+    delete self.eanaEltu.dictWordMeta[372]; // duplicate --pe+
     delete self.eanaEltu.dictWordMeta[447];
 
     for(let id in self.eanaEltu.dictWordMeta){

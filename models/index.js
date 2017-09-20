@@ -3,10 +3,12 @@
 const fs        = require("fs");
 const path      = require("path");
 const Sequelize = require("sequelize");
+const cacher    = require("sequelize-redis-cache");
+const redis     = require("redis");
 const config = require("../config");
 
 const sequelize = new Sequelize(config.databases.naranawm);
-
+const rc        = redis.createClient(6379, 'localhost');
 const db        = {};
 
 fs
@@ -17,6 +19,7 @@ fs
     .forEach(function(file) {
         const model = sequelize.import(path.join(__dirname, file));
         db[model.name] = model;
+        db[model.name].cache = cacher(sequelize, rc).model(model.name).ttl(120);
     });
 
 Object.keys(db).forEach(function(modelName) {

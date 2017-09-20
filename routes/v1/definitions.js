@@ -24,7 +24,7 @@ router.get('/:lc/:lemmaId/:type', function(req, res, next){
         }
     }).then(function (definition) {
         "use strict";
-        definition.getFormattedlayout(req.params.type).then(function(data){
+        definition.getFormattedLayout(req.params.type).then(function(data){
             res.send(data);
         });
 

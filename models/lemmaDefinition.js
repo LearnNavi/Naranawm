@@ -1,12 +1,11 @@
 'use strict';
 const format = require('string-format');
-const Promise = require('bluebird');
-const models = require('./index');
 
 module.exports = function (sequelize, DataTypes) {
 
     const LemmaDefinition = sequelize.define('LemmaDefinition', {
         text: DataTypes.TEXT,
+        note: DataTypes.TEXT,
         odd: DataTypes.TEXT
     });
 
@@ -28,7 +27,7 @@ module.exports = function (sequelize, DataTypes) {
         });
     };
 
-    LemmaDefinition.prototype.getFormattedlayout = function(type){
+    LemmaDefinition.prototype.getFormattedLayout = function(type){
         const self = this;
         return new Promise(function (resolve, reject) {
             self.getLemma({
@@ -126,11 +125,11 @@ module.exports = function (sequelize, DataTypes) {
     };
 
     LemmaDefinition.prototype.getHtml = function() {
-        return this.getFormattedlayout("html");
+        return this.getFormattedLayout("html");
     };
 
     LemmaDefinition.prototype.getLatex = function() {
-        return this.getFormattedlayout("latex");
+        return this.getFormattedLayout("latex");
     };
 
     return LemmaDefinition;
