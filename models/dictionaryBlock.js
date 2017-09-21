@@ -3,7 +3,7 @@ module.exports = function (sequelize, DataTypes) {
     const DictionaryBlock = sequelize.define('DictionaryBlock', {
         id: { type: DataTypes.INTEGER, primaryKey: true },
         description: { type: DataTypes.STRING },
-        useGraphemeHeaders: { type: DataTypes.BOOLEAN, default: false }
+        useGraphemeHeaders: { type: DataTypes.BOOLEAN, defaultValue: false, allowNull: false }
     });
 
     DictionaryBlock.associate = function (models) {

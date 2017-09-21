@@ -49,4 +49,6 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+process.on('unhandledRejection', r => console.log(r));
+
 module.exports = app;

@@ -128,6 +128,8 @@ Dictionary.prototype.build = function(buildId, type) {
                         break;
 
                     case "mainblock":
+                    case "block":
+                        console.log(buildData.DictionaryBlock.id);
                         documentPromises.push(self.buildBlock(buildData.DictionaryBlock, type).then(function(formattedBlock){
                             //documentParts[i] = "\\needspace{8\\baselineskip}\n";
                             //documentParts[i] += "\\noindent\\textbf{A}\\begin{multicols}{2}{\\begin{hangparas}{.5cm}{1}\\noindent\n";
@@ -138,7 +140,7 @@ Dictionary.prototype.build = function(buildId, type) {
                         //document += buildData[i].DictionaryBlock
                         break;
 
-                    case "block":
+                    default:
                         documentParts[i] = "\n";
                         break;
                 }
@@ -152,7 +154,6 @@ Dictionary.prototype.build = function(buildId, type) {
                 let document = documentParts.join('');
                 for(let i = 0; i < self.localizedMetadata.length; i++){
                     if(self.localizedMetadata[i].MetadatumId === "CHANGELOG"){
-                        console.log("CHANGELOG");
                         const changelog = [];
                         const entries = self.localizedMetadata[i].value.split('\n');
                         for(let j = 0; j < entries.length; j++){
@@ -164,7 +165,6 @@ Dictionary.prototype.build = function(buildId, type) {
                                 changelog.push(`\\item {\\bf ${version}} ${entry}`);
                             }
                         }
-                        console.log(changelog);
                         document = document.replace(new RegExp(`__${self.localizedMetadata[i].MetadatumId}__`, "g"), changelog.join('\n'));
                     } else {
                         document = document.replace(new RegExp(`__${self.localizedMetadata[i].MetadatumId}__`, "g"), self.localizedMetadata[i].value);
@@ -187,7 +187,19 @@ Dictionary.prototype.build = function(buildId, type) {
 Dictionary.prototype.buildBlock = function (block, type){
     const self = this;
     return new Promise(function(resolve, reject){
-        models.Lemma.cache.findAll({
+        let sortOrder = [
+            [models.Lemma.associations.Grapheme, 'sortOrder', 'ASC'],
+            ['lemma', 'ASC']
+            //[models.sequelize.fn('lower', models.sequelize.col('Lemma.lemma')), 'ASC']
+        ];
+        if(block.id !== 0){
+            sortOrder = [
+                //[models.Lemma.associations.Grapheme, 'sortOrder', 'ASC'],
+                //['lemma', 'ASC']
+                [models.sequelize.fn('lower', models.sequelize.col('Lemma.lemma')), 'ASC']
+            ];
+        }
+        models.Lemma.findAll({
             where: {
                 LanguageIsoCode: self.sourceLanguage,
                 DictionaryBlockId: block.id
@@ -205,7 +217,8 @@ Dictionary.prototype.buildBlock = function (block, type){
                     through: "LemmaClassTypeAssociations",
                     where: {
                         LanguageIsoCode: self.targetLanguage
-                    }
+                    },
+                    required: false
                 }, {
                     association: "LinkedLemma",
                     include: [{
@@ -216,21 +229,23 @@ Dictionary.prototype.buildBlock = function (block, type){
                                 LanguageIsoCode: self.targetLanguage
                             }
                         }]
-                    }]
+                    }],
+                    required: false
                 }, {
-                    association: "Grapheme"
+                    association: "Grapheme",
+                    required: false
                 }
             ],
-            order: [
-                [models.Lemma.associations.Grapheme, 'sortOrder', 'ASC'],
-                ['lemma', 'ASC']
-            ]
+            order: sortOrder
         }).then(function(lemmas){
             "use strict";
-            console.log("Got Lemmas");
+            console.log(229, "Got Lemmas", block.id, lemmas.length);
             const definitions = new Array(lemmas.length);
             const promises = [];
             for(let i = 0; i < lemmas.length; i++){
+                if(lemmas[i].id === 1725){
+                    console.log("FOUND LEMMA");
+                }
                 promises.push(self.getFormattedDefinition(lemmas[i], type).then(function(formattedDefinition){
                     definitions[i] = formattedDefinition;
                     lemmas[i].definition = formattedDefinition;
@@ -259,6 +274,9 @@ Dictionary.prototype.buildBlock = function (block, type){
                                 latexData += sectionEnd();
                             }
                             // Start new section
+                            if(lemmas[i].Grapheme === null){
+                                console.log(lemmas[i].id, lemmas[i].lemma, lemmas[i].DictionaryBlockId, block.useGraphemeHeaders, block.id);
+                            }
                             latexData += sectionStart(lemmas[i].Grapheme.grapheme);
                             currentGrapheme = lemmas[i].GraphemeId;
                         }
@@ -308,7 +326,7 @@ Dictionary.prototype.getFormattedDefinition = function(lemma, type){
             if(entryType.layouts !== undefined){
                 layouts = JSON.parse(JSON.stringify(entryType.layouts[type]));
                 if(lemma.id === 133){
-                    console.log(lemma.linkedLemma);
+                    console.log(133, lemma.linkedLemma);
                 }
                 for(let i = 0; i < lemma.LinkedLemma.length; i++){
                     const linkedDef = {
@@ -342,12 +360,12 @@ Dictionary.prototype.getFormattedDefinition = function(lemma, type){
                 LAYOUTS: layouts
             };
             if(entryType.id === "lenite"){
-                console.log(formatData, entryType.layout);
+                //console.log("lenite", formatData, entryType.layout);
             }
             resolve(format(entryType.layout, formatData));
 
         } else {
-            console.log("Missing Definition!", lemma.id);
+            console.log(351, "Missing Definition!", lemma.id);
             resolve();
         }
     });
