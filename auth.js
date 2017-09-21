@@ -12,7 +12,7 @@ const models = require('./models/index');
 const crypto = require('crypto');
 const userDatabase = config.databases.forum;
 
-jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeader();
+jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 jwtOptions.secretOrKey = config.jwtKey;
 jwtOptions.issuer = 'naranawm.org';
 
