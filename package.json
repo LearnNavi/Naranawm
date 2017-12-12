@@ -8,24 +8,25 @@
     "update-deps": "npm update"
   },
   "dependencies": {
-    "bluebird": "^3.5.0",
+    "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
     "cookie-parser": "^1.4.3",
     "debug": "^3.1.0",
-    "express": "^4.16.1",
+    "express": "^4.16.2",
     "js2xmlparser": "^3.0.0",
-    "jsonwebtoken": "^8.0.1",
+    "jsonwebtoken": "^8.1.0",
     "morgan": "^1.9.0",
-    "mysql": "^2.14.1",
-    "mysql2": "^1.4.2",
+    "mysql": "^2.15.0",
+    "mysql2": "^1.5.1",
+    "node-latex": "^2.4.3",
     "passport": "^0.4.0",
-    "passport-jwt": "^3.0.0",
+    "passport-jwt": "^3.0.1",
     "passport-local": "^1.0.0",
     "passport-localapikey": "^0.0.3",
     "pug": "^2.0.0-rc.4",
     "redis": "^2.8.0",
-    "sequelize": "^4.13.3",
-    "sequelize-cli": "^3.0.0",
+    "sequelize": "^4.28.0",
+    "sequelize-cli": "^3.2.0",
     "sequelize-redis-cache": "^2.0.1",
     "serve-favicon": "^2.4.5",
     "sqlite3": "^3.1.13",
@@ -33,6 +34,6 @@
     "tmp": "0.0.33"
   },
   "devDependencies": {
-    "nodemon": "^1.12.1"
+    "nodemon": "^1.12.5"
   }
 }

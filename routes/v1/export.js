@@ -5,6 +5,7 @@ const Sqlite_models = require('../../models/sqlite');
 const debug = require('debug')('Naranawm:API_V1_EXPORT');
 const Dictionary = require('../../controllers/dictionary');
 const Xliff = require('../../controllers/xliff');
+const latex = require('node-latex');
 
 const tablesThatNeedLanguageIsoCode = [
     "LemmaDefinition",
@@ -141,7 +142,15 @@ router.get('/dictionary/:id/:type/:lc', function(req, res, next){
     }).then(function(dictionaryBuild) {
         const dictionary = new Dictionary(dictionaryBuild.LanguageIsoCode, req.params.lc);
         dictionary.build(dictionaryBuild.id, req.params.type).then(function(data){
-            res.send(data);
+            res.setHeader("content-type", "application/pdf");
+            const options = {
+                cmd: 'xelatex' // This will write the errors to `latexerrors.log`
+            };
+            const pdf = latex(data, options);
+
+            pdf.pipe(res);
+            pdf.on('error', err => console.error(err));
+
         });
     });
 
