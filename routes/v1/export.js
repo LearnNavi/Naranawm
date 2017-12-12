@@ -4,6 +4,7 @@ const models = require('../../models');
 const Sqlite_models = require('../../models/sqlite');
 const debug = require('debug')('Naranawm:API_V1_EXPORT');
 const Dictionary = require('../../controllers/dictionary');
+const Xliff = require('../../controllers/xliff');
 
 const tablesThatNeedLanguageIsoCode = [
     "LemmaDefinition",
@@ -12,7 +13,7 @@ const tablesThatNeedLanguageIsoCode = [
     "LemmaClassType"
 ];
 
-function exportData(sqlite, lc, model){
+function exportSqliteData(sqlite, lc, model){
     "use strict";
     debug("Exporting: ", model);
     let where;
@@ -26,6 +27,57 @@ function exportData(sqlite, lc, model){
             const data = sequlizeData.map(function(row){ return row.get({plain: true}); });
             return sqlite[model].bulkCreate(data);
         });
+    });
+}
+
+function exportXLIFF(sourceLanguage, targetLanguage, res){
+    "use strict";
+    const xliff = new Xliff(sourceLanguage, targetLanguage);
+    models['Lemma'].findAll({
+        where: {
+            LanguageIsoCode: sourceLanguage
+        },
+        include: [
+            {
+                association: "LemmaDefinition",
+                where: {
+                    LanguageIsoCode: targetLanguage
+                },
+                required: false
+            }
+        ]
+    }).then(function(lemmas){
+        const file = xliff.newFile("LemmaDefinition");
+        for(let i = 0; i < lemmas.length; i++){
+            const transUnit = {
+                "@": {
+                    id: lemmas[i].id
+                },
+                source: lemmas[i].lemma
+            };
+            if(lemmas[i].LemmaDefinition !== undefined && lemmas[i].LemmaDefinition.length === 1){
+                transUnit.target = {
+                    "@": {
+                        state: "translated"
+                    },
+                    "#": lemmas[i].LemmaDefinition[0].text
+                };
+                transUnit["@"].approved = "yes";
+            }
+            file.addTransUnit(transUnit);
+        }
+        xliff.addFile(file);
+        const xliffDocument = xliff.render()
+            .replace(/'/g, "&apos;");
+
+        console.log(xliffDocument);
+        if(targetLanguage === undefined){
+            targetLanguage = sourceLanguage;
+        }
+        res.setHeader('Content-disposition', `attachment; filename=${targetLanguage}.xliff`);
+        res.setHeader('Content-type', 'application/xml');
+        //res.sendFile(xliffFile);
+        res.send(xliffDocument);
     });
 }
 
@@ -55,7 +107,7 @@ router.get('/:lc/sqlite', function(req, res, next) {
     });
     for(let i = 0; i < tables.length; i++){
         const table = tables[i];
-        exportPromise = exportPromise.then(function(){ return exportData(sqlite, req.params.lc, table); });
+        exportPromise = exportPromise.then(function(){ return exportSqliteData(sqlite, req.params.lc, table); });
     }
     return exportPromise.then(function(){
         "use strict";
@@ -68,6 +120,16 @@ router.get('/:lc/sqlite', function(req, res, next) {
     }).catch(function(error){
         debug("Error: ", error);
     });
+});
+
+router.get('/xliff/:source', function(req, res, next){
+    "use strict";
+    exportXLIFF(req.params.source, undefined, res);
+});
+
+router.get('/xliff/:source/:target', function(req, res, next){
+    "use strict";
+    exportXLIFF(req.params.source, req.params.target, res);
 });
 
 router.get('/dictionary/:id/:type/:lc', function(req, res, next){

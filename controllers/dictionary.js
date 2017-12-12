@@ -177,7 +177,9 @@ Dictionary.prototype.build = function(buildId, type) {
                 const day = date.getDate();
                 const year = date.getFullYear();
                 document = document.replace(new RegExp("___DATE___", "g"), `${month} ${day}$^{${nth(day)}}$, ${year}`);
-                //console.log("Done", document);
+                document = document.replace(new RegExp("»", "g"), "\u00BB");
+                //document = document.replace(new RegExp("#", "g"), "X");
+                console.log("Done");
                 resolve(document);
             });
         });
@@ -349,12 +351,18 @@ Dictionary.prototype.getFormattedDefinition = function(lemma, type){
                 }
             }
 
+            if(type === "latex"){
+                lemma.ipa = lemma.ipa.replace("_", "$\\_$");
+            }
+
             const formatData = {
                 lemma: lemma.lemma,
                 ipa: lemma.ipa,
                 source: lemma.Source.name,
                 lemma_class: lemmaClassTypes.join(", "),
                 definition: definition.text,
+                loanWordLanguage: definition.loanWordLanguage,
+                loanWordDefinition: definition.loanWordDefinition,
                 note: definition.note,
                 METADATA: localMetadata,
                 LAYOUTS: layouts

@@ -75,6 +75,8 @@ Lemma.prototype.addDefinition = function (definition, lc) {
         //linkedLemmas: this.parseLinkedLemmas(definition, ),
         definition: this.parseDefinition(definition),
         note: this.parseNote(definition),
+        loanWordLanguage: this.parseLoanWordLanguage(definition),
+        loanWordDefinition: this.parseLoanWordDefinition(definition),
         arg1: definition.arg1,
         arg2: definition.arg2,
         arg3: definition.arg3,
@@ -132,6 +134,24 @@ Lemma.prototype.parseNote = function(definition) {
     "use strict";
     switch(this.type){
         case "note":
+            return definition.arg5;
+
+    }
+};
+
+Lemma.prototype.parseLoanWordLanguage = function(definition) {
+    "use strict";
+    switch(this.type){
+        case "loan":
+            return definition.arg7;
+
+    }
+};
+
+Lemma.prototype.parseLoanWordDefinition = function(definition) {
+    "use strict";
+    switch(this.type){
+        case "loan":
             return definition.arg5;
 
     }

@@ -5,6 +5,8 @@ module.exports = function (sequelize, DataTypes) {
 
     const LemmaDefinition = sequelize.define('LemmaDefinition', {
         text: DataTypes.TEXT,
+        loanWordLanguage: DataTypes.TEXT,
+        loanWordDefinition: DataTypes.TEXT,
         note: DataTypes.TEXT,
         odd: DataTypes.TEXT
     });

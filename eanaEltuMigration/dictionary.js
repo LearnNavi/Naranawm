@@ -781,6 +781,8 @@ Dictionary.prototype.exportLemmas = function () {
                 LanguageIsoCode: lc,
                 text: definition.definition,
                 note: definition.note,
+                loanWordLanguage: definition.loanWordLanguage,
+                loanWordDefinition: definition.loanWordDefinition,
                 odd: definition.odd,
                 createdAt: definition.editTime * 1000
             });
@@ -1631,6 +1633,10 @@ function buildDictionaryTemplates(self) {
             format = format.replace("#5", "{note}")
         }
 
+        if(index === "loan"){
+            format += " {loanWordLanguage} {loanWordDefinition}";
+        }
+
         if(index === "liu"){
             format = format.replace("#4", "");
         }
@@ -1680,6 +1686,11 @@ function buildDictionaryTemplates(self) {
                     // These templates have parens in them, strip them out and use the correct parent
                     metadata = metadata.replace("(", "");
                     metadata = metadata.replace(")", "");
+                }
+
+                if(index === "loan"){
+                    metadata = metadata.replace("#7", "");
+                    metadata = metadata.replace("\\textit{#5}", "");
                 }
 
                 metadata = metadata.trim();
