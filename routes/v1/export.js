@@ -6,6 +6,7 @@ const debug = require('debug')('Naranawm:API_V1_EXPORT');
 const Dictionary = require('../../controllers/dictionary');
 const Xliff = require('../../controllers/xliff');
 const latex = require('node-latex');
+const fs = require('fs');
 
 const tablesThatNeedLanguageIsoCode = [
     "LemmaDefinition",
@@ -150,7 +151,12 @@ router.get('/dictionary/:id/:type/:lc', function(req, res, next){
 
             pdf.pipe(res);
             pdf.on('error', err => console.error(err));
-
+            fs.writeFile(req.params.id + "_" + req.params.lc + ".tex", data, function(err) {
+                if(err) {
+                    return console.error(err);
+                }
+                console.log("The file was saved!");
+            });
         });
     });
 
