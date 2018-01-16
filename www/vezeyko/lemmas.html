@@ -1,0 +1,29 @@
+<div class="page-header">
+    <h1>Lemmas</h1>
+</div>
+<div class="col-md-12">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>PubID</th>
+            <th>Lemma</th>
+            <th>IPA</th>
+            <th>Audio</th>
+            <th>Rejected</th>
+            <th>Legacy</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="row in lemmas">
+            <td>{{ row.id }}</td>
+            <td>{{ row.pubId }}</td>
+            <td>{{ row.lemma }}</td>
+            <td>{{ row.ipa }}</td>
+            <td><a href="http://temp.learnnavi.org/audio/{{ row.audio }}" onclick="window.open(this.href,this.target,'width=550px,height=350px');return false">{{ row.audio }}</a></td>
+            <td><input type="checkbox" ng-checked="row.rejected" disabled="true"/></td>
+            <td><input type="checkbox" ng-checked="row.legacyLemma" disabled="true"/></td>
+        </tr>
+        </tbody>
+    </table>
+</div>

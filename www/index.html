@@ -42,6 +42,12 @@
             <a class="navbar-brand" href="#">Naranawm</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
+                <li><a href="#!/vezeyko/nav/languages">Languages</a></li>
+                <li><a href="#!/vezeyko/nav/sources">Sources</a></li>
+                <li><a href="#!/vezeyko/nav/lemmas">Lemmas</a></li>
+            </ul>
             <form class="navbar-form navbar-right" ng-controller="LoginCtrl" ng-submit="login()" ng-show="showLoginForm()">
                 <div class="form-group">
                     <input type="text" placeholder="Username" class="form-control" ng-model="form.username">
@@ -77,6 +83,7 @@
 <script src="vezeyko/vezeyko.js"></script>
 <script src="vezeyko/dashboard.js"></script>
 <script src="vezeyko/languages.js"></script>
+<script src="vezeyko/lemmas.js"></script>
 <script src="vezeyko/sources.js"></script>
 
 <script src="components/version/version.js"></script>

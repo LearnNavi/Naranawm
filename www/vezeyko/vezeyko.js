@@ -19,6 +19,11 @@ angular.module('naranawm.vezeyko', ['ngRoute'])
             controller: 'LanguagesCtrl'
         });
 
+        $routeProvider.when('/vezeyko/:language/lemmas', {
+            templateUrl: 'vezeyko/lemmas.html',
+            controller: 'LemmasCtrl'
+        });
+
         $routeProvider.when('/vezeyko/:language/sources', {
             templateUrl: 'vezeyko/sources.html',
             controller: 'SourcesCtrl'
