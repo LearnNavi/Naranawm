@@ -744,7 +744,7 @@ Dictionary.prototype.exportLemmas = function () {
             lemma: lemma.lemma,
             ipa: lemma.ipa,
             //partOfSpeech: entry.partOfSpeech,
-            //odd: entry.odd,
+            odd: lemma.odd,
             audio: lemma.pubId + ".mp3",
             rejected: lemma.rejected,
             SourceId: self.sources[lemma.source].id,
@@ -1004,11 +1004,11 @@ Dictionary.prototype.exportGraphemes = function(){
         sortOrder: 26,
         LanguageIsoCode: "nav"
     },{
-        grapheme: "tx",
+        grapheme: "ts",
         sortOrder: 27,
         LanguageIsoCode: "nav"
     },{
-        grapheme: "ts",
+        grapheme: "tx",
         sortOrder: 28,
         LanguageIsoCode: "nav"
     },{

@@ -61,7 +61,7 @@ function Lemma(rawLemma) {
     this.definitions = {};
     this.linkedLemmas = this.parseLinkedLemmas(rawLemma);
     this.rejected = this.parseRejected(rawLemma);
-
+    this.attributes = this.parseAttributes(rawLemma);
     this.rawLemma = rawLemma;
 }
 
@@ -101,6 +101,265 @@ Lemma.prototype.finalizeLemma = function () {
 Lemma.prototype.parseRejected = function(rawLemma) {
     "use strict";
     return (rawLemma.block === 1);
+};
+
+Lemma.prototype.parseAttributes = function(rawLemma) {
+    "use strict";
+    const odd = this.odd;
+    if(odd === "" || odd === undefined || odd === null) {
+        return [];
+    } else {
+        let attributes = [];
+        if(odd.indexOf("%") === 0){
+            this.odd = "";
+        } else if(odd === "\\ ofp." || odd === "\\  ofp.") {
+            attributes.push({attribute: "OFP"});
+            this.odd = "";
+        } else if(odd === "\\ ofp. (female)") {
+            attributes.push({attribute: "OFP"});
+            attributes.push({attribute: "NOTE", text: "female"});
+            this.odd = "";
+        } else if(odd === "\\ ofp. (male)") {
+            attributes.push({attribute: "OFP"});
+            attributes.push({attribute: "NOTE", text: "male"});
+            this.odd = "";
+        } else if(odd === "\\ ofp. (refers to a 'dim' person)"){
+            attributes.push({attribute: "OFP"});
+            attributes.push({attribute: "NOTE", text: "refers to a 'dim' person"});
+            this.odd = "";
+        } else if(odd === "\\ nfp.") {
+            attributes.push({attribute: "NFP"});
+            this.odd = "";
+        } else if(odd === "\\ nfp. (e.g. a brave deed)"){
+            attributes.push({attribute: "NFP"});
+            attributes.push({attribute: "NOTE", text: "e.g. a brave deed"});
+            this.odd = "";
+        } else if(odd === "\\ (not normally allowable under Na'vi phonotactic rules)"){
+            attributes.push({attribute: "Irregular Phonetics"});
+            this.odd = "";
+        } else if(odd === "\\ (stress moves to first syllable with infixation)") {
+            attributes.push({attribute: "First Syllable Stress With Infixation"});
+            this.odd = "";
+        } else if(odd === "\\ (Used for appositions)") {
+            attributes.push({attribute: "NOTE", text: "Used for appositions"});
+            this.odd = "";
+        } else if(odd === "\\ (Note: From Disney's Pandora - The World of Avatar)") {
+            attributes.push({attribute: "NOTE", text: "From Disney's Pandora - The World of Avatar"});
+            this.odd = "";
+        } else if(odd === "\\ (Note: Name of bar at Disney's Pandora - The World of Avatar)") {
+            attributes.push({attribute: "NOTE", text: "Name of bar at Disney's Pandora - The World of Avatar"});
+            this.odd = "";
+        } else if(odd === "\\ (Note: Also name of canteen at Disney's Pandora)") {
+            attributes.push({attribute: "NOTE", text: "Also name of canteen at Disney's Pandora"});
+            this.odd = "";
+        } else if(odd === "\\ (Note: Also the name of the Disney Pandora location)") {
+            attributes.push({attribute: "NOTE", text: "Also the name of the Disney Pandora location"});
+            this.odd = "";
+        } else if(odd === "\\ (Note: Being enthusiastic is always transitive in Na'vi -PF)") {
+            attributes.push({attribute: "NOTE", text: "Being enthusiastic is always transitive in Na'vi -PF"});
+            this.odd = "";
+        } else if(odd === "\\ (Note: common misspelling as Omaticaya, sourced by the ASG)") {
+            attributes.push({attribute: "NOTE", text: "common misspelling as Omaticaya, sourced by the ASG"});
+            this.odd = "";
+        } else if(odd === "\\ (The derivation of this word is not entirely clear. It may have originally been kesrankekehe, literally, ‘not yes, not no,’ in reference to whether a certain action was performed well or not, and over time it became shortened to just kesran, its use expanding to include anything only mediocre in quality.)") {
+            attributes.push({attribute: "NOTE", text: "The derivation of this word is not entirely clear. It may have originally been kesrankekehe, literally, ‘not yes, not no,’ in reference to whether a certain action was performed well or not, and over time it became shortened to just kesran, its use expanding to include anything only mediocre in quality."});
+            this.odd = "";
+        } else if(odd === "\\ (Used with countable nouns in the singular form)") {
+            attributes.push({attribute: "NOTE", text: "Used with countable nouns in the singular form"});
+            this.odd = "";
+        } else if(odd === "\\ (contraction)") {
+            attributes.push({attribute: "CONTRACTION"});
+            attributes.push({attribute: "NOTE", text: "contraction"});
+            this.odd = "";
+        } else if(odd === "\\ (sentence, not manner, adverbial)") {
+            attributes.push({attribute: "NOTE", text: "sentence, not manner, adverbial"});
+            this.odd = "";
+        } else if(odd === "\\ (used with singular or plural noun forms)") {
+            attributes.push({attribute: "NOTE", text: "used with singular or plural noun forms"});
+            this.odd = "";
+        } else if(odd === "\\ (with subjunctive verb in dependant clause)") {
+            attributes.push({attribute: "NOTE", text: "with subjunctive verb in dependant clause"});
+            this.odd = "";
+        } else if(odd === "\\ (with the subjunctive)") {
+            attributes.push({attribute: "NOTE", text: "with the subjunctive"});
+            this.odd = "";
+        } else if(odd === "\\ eg.  James Horner") {
+            attributes.push({attribute: "EXAMPLE", text: "James Horner"});
+            this.odd = "";
+        } else if(odd === "\\ lit.: 'a clump of stars'") {
+            attributes.push({attribute: "LITERAL", text: "a clump of stars"});
+            this.odd = "";
+        } else if(odd === "\\ lit.: 'a group of mindsets'") {
+            attributes.push({attribute: "LITERAL", text: "a group of mindsets"});
+            this.odd = "";
+        } else if(odd === "\\ lit.: 'like a trap'") {
+            attributes.push({attribute: "LITERAL", text: "like a trap"});
+            this.odd = "";
+        } else if(odd === "\\ lit.: 'little cloud'") {
+            attributes.push({attribute: "LITERAL", text: "little cloud"});
+            this.odd = "";
+        } else if(odd === "\\ lit.: 'set of bones'") {
+            attributes.push({attribute: "LITERAL", text: "set of bones"});
+            this.odd = "";
+        } else if(odd === "\\ lit.: 'without letting it fall'") {
+            attributes.push({attribute: "LITERAL", text: "without letting it fall"});
+            this.odd = "";
+        } else if(odd === "\\ lit.: 'without letting it move'") {
+            attributes.push({attribute: "LITERAL", text: "without letting it move"});
+            this.odd = "";
+        } else if(odd === "\\ lit.: 'without releasing it'") {
+            attributes.push({attribute: "LITERAL", text: "without releasing it"});
+            this.odd = "";
+        } else if(odd === "\\textit{``Death is inevitable.\"}") {
+            //attributes.push({attribute: "LITERAL", text: "Death is inevitable"});
+            this.odd = "";
+        } else if(odd === "\\ (lit. canopy fruit)") {
+            attributes.push({attribute: "LITERAL", text: "canopy fruit"});
+            this.odd = "";
+        } else if(odd === "\\ (Can also be used metaphorically to refer to the level of anything scalable - anything that can have levels or degrees, highs and lows, water level, temperature, talent, anger, etc.)") {
+            attributes.push({attribute: "NOTE", text: "Can also be used metaphorically to refer to the level of anything scalable - anything that can have levels or degrees, highs and lows, water level, temperature, talent, anger, etc."});
+            this.odd = "";
+        } else if(odd === "\\ (\\textit {example use:} \\textbf{rou fa pxir})") {
+            attributes.push({attribute: "USAGE", text: "rou fa pxir"});
+            this.odd = "";
+        } else if(odd === "\\ (predicative copula, existential verb) (signifies possession with dative of possessor)") {
+            attributes.push({attribute: "NOTE", text: "predicative copula, existential verb"});
+            attributes.push({attribute: "NOTE", text: "signifies possession with dative of possessor"});
+            this.odd = "";
+        } else if(odd === "\\ (c.w. from {\\bf kem} {\\it action, deed})") {
+            this.linkedLemmas.push({
+                id: "kem"
+            });
+            this.odd = "";
+        } else if(odd === "\\ (c.w. from {\\bf krr} {\\it time})") {
+            this.linkedLemmas.push({
+                id: "krr"
+            });
+            this.odd = "";
+        } else if(odd === "\\ (c.w. from {\\bf krr} {\\it time} and {\\bf ta} {\\it from})") {
+            this.linkedLemmas.push({
+                id: "krr"
+            });
+            this.linkedLemmas.push({
+                id: "ta"
+            });
+            this.odd = "";
+        } else if(odd === "\\ (c.w. from {\\bf krr} {\\it time} and {\\bf maw} {\\it after})") {
+            this.linkedLemmas.push({
+                id: "krr"
+            });
+            this.linkedLemmas.push({
+                id: "maw"
+            });
+            this.odd = "";
+        } else if(odd === "\\ Contraction of \\textbf{na hufwe}") {
+            this.linkedLemmas.push({
+                id: "na"
+            });
+            this.linkedLemmas.push({
+                id: "hufwe"
+            });
+            this.odd = "";
+        } else if(odd === "\\ (contraction of \\textit{tsonit a})") {
+            this.linkedLemmas.push({
+                id: "tsonit"
+            });
+            this.linkedLemmas.push({
+                id: "a"
+            });
+            this.odd = "";
+        } else if(odd === "\\ (c.w. from {\\bf prrte'} {\\it pleasurable}, {\\bf kxener} {\\it smoke}, {\\bf trr} {\\it day} and {\\bf krr} {\\it time})") {
+            this.linkedLemmas.push({
+                id: "prrte'"
+            });
+            this.linkedLemmas.push({
+                id: "kxener"
+            });
+            this.linkedLemmas.push({
+                id: "trr"
+            });
+            this.linkedLemmas.push({
+                id: "krr"
+            });
+            this.odd = "";
+        } else if(odd === "\\ (contraction of {\\bf ke+zene+pivlltxe})") {
+            this.linkedLemmas.push({
+                id: "ke"
+            });
+            this.linkedLemmas.push({
+                id: "zene"
+            });
+            this.linkedLemmas.push({
+                id: "pivlltxe"
+            });
+            this.odd = "";
+        } else if(odd === "\\ variant of slosneppe") {
+            this.linkedLemmas.push({
+                id: "slosneppe",
+                note: "variant"
+            });
+            this.odd = "";
+        } else if(odd === "\\ variant of peslosnep") {
+            this.linkedLemmas.push({
+                id: "peslosnep",
+                note: "variant"
+            });
+            this.odd = "";
+        } else if(odd === "\\ variant of fyinep'angpe") {
+            this.linkedLemmas.push({
+                id: "fyinep'angpe",
+                note: "variant"
+            });
+            this.odd = "";
+        } else if(odd === "\\ variant of pefyinep'ang") {
+            this.linkedLemmas.push({
+                id: "pefyinep'ang",
+                note: "variant"
+            });
+            this.odd = "";
+        } else if(odd === "\\ Note: \\textit{soaia} contracts to \\textit{sway}") {
+            attributes.push({attribute: "NOTE", text: "<i>soaia</i> contracts to <i>sway</i>"});
+            this.odd = "";
+        } else if(odd === "\\ ({\\bf ayoenga--} base for suffixes)") {
+            attributes.push({attribute: "NOTE", text: "<b>ayoenga--</b> base for suffixes"});
+            this.odd = "";
+        } else if(odd === "\\ (never plural {\\bf u})") {
+            attributes.push({attribute: "NOTE", text: "never plural <b>u</b>"});
+            this.odd = "";
+        } else if(odd === "\\ (lenited form of {\\bf tsat})") {
+            this.linkedLemmas.push({
+                id: "tsat",
+                note: "lenited form"
+            });
+            this.odd = "";
+        } else if(odd === "\\ (synonym: {\\bf tslolam})") {
+            this.linkedLemmas.push({
+                id: "tslolam",
+                note: "synonym"
+            });
+            this.odd = "";
+        } else if(odd === "\\ (Pronounced [\\textipa{tI.\\textprimstress wEjk.tIN}] in casual speech)") {
+            attributes.push({attribute: "ALT_IPA", text: "Pronounced [\\textipa{tI.\\textprimstress wEjk.tIN}] in casual speech"});
+            this.odd = "";
+        } else if(odd === "\\ Note: In compounds, the ä and e drop,   yielding --\\textit{smung}") {
+            attributes.push({attribute: "NOTE", text: "In compounds, the ä and e drop,   yielding --<i>smung</i>"});
+            this.odd = "";
+        } else if(odd === "\\ Note: colloquially, \\textbf{yo} can be used in place of \\textbf{fyanyo}.") {
+            attributes.push({attribute: "NOTE", text: "colloquially, <b>yo</b> can be used in place of <b>fyanyo</b>."});
+            this.odd = "";
+        } else if(odd === "\\ transitive form of \\textit{klltxay}") {
+            attributes.push({attribute: "NOTE", text: "transitive form of <i>klltxay</i>"});
+            this.odd = "";
+        } else if(odd === "\\ (affectionate form {\\bf Kamtsyìp})") {
+            this.linkedLemmas.push({
+                id: "kamtsyìp",
+                note: "affectionate"
+            });
+            this.odd = "";
+        }
+
+        return attributes;
+    }
 };
 
 Lemma.prototype.parseDefinition = function(definition) {
@@ -345,7 +604,6 @@ function parseSource(entry) {
 function parseIpa(entry) {
     if(nonIpaTypes.indexOf(entry.type) === -1){
         let rawIpa = entry.arg2;
-
         // Need to do some string manipulation to get the correct IPA value out
         //rawIpa = processRegexReplace(/(\\\\)/g, rawIpa, "\\");
         rawIpa = processRegexReplace(/(\\textprimstress )/g, rawIpa, "\u02C8");

@@ -186,8 +186,36 @@ Dictionary.prototype.build = function(buildId, type) {
     });
 };
 
+function alpha(alphabet, dir, caseSensitive){
+    dir = dir || 1;
+    function compareLetters(a, b) {
+        let ia = alphabet.indexOf(a);
+        let ib = alphabet.indexOf(b);
+        if(ia === -1 || ib === -1) {
+            if(ib !== -1)
+                return a > 'a';
+            if(ia !== -1)
+                return 'a' > b;
+            return a > b;
+        }
+        return ia > ib;
+    }
+    return function(a, b){
+        let pos = 0;
+        let min = Math.min(a.length, b.length);
+        caseSensitive = caseSensitive || false;
+        if(!caseSensitive){
+            a = a.toLowerCase();
+            b = b.toLowerCase();
+        }
+        while(a.charAt(pos) === b.charAt(pos) && pos < min){ pos++; }
+        return compareLetters(a.charAt(pos), b.charAt(pos)) ? dir:-dir;
+    };
+}
+
 Dictionary.prototype.buildBlock = function (block, type){
     const self = this;
+    const naviAlphabet = alpha("'aäbcdefghiìjklmnopqrstuvwxyz ");
     return new Promise(function(resolve, reject){
         let sortOrder = [
             [models.Lemma.associations.Grapheme, 'sortOrder', 'ASC'],
@@ -238,9 +266,24 @@ Dictionary.prototype.buildBlock = function (block, type){
                     required: false
                 }
             ],
-            order: sortOrder
-        }).then(function(lemmas){
+            sort: sortOrder
+        }).then(function(unsortedLemmas){
             "use strict";
+            // Sort lemmas
+            let lemmas = unsortedLemmas.sort(function(l1, l2) {
+                if(l1.Grapheme !== undefined && l1.Grapheme !== null && l2.Grapheme !== undefined && l2.Grapheme !== null){
+                    if(l1.Grapheme.sortOrder !== l2.Grapheme.sortOrder){
+                        if(l1.Grapheme.sortOrder < l2.Grapheme.sortOrder){
+                            return -1;
+                        } else {
+                            return 1;
+                        }
+                    }
+                }
+
+                return naviAlphabet(l1.lemma, l2.lemma);
+
+            });
             console.log(229, "Got Lemmas", block.id, lemmas.length);
             const definitions = new Array(lemmas.length);
             const promises = [];
@@ -351,15 +394,42 @@ Dictionary.prototype.getFormattedDefinition = function(lemma, type){
                 }
             }
 
+            let rawIpa = lemma.ipa;
+
             if(type === "latex"){
-                lemma.ipa = lemma.ipa.replace("_", "$\\_$");
+                // Convert IPA UTF-8 to LaTeX
+
+                rawIpa = rawIpa.replace(/_/g, "$\\_$");
+                rawIpa = rawIpa.replace(/\u02C8/g, "\\textprimstress ");
+                rawIpa = rawIpa.replace(/\u02CC/g, "\\textsecstress ");
+                rawIpa = rawIpa.replace(/\u031A/g, "\\textcorner ");
+                //rawIpa = rawIpa.replace(/(\\ )/g, rawIpa, " ");
+                rawIpa = rawIpa.replace(/\u025B/g, "E");
+                rawIpa = rawIpa.replace(/\u0294/g, "P");
+                rawIpa = rawIpa.replace(/\u029D/g, "J");
+                rawIpa = rawIpa.replace(/\u027E/g, "R");
+                rawIpa = rawIpa.replace(/\u0271/g, "M");
+                rawIpa = rawIpa.replace(/\u014B/g, "N");
+                rawIpa = rawIpa.replace(/\u026A/g, "I");
+                rawIpa = rawIpa.replace(/\u0292/g, "Z");
+                rawIpa = rawIpa.replace(/t\u0361s/g, "\\t\{ts\}");
+                rawIpa = rawIpa.replace(/l\u0329/g, "\\textsyllabic{l}");
+                rawIpa = rawIpa.replace(/r\u0329/g, "\\textsyllabic{r}");
+                rawIpa = rawIpa.replace(/\u22C5/g, "$\\cdot$");
+                // Illegal phonetics for Na'vi - bug in EE data
+                //rawIpa = rawIpa.replace(/(\\textsyllabic{ts})/, rawIpa, "\u02A6\u0329");
+                //rawIpa = rawIpa.replace(/(\\textesh )/, rawIpa, "\u0283");
+                //rawIpa = rawIpa.replace(/(\\textesh)/, rawIpa, "\u0283");
+                //
+                //rawIpa = rawIpa.replace(/(\$\\_\$)/, rawIpa, "_");
+                lemma.ipa = rawIpa;
             }
 
             const formatData = {
                 lemma: lemma.lemma,
                 ipa: lemma.ipa,
                 source: lemma.Source.name,
-                lemma_class: lemmaClassTypes.join(", "),
+                lemma_class: lemmaClassTypes.sort().join(", "),
                 definition: definition.text,
                 loanWordLanguage: definition.loanWordLanguage,
                 loanWordDefinition: definition.loanWordDefinition,

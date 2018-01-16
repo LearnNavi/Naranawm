@@ -14,7 +14,8 @@ module.exports = function (sequelize, DataTypes) {
         // Using legacy status to indicate a "lemma" from EE, but it isn't actually a lemma
         // This is a stop gap measure to get things working from EE until the data is properly
         // migrated into the new structure
-        legacyLemma: { type: DataTypes.BOOLEAN, defaultValue: false }
+        legacyLemma: { type: DataTypes.BOOLEAN, defaultValue: false },
+        odd: { type: DataTypes.STRING }
     });
 
     Lemma.beforeCreate((user, options, callback) => {

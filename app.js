@@ -24,7 +24,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(auth.initialize());
 
-app.use('/api/v1', auth.authenticateJwt(), apiV1);
+//app.use('/api/v1', auth.authenticateJwt(), apiV1);
+app.use('/api/v1', apiV1);
 app.post('/login', auth.authenticateUser(), auth.createToken, function(req, res){
   "use strict";
   res.send({ user: req.user, token: req.token});
