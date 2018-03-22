@@ -756,6 +756,9 @@ Dictionary.prototype.exportLemmas = function () {
 
         for(let j = 0; j < lemma.classTypes.length; j++){
             const classTypes = self.lemmaClassTypes[lemma.classTypes[j].trim()];
+            if( classTypes === undefined ){
+                continue;
+            }
             for(let i = 0; i < classTypes.length; i++){
                 classTypeAssociations.push({ LemmaId: lemma.id, LemmaClassTypeId: classTypes[i] });
             }
@@ -798,101 +801,7 @@ Dictionary.prototype.exportLemmas = function () {
     });
 };
 
-Dictionary.prototype.exportMorphemeAffixTypes = function(){
-    "use strict";
-    const types = [{
-        id: "infix",
-        LanguageIsoCode: "nav"
-    },{
-        id: "affix",
-        LanguageIsoCode: "nav"
-    }];
-    return models.MorphemeAffixType.bulkCreate(types);
-};
 
-function getMorphemeBoundType (morpheme){
-    "use strict";
-    switch(morpheme.block){
-        case 2:
-        case 3:
-            return "bound_inflectional";
-        case 4:
-        case 11:
-            return "bound_derivational";
-    }
-}
-
-function getMorphemeProductivity (morpheme){
-    "use strict";
-    switch(morpheme.block){
-        case 2:
-        case 3:
-            return true;
-        case 4:
-        case 11:
-            const metaDef = morpheme.rawLemma.arg3;
-            if(metaDef.indexOf("unpro.") !== -1){
-                return false;
-            } else {
-                return (metaDef.indexOf("pro.") !== -1);
-            }
-        default:
-            return false;
-    }
-}
-
-function getMorphemeAffixType (morpheme){
-    "use strict";
-    switch(morpheme.block){
-        case 2:
-            return "infix";
-        default:
-            return "affix";
-    }
-}
-
-Dictionary.prototype.exportMorphemes = function() {
-    "use strict";
-    // Insert Entries
-    const self = this;
-    const morphemes = [];
-    const definitions = [];
-    for(const id of Object.keys(self.morphemes)){
-        const morpheme = self.morphemes[id];
-        morphemes.push({
-            id: morpheme.id,
-            LanguageIsoCode: "nav",
-            pubId: morpheme.pubId,
-            morpheme: morpheme.lemma,
-            ipa: morpheme.ipa,
-            boundType: getMorphemeBoundType(morpheme),
-            productive: getMorphemeProductivity(morpheme),
-            //partOfSpeech: entry.partOfSpeech,
-            //odd: entry.odd,
-            audio: morpheme.pubId + ".mp3",
-            eeType: morpheme.type,
-            SourceId: self.sources[morpheme.source].id,
-            DictionaryBlockId: morpheme.block,
-            MorphemeAffixTypeId: getMorphemeAffixType(morpheme),
-            //EntryTypeId: lemma.type,
-            createdAt: morpheme.editTime * 1000
-        });
-
-        for(const lc of Object.keys(morpheme.definitions)){
-            const definition = morpheme.definitions[lc];
-            definitions.push({
-                MorphemeId: morpheme.id,
-                LanguageIsoCode: lc,
-                odd: definition.odd,
-                text: definition.definition,
-                createdAt: definition.editTime * 1000
-            });
-        }
-    }
-    return models.Morpheme.bulkCreate(morphemes).then(function(){
-        return models.MorphemeDefinition.bulkCreate(definitions);
-    });
-};
 
 Dictionary.prototype.exportGraphemes = function(){
     "use strict";
@@ -1223,13 +1132,11 @@ Dictionary.prototype.export = function (callback) {
             secondLayerPromises.push(self.exportMetadata());
             secondLayerPromises.push(self.exportLemmaClassTypes());
             secondLayerPromises.push(self.exportGraphemePhonemeCorrespondence());
-            secondLayerPromises.push(self.exportMorphemeAffixTypes());
 
             Promise.all(secondLayerPromises).then(function(){
 
                 const thirdLayerPromises = [];
                 thirdLayerPromises.push(self.exportEntryLayouts());
-                thirdLayerPromises.push(self.exportMorphemes());
 
                 Promise.all(thirdLayerPromises).then(function(){
                     self.exportLemmas().then(callback);/*function () {
@@ -1806,20 +1713,11 @@ function buildDictionaryLemmas(self) {
 
         if(block === 2 || block === 3 || block === 4 || block === 11){
             // Filter out morphemes...
-            self.morphemes[id] = lemma;
-            self.morphemeLookup[lemma.lemma] = lemma;
-            const strippedId = lemma.lemma.replace("-", "").replace("-", "")
-                .replace("+", "")
-                .replace("«", "")
-                .replace("»", "");
-            if(lemma.lemma !== strippedId){
-                //console.log(id);
-                self.morphemeLookup[strippedId] = lemma;
-            }
+
             //continue;
         } else if (block === 10){
             // Filter out phrases...
-            self.phrases[id] = lemma;
+
             //continue;
         } else {
             for(const classType of lemma.classTypes){
@@ -1861,18 +1759,18 @@ function buildDictionaryLemmas(self) {
                 }
             }
         }
-        if(!(block === 2 || block === 3 || block === 4 || block === 10 || block === 11)){
+        //if(!(block === 2 || block === 3 || block === 4 || block === 10 || block === 11)){
             lemma.finalizeLemma();
             self.lemmas[lemma.id] = lemma;
             self.lemmaLookup[lemma.lemma] = lemma;
-            const id = lemma.lemma.replace("-", "").replace("-", "")
+            const processedId = lemma.lemma.replace("-", "").replace("-", "")
                 .replace("+", "")
                 .replace("«", "")
                 .replace("»", "")
                 .replace("'", "");
-            if(lemma.lemma !== id){
+            if(lemma.lemma !== processedId){
                 //console.log(id);
-                self.lemmaLookup[id] = lemma;
+                self.lemmaLookup[processedId] = lemma;
             }
             const regex = /\((.*)\)/;
             let result;
@@ -1887,7 +1785,7 @@ function buildDictionaryLemmas(self) {
             if(lemma.lemma === "sämunge"){
                 self.lemmaLookup["smung"] = lemma;
             }
-        }
+        //}
 
     }
 }

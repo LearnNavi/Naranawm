@@ -5,17 +5,17 @@ module.exports = {
     databases: {
         naranawm: {
             host: "127.0.0.1",
-            database: "naranawm",
-            username: "mobile",
-            password: "mobile",
+            database: "eana_naranawm_eltu",
+            username: "root",
+            password: "",
             dialect: "mysql",
             logging: false
         },
         eanaEltu: {
             host: '127.0.0.1',
             database: 'eanaeltu',
-            username: 'mobile',
-            password: 'mobile'
+            username: 'root',
+            password: ''
         },
         forum: {
             database: "learnnavi_forum",

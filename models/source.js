@@ -15,7 +15,6 @@ module.exports = function (sequelize, DataTypes) {
             onDelete: 'cascade'
         });
         Source.hasMany(models.Lemma);
-        Source.hasMany(models.Morpheme);
     };
 
     return Source;
